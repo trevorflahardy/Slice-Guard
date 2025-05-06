@@ -1,8 +1,9 @@
 /**
- * Manages WebSocket authentication and authorization logic.
+ * @fileoverview Manages WebSocket authentication and authorization logic.
+ * Defines handlers for login, register, refresh, and logout operations.
  */
 
-import { OpCode, type AuthLoginPayload, type AuthLogoutPayload, type AuthRefreshPayload } from "../../../../shared/ws/opcodes"
+import { OpCode, type AuthLoginPayload, type AuthLogoutPayload, type AuthRefreshPayload } from "@shared/ws/opcodes"
 import type { HandlerMap } from ".."
 
 export const handlers: HandlerMap = {

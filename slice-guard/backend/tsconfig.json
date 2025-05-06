@@ -7,6 +7,11 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": "../",
+    "paths": {
+      "@slice-guard/*": ["./*"],
+      "@shared/*": ["./shared/*"]
+    }
   }
 }

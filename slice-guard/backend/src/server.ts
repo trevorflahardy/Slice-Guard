@@ -1,18 +1,15 @@
-import { serve } from "bun";
-import { handlers as wsOpHandlers } from "./ws";
-import { OpCode, type OpCodePayloadUnion } from "../../shared/ws/opcodes";
+// import { handlers as wsOpHandlers } from "./ws";
+import { OpCode, type OpCodePayloadUnion } from "@shared/ws/opcodes";
 
 type WebSocketUpgrade = {
     created_at: number;
     auth_token?: string;
 }
 
-// TODO: Message size limits, timeouts after inactivity.
-
 Bun.serve<WebSocketUpgrade, unknown>({
     port: 3000,
     routes: {
-        // Example for later:
+        // NOTE: Placeholder for future API routes
         // "/api/v1/some_endpoint": {
         //    GET: async (req) => { ... },
         //    POST: async (req) => { ... },
@@ -24,7 +21,7 @@ Bun.serve<WebSocketUpgrade, unknown>({
         server.upgrade(req, {
             data: {
                 created_at: Date.now(),
-                auth_token: undefined, // TODO: Auth token info
+                auth_token: undefined, // TODO: Auth token info passed on request
             }
         })
     },

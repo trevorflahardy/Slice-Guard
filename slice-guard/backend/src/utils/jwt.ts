@@ -3,9 +3,7 @@
  */
 import jwt from "jsonwebtoken";
 
-/**
- * Set during build time.
- */
+// ! Set during build time. Must be set.
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 export function signJwt(payload: object, expiresIn = "15m") {

@@ -1,6 +1,6 @@
 # SliceGuard
 
-Welcome to Slice Guard, a tool to help the University of South Florida detect invalid or improper requested 3D prints. It is designed to keep track of students' 3D print requests and ensure that they are within the allowed limits.
+Welcome to Slice Guard, a tool to help University 3D-print labs manage requests for printing. Slice Guard is designed to keep track of students' 3D print requests, ensure they are within the allowed limits, and get useful statistics abotu your printers.
 
 ## Planned Features
 

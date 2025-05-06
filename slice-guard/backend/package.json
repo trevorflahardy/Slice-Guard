@@ -1,0 +1,15 @@
+{
+    "name": "slice-guard-backend",
+    "version": "0.1.0",
+    "description": "A Bun-based backlend for Slice Guard for authentication and management.",
+    "type": "module",
+    "scripts": {
+        "start": "bun run src/server.ts"
+    },
+    "dependencies": {
+        "jsonwebtoken": "^9.0.2"
+    },
+    "devDependencies": {
+        "@types/bun": "latest"
+    }
+}

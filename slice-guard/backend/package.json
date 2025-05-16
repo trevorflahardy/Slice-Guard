@@ -4,7 +4,8 @@
     "description": "A Bun-based backend for Slice Guard for authentication and management.",
     "type": "module",
     "scripts": {
-        "start": "bun run src/server.ts"
+        "start": "bun run src/server.ts",
+        "dev": "bun run src/server.ts --watch"
     },
     "dependencies": {
         "jsonwebtoken": "^9.0.2"

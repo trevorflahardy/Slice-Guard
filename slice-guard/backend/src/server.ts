@@ -8,6 +8,9 @@ type WebSocketUpgrade = {
     auth_token?: string;
 }
 
+console.log("Starting server...");
+console.log("Connecting to database...");
+
 const db: SQL = new SQL({
     url: `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}/${process.env.POSTGRES_DB}`,
 
@@ -20,6 +23,9 @@ const db: SQL = new SQL({
     tls: true,
 });
 const state = new State(db);
+
+console.log("Connected to database.");
+console.log("Starting server...");
 
 Bun.serve<WebSocketUpgrade, unknown>({
     port: 3000,
@@ -72,4 +78,6 @@ Bun.serve<WebSocketUpgrade, unknown>({
             console.log("Client disconnected.", ws);
         }
     },
-})
+});
+
+console.log("Server started on port 3000.");

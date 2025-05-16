@@ -1,7 +1,8 @@
-import { OpCode, type OpCodePayloadMap, type OpCodeValue } from '../../../shared/ws/opcodes';
+import { OpCode, type OpCodePayloadMap, type OpCodePayloadUnion, type OpCodeValue } from '@shared/ws/opcodes';
 import * as auth from "./handlers/auth";
+import type State from '../utils/state';
 
-export type Handler<K extends OpCodeValue> = (ws: Bun.WebSocket, payload: OpCodePayloadMap[K]) => Promise<void> | void;
+export type Handler<K extends OpCodeValue> = (ws: Bun.WebSocket, payload: OpCodePayloadMap[K], state: State) => Promise<void> | void;
 
 /**
  * Mapping of OpCode to handler function. Generic by default, so modules exporting this do not need to specify exactly
@@ -25,4 +26,43 @@ type HandlerMapItems = OpCode.AUTH_LOGIN
 
 export const handlers: HandlerMap<HandlerMapItems> = {
     ...auth.handlers,
+}
+
+export async function validateAndDispatchMessage(ws, message: string | object | Buffer<ArrayBufferLike>, state: State): Promise<null> {
+    // Try and narrow this type of data, assuming it follows the convention
+    // of OpCodePayload.
+    // One of a couple things will be passed here. Either an object, string,
+    // or buffer of data.
+    // ! TODO: Better impl of narrowing this type and decoding passed
+
+    let payload: OpCodePayloadUnion;
+    try {
+        payload = JSON.parse(message.toString());
+    }
+    catch (_e) {
+        // Assume nothing cna be done here, for now.
+        // ! TODO: Update this to be far better
+        console.error("Failed to parse message", message);
+        return;
+    }
+
+    // Check if the payload is a valid OpCode
+    let handler = handlers[payload.op];
+    if (!handler) {
+        // We have received something invalid from the client.
+        // For now, complain about it and simply do nothing.
+        // ! TODO: In the future, upgrade this to send a message back to the client.
+        console.error("Invalid OpCode received:", payload.op);
+        return;
+    }
+
+    // Validate that *some* data has been passed to us
+    if (!payload.d) {
+        // ! TODO: In the future, upgrade this to send a message back to the client.
+        console.error("No data passed to OpCode:", payload.op);
+        return;
+    }
+
+    // Pass logic off to the handler, which will handle the payload
+    await handler(ws, payload);
 }

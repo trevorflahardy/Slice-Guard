@@ -16,3 +16,6 @@ build/
 
 # General
 .env
+
+# Python local development
+_.py

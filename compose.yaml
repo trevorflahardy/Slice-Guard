@@ -13,3 +13,22 @@ services:
     ports:
       - 5432:5432
     restart: always
+
+  backend:
+    container_name: slice_guard_backend
+    build:
+      context: .
+      dockerfile: slice-guard/backend/dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    depends_on:
+      - postgres
+    restart:
+      unless-stopped
+
+volumes:
+  postgres:

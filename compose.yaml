@@ -17,8 +17,8 @@ services:
   backend:
     container_name: slice_guard_backend
     build:
-      context: .
-      dockerfile: slice-guard/backend/dockerfile
+      context: ./slice-guard
+      dockerfile: backend/Dockerfile
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -29,6 +29,8 @@ services:
       - postgres
     restart:
       unless-stopped
+    ports:
+      - 3000:3000
 
 volumes:
   postgres:

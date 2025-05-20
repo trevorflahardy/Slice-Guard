@@ -1,4 +1,5 @@
 import type { User } from "../db/user";
+import type { ErrorCodeType, ErrorCodeMappingValue } from "./errors";
 
 export enum OpCode {
     AUTH_LOGIN = 0,
@@ -8,7 +9,7 @@ export enum OpCode {
     AUTH_REFRESH = 4,
     AUTH_REFRESH_SUCCESS = 5,
     AUTH_LOGOUT = 6,
-    // ...expand as needed
+    ERROR = 7,
 }
 
 // Generic type for WebSocket payloads
@@ -87,3 +88,9 @@ export type AuthRefreshSuccessPayload = OpCodePayload<OpCode.AUTH_REFRESH_SUCCES
 
 // - CLIENT -> SERVER when logging out.
 export type AuthLogoutPayload = OpCodePayload<OpCode.AUTH_LOGOUT> & { d: { refreshToken: string } };
+
+/**
+ * Denotes any error response from the server.
+ */
+
+export type ErrorPayload<E extends ErrorCodeType> = OpCodePayload<OpCode.ERROR> & { d: { error: E, response: ErrorCodeMappingValue } };

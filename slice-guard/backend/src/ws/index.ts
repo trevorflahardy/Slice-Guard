@@ -1,68 +1,77 @@
-import { OpCode, type OpCodePayloadMap, type OpCodePayloadUnion, type OpCodeValue } from '@shared/ws/opcodes';
-import * as auth from "./handlers/auth";
+import { OpCode, type OpCodePayload, type OpCodePayloadUnion, type OpCodeValue } from '@shared/ws/opcodes';
 import type State from '../utils/state';
+import type { Server } from '../server';
+import { handlers, HandlerPayload, type Handler, type HandlerResponse } from "./handlers";
+import { ErrorCode, toErrorCodeValue, type ErrorCodeValue } from '@slice-guard/shared/ws/errors';
+import { type ErrorPayload } from '@shared/ws/opcodes';
 
-export type Handler<K extends OpCodeValue> = (ws: Bun.WebSocket, payload: OpCodePayloadMap[K], state: State) => Promise<void> | void;
 
-/**
- * Mapping of OpCode to handler function. Generic by default, so modules exporting this do not need to specify exactly
- * the OpCodes they cover.
- *
- * See below, where all OpCodes are specified in the HandlerMapItems type as a requirement for type safety.
- */
-export type HandlerMap<K extends OpCodeValue = OpCodeValue> = Partial<{
-    [P in K]: Handler<P>;
-}>;
-
-/**
- * Constraints on the handler map - not all OpCodes are handled, IE some are responses and do not need handlers.
- *
- * This is a union of all OpCodes that are handled by the server from the client as a request for some operation.
- */
-type HandlerMapItems = OpCode.AUTH_LOGIN
-    | OpCode.AUTH_REGISTER
-    | OpCode.AUTH_REFRESH
-    | OpCode.AUTH_LOGOUT;
-
-export const handlers: HandlerMap<HandlerMapItems> = {
-    ...auth.handlers,
+export type WebSocketData = {
+    created_at: number;
+    id: string;
 }
 
-export async function validateAndDispatchMessage(ws, message: string | object | Buffer<ArrayBufferLike>, state: State): Promise<null> {
+export type ServerWebSocket = Bun.ServerWebSocket<WebSocketData>;
+
+export async function validateAndDispatchMessage(server: Server, ws: ServerWebSocket, message: string | Buffer<ArrayBufferLike>, state: State): Promise<null> {
     // Try and narrow this type of data, assuming it follows the convention
     // of OpCodePayload.
     // One of a couple things will be passed here. Either an object, string,
     // or buffer of data.
     // ! TODO: Better impl of narrowing this type and decoding passed
 
-    let payload: OpCodePayloadUnion;
+    let payloadData: OpCodePayloadUnion;
     try {
-        payload = JSON.parse(message.toString());
+        payloadData = JSON.parse(message.toString());
     }
     catch (_e) {
         // Assume nothing cna be done here, for now.
         // ! TODO: Update this to be far better
-        console.error("Failed to parse message", message);
+        server.logger.error("Failed to parse message", message);
         return;
     }
 
-    // Check if the payload is a valid OpCode
-    let handler = handlers[payload.op];
+    // Check if the payloadData is a valid OpCode
+    let handler: Handler<OpCodePayloadUnion> = handlers[payloadData.op];
     if (!handler) {
         // We have received something invalid from the client.
         // For now, complain about it and simply do nothing.
         // ! TODO: In the future, upgrade this to send a message back to the client.
-        console.error("Invalid OpCode received:", payload.op);
+        server.logger.error("Invalid OpCode received:", payloadData.op);
         return;
     }
 
     // Validate that *some* data has been passed to us
-    if (!payload.d) {
+    if (!payloadData.d) {
         // ! TODO: In the future, upgrade this to send a message back to the client.
-        console.error("No data passed to OpCode:", payload.op);
+        server.logger.error("No data passed to OpCode:", payloadData.op);
         return;
     }
 
+    // This.. should be valid. We can create a payload object from this.
+    const loggerChild = server.logger.child({
+        op: payloadData.op,
+        ws_id: ws.data.id,
+        ws_created_at: ws.data.created_at,
+    })
+    const payload: HandlerPayload<OpCodePayloadUnion> = new HandlerPayload<OpCodePayloadUnion>(ws, payloadData, state, loggerChild);
+
     // Pass logic off to the handler, which will handle the payload
-    await handler(ws, payload);
+    let response: HandlerResponse | ErrorPayload<ErrorCode> = await handler(payload);
+
+    // IF this response is the enum ErrorCode, it has error'd out somehow.
+    if (Object.values(ErrorCode).includes(response as ErrorCode)) {
+        // Wrap this in an error response here
+        response = {
+            op: OpCode.ERROR,
+            d: {
+                code: response as ErrorCode,
+                message: toErrorCodeValue(response as ErrorCodeValue)
+            }
+        }
+    }
+
+    // We can send this back to the socket
+    ws.send(JSON.stringify(response));
+    return null;
 }

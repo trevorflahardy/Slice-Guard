@@ -6,7 +6,8 @@
     "scripts": {
         "start": "bun run src/server.ts",
         "dev": "bun run src/server.ts --watch",
-        "build": "bun build ./src/server.ts --target=bun"
+        "build": "bun build ./src/server.ts --target=bun",
+        "test": "bun test"
     },
     "dependencies": {
         "jsonwebtoken": "^9.0.2",

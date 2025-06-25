@@ -10,6 +10,11 @@ export enum OpCode {
     AUTH_REFRESH_SUCCESS = 5,
     AUTH_LOGOUT = 6,
     ERROR = 7,
+    REQUEST_CREATE = 8,
+    REQUEST_LIST = 9,
+    TAG_CREATE = 10,
+    TAG_SET_DEFAULT = 11,
+    REQUEST_ASSIGN_TAG = 12,
 }
 
 // Generic type for WebSocket payloads
@@ -94,3 +99,9 @@ export type AuthLogoutPayload = OpCodePayload<OpCode.AUTH_LOGOUT> & { d: { refre
  */
 
 export type ErrorPayload<E extends ErrorCodeType> = OpCodePayload<OpCode.ERROR> & { d: { error: E, response: ErrorCodeMappingValue } };
+
+export type RequestCreatePayload = OpCodePayload<OpCode.REQUEST_CREATE> & { d: { labId: number; file: string; metadata: any; description?: string; token: string } };
+export type RequestListPayload = OpCodePayload<OpCode.REQUEST_LIST> & { d: { labId: number; token: string } };
+export type TagCreatePayload = OpCodePayload<OpCode.TAG_CREATE> & { d: { labId: number; name: string; isDefault?: boolean; token: string } };
+export type TagSetDefaultPayload = OpCodePayload<OpCode.TAG_SET_DEFAULT> & { d: { tagId: number; isDefault: boolean; token: string } };
+export type RequestAssignTagPayload = OpCodePayload<OpCode.REQUEST_ASSIGN_TAG> & { d: { requestId: number; tagId: number; assign: boolean; token: string } };

@@ -15,6 +15,14 @@ Welcome to Slice Guard, a tool to help University 3D-print labs manage requests 
   - A modern, clean GUI for staff to approve or deny requests, with notifications for students when their requests are approved or denied.
 - Concurrent file management between multiple users.
 
+## File Storage
+
+Uploaded 3MF files are stored on the backend under `slice-guard/backend/uploads`.
+Files larger than 30MB are rejected. Each file is compressed using gzip to save
+space and its path is stored in the database. For large scale deployments an
+external storage service such as S3 is recommended, but for development local
+storage is sufficient.
+
 ### Planned Technologies
 
 - Docker for easy deployment and management.

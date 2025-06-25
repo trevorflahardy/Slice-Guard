@@ -30,8 +30,8 @@ export interface AuthenticatedPayload<D> extends HandlerPayload<D> {
     userId: number;
 }
 
-export function withAuth<D>(handler: (payload: AuthenticatedPayload<D>) => Promise<HandlerResponse>): Handler<D & { token: string }> {
-    return async (payload: HandlerPayload<D & { token: string }>): Promise<HandlerResponse> => {
+export function withAuth<D>(handler: (payload: AuthenticatedPayload<D>) => Promise<HandlerResponse>): Handler<D & { d: { token: string } }> {
+    return async (payload: HandlerPayload<D & { d: { token: string } }>): Promise<HandlerResponse> => {
         let userId: number;
         try {
             const decoded = verifyJwt(payload.data.d.token) as any;

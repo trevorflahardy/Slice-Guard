@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { Parser } from "../src/three-parser";
 import { resolve } from "path";
 
-const file = resolve(__dirname, "../../../tests/sliced_files/benchy_sliced.3mf");
+const file = resolve(__dirname, "./slices/benchy_sliced.3mf");
 
 test("extract plates from 3mf", async () => {
   const parser = new Parser(file);

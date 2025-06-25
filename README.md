@@ -20,12 +20,28 @@ Welcome to Slice Guard, a tool to help University 3D-print labs manage requests 
 - Docker for easy deployment and management.
 - Bun for the backend + frontend.
 - Vite as the build tool for the frontend.
-- Vue.js for the frontend.
-  - Tailwind CSS for styling.
+  - Vue.js for the frontend.
+  - Tailwind CSS for styling with a custom theme.
   - Pinia for state management (?)
   - Vue Router for routing.
 - PostgreSQL for the database.
 - Redis for caching and session management (?)
+
+### Accent Scheme
+
+The frontend uses a British Racing Green palette with a soft modern accent. `tailwind.config.cjs` defines CSS variables for a full light and dark theme:
+
+- **main**: `#005e3c` (light) / `#1ba56e` (dark) – primary brand colour
+- **accent**: `#30d158` – highlight and focus colour
+- **accent-text**: black in light mode, white in dark mode
+- **background** / **surface** – page and card backgrounds
+- **foreground** / **muted** – primary and secondary text colours
+- **border** – subtle lines and outlines
+- **gray1-3** – tiered neutral shades
+- **success**, **warning**, **error**, **info** – status colours for UI components
+- **white** and **black** remain handy shorthands
+
+Dark mode is toggled by adding the `dark` class to the `<html>` element. Reusable UI pieces like `src/components/Button.vue` keep styles consistent across the app.
 
 ## Three Parser
 

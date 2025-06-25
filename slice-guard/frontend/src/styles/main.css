@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light theme inspired by Apple's palette */
+  --color-background: #f8f8f8;
+  --color-surface: #ffffff;
+  --color-foreground: #1c1c1e;
+  --color-muted: #6e6e73;
+  --color-border: #c7c7d1;
+  --color-main: #007f3c; /* lighter British Racing Green */
+  --color-accent: #30d158; /* modern accent */
+  --color-accent-text: #000000; /* accent text is black */
+  --color-success: #34c759;
+  --color-warning: #ff9f0a;
+  --color-error: #ff3b30;
+  --color-info: #5ac8fa;
+  --color-gray-1: #f5f5f7;
+  --color-gray-2: #e3e3e8;
+  --color-gray-3: #c7c7d1;
+  --color-white: #ffffff;
+  --color-black: #000000;
+}
+
+.dark {
+  /* Softer dark theme matching Apple's design */
+  --color-background: #1c1c1e;
+  --color-surface: #3e3e41;
+  --color-foreground: #f2f2f7;
+  --color-muted: #8e8e93;
+  --color-border: #57575b;
+  --color-main: #1ba56e; /* lighter in dark mode */
+  --color-accent-text: #ffffff; /* accent text is white */
+  --color-gray-1: #3e3e41;
+  --color-gray-2: #57575b;
+  --color-gray-3: #a4a4a8;
+  --color-white: #ffffff;
+  --color-black: #000000;
+}

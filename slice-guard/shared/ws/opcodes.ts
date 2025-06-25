@@ -15,6 +15,12 @@ export enum OpCode {
     TAG_CREATE = 10,
     TAG_SET_DEFAULT = 11,
     REQUEST_ASSIGN_TAG = 12,
+    LAB_CREATE = 13,
+    LAB_UPDATE = 14,
+    LAB_DELETE = 15,
+    ROLE_CREATE = 16,
+    MEMBER_ADD = 17,
+    MEMBER_REMOVE = 18,
 }
 
 // Generic type for WebSocket payloads
@@ -105,3 +111,11 @@ export type RequestListPayload = OpCodePayload<OpCode.REQUEST_LIST> & { d: { lab
 export type TagCreatePayload = OpCodePayload<OpCode.TAG_CREATE> & { d: { labId: number; name: string; isDefault?: boolean; token: string } };
 export type TagSetDefaultPayload = OpCodePayload<OpCode.TAG_SET_DEFAULT> & { d: { tagId: number; isDefault: boolean; token: string } };
 export type RequestAssignTagPayload = OpCodePayload<OpCode.REQUEST_ASSIGN_TAG> & { d: { requestId: number; tagId: number; assign: boolean; token: string } };
+
+export type LabCreatePayload = OpCodePayload<OpCode.LAB_CREATE> & { d: { name: string; description?: string | null; imageUrl?: string | null; token: string } };
+export type LabUpdatePayload = OpCodePayload<OpCode.LAB_UPDATE> & { d: { labId: number; name: string; description?: string | null; imageUrl?: string | null; token: string } };
+export type LabDeletePayload = OpCodePayload<OpCode.LAB_DELETE> & { d: { labId: number; token: string } };
+export type RoleCreatePayload = OpCodePayload<OpCode.ROLE_CREATE> & { d: { labId: number; name: string; permissions: number; token: string } };
+export type MemberAddPayload = OpCodePayload<OpCode.MEMBER_ADD> & { d: { labId: number; userId: number; roleId: number | null; token: string } };
+export type MemberRemovePayload = OpCodePayload<OpCode.MEMBER_REMOVE> & { d: { labId: number; userId: number; token: string } };
+

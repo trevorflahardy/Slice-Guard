@@ -12,13 +12,12 @@ export async function createPrintRequest(
     metadata: unknown,
     description: string | null = null,
 ): Promise<PrintRequestRow> {
-    const [row] = await db.query<PrintRequestRow>(
-        `INSERT INTO lab.print_requests (lab_id, user_id, file_path, metadata, description)
-           VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, lab_id, user_id, file_path, metadata, description, created_at`,
-        [labId, userId, filePath, JSON.stringify(metadata), description]
-    );
-    return row;
+    const rows: PrintRequestRow[] = await db`
+        INSERT INTO lab.print_requests (lab_id, user_id, file_path, metadata, description)
+             VALUES (${labId}, ${userId}, ${filePath}, ${JSON.stringify(metadata)}, ${description})
+        RETURNING id, lab_id, user_id, file_path, metadata, description, created_at
+    `;
+    return rows[0];
 }
 
 export async function getUserPrintRequests(
@@ -26,12 +25,12 @@ export async function getUserPrintRequests(
     labId: number,
     userId: number
 ): Promise<PrintRequestRow[]> {
-    return db.query<PrintRequestRow>(
-        `SELECT id, lab_id, user_id, file_path, metadata, description, created_at
-           FROM lab.print_requests
-          WHERE lab_id = $1 AND user_id = $2`,
-        [labId, userId]
-    );
+    const rows: PrintRequestRow[] = await db`
+        SELECT id, lab_id, user_id, file_path, metadata, description, created_at
+          FROM lab.print_requests
+         WHERE lab_id = ${labId} AND user_id = ${userId}
+    `;
+    return rows;
 }
 
 export async function createTag(
@@ -40,13 +39,12 @@ export async function createTag(
     name: string,
     isDefault = false
 ): Promise<RequestTagRow> {
-    const [row] = await db.query<RequestTagRow>(
-        `INSERT INTO lab.request_tags (lab_id, name, is_default)
-           VALUES ($1, $2, $3)
-        RETURNING id, lab_id, name, is_default, created_at`,
-        [labId, name, isDefault]
-    );
-    return row;
+    const rows: RequestTagRow[] = await db`
+        INSERT INTO lab.request_tags (lab_id, name, is_default)
+             VALUES (${labId}, ${name}, ${isDefault})
+        RETURNING id, lab_id, name, is_default, created_at
+    `;
+    return rows[0];
 }
 
 export async function setTagDefault(
@@ -54,14 +52,13 @@ export async function setTagDefault(
     tagId: number,
     isDefault: boolean
 ): Promise<RequestTagRow> {
-    const [row] = await db.query<RequestTagRow>(
-        `UPDATE lab.request_tags
-            SET is_default = $2
-          WHERE id = $1
-        RETURNING id, lab_id, name, is_default, created_at`,
-        [tagId, isDefault]
-    );
-    return row;
+    const rows: RequestTagRow[] = await db`
+        UPDATE lab.request_tags
+           SET is_default = ${isDefault}
+         WHERE id = ${tagId}
+        RETURNING id, lab_id, name, is_default, created_at
+    `;
+    return rows[0];
 }
 
 export async function assignTag(
@@ -69,12 +66,11 @@ export async function assignTag(
     requestId: number,
     tagId: number
 ): Promise<void> {
-    await db.run(
-        `INSERT INTO lab.request_tag_assignments (request_id, tag_id)
-           VALUES ($1, $2)
-        ON CONFLICT DO NOTHING`,
-        [requestId, tagId]
-    );
+    await db`
+        INSERT INTO lab.request_tag_assignments (request_id, tag_id)
+             VALUES (${requestId}, ${tagId})
+        ON CONFLICT DO NOTHING
+    `;
 }
 
 export async function unassignTag(
@@ -82,22 +78,21 @@ export async function unassignTag(
     requestId: number,
     tagId: number
 ): Promise<void> {
-    await db.run(
-        `DELETE FROM lab.request_tag_assignments
-          WHERE request_id = $1 AND tag_id = $2`,
-        [requestId, tagId]
-    );
+    await db`
+        DELETE FROM lab.request_tag_assignments
+         WHERE request_id = ${requestId} AND tag_id = ${tagId}
+    `;
 }
 
 export async function getTagsForRequest(
     db: SQL,
     requestId: number
 ): Promise<RequestTagRow[]> {
-    return db.query<RequestTagRow>(
-        `SELECT t.id, t.lab_id, t.name, t.is_default, t.created_at
-           FROM lab.request_tag_assignments a
-           JOIN lab.request_tags t ON a.tag_id = t.id
-          WHERE a.request_id = $1`,
-        [requestId]
-    );
+    const rows: RequestTagRow[] = await db`
+        SELECT t.id, t.lab_id, t.name, t.is_default, t.created_at
+          FROM lab.request_tag_assignments a
+          JOIN lab.request_tags t ON a.tag_id = t.id
+         WHERE a.request_id = ${requestId}
+    `;
+    return rows;
 }

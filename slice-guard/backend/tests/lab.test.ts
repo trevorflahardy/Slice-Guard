@@ -12,25 +12,16 @@ import {
   type LabMemberRow,
 } from "../src/db/lab";
 
-class MockDB {
-  public lastQuery: string | null = null;
-  public lastParams: any[] | null = null;
-  private result: any[];
-
-  constructor(result: any[] = []) {
-    this.result = result;
-  }
-
-  async query<T>(sql: string, params: any[]): Promise<T[]> {
-    this.lastQuery = sql;
-    this.lastParams = params;
-    return this.result as T[];
-  }
-
-  async run(sql: string, params: any[]): Promise<void> {
-    this.lastQuery = sql;
-    this.lastParams = params;
-  }
+function createMockSQL(result: any[] = []) {
+  const fn: any = (strings: TemplateStringsArray, ...values: any[]) => {
+    const query = strings.reduce((acc, str, i) => acc + str + (i < values.length ? `$${i + 1}` : ""), "");
+    fn.lastQuery = query;
+    fn.lastParams = values;
+    return Promise.resolve(result);
+  };
+  fn.lastQuery = null as string | null;
+  fn.lastParams = null as any[] | null;
+  return fn;
 }
 
 function normalize(sql: string | null) {
@@ -69,7 +60,7 @@ function sampleMember(): LabMemberRow {
 
 test("createLab inserts expected values", async () => {
   const lab = sampleLab();
-  const db = new MockDB([lab]);
+  const db = createMockSQL([lab]);
   const result = await createLab(db as any, lab.owner_id, lab.name, lab.description!, lab.image_url!);
   expect(normalize(db.lastQuery)).toBe(
     "INSERT INTO lab.labs (owner_id, name, description, image_url) VALUES ($1, $2, $3, $4) RETURNING id, owner_id, name, description, image_url, created_at"
@@ -79,7 +70,7 @@ test("createLab inserts expected values", async () => {
 });
 
 test("deleteLab deletes by id", async () => {
-  const db = new MockDB();
+  const db = createMockSQL();
   await deleteLab(db as any, 1);
   expect(normalize(db.lastQuery)).toBe("DELETE FROM lab.labs WHERE id = $1");
   expect(db.lastParams).toEqual([1]);
@@ -87,18 +78,18 @@ test("deleteLab deletes by id", async () => {
 
 test("updateLab updates fields", async () => {
   const lab = sampleLab();
-  const db = new MockDB([lab]);
+  const db = createMockSQL([lab]);
   const result = await updateLab(db as any, lab.id, lab.name, lab.description!, lab.image_url!);
   expect(normalize(db.lastQuery)).toBe(
-    "UPDATE lab.labs SET name = $2, description = $3, image_url = $4 WHERE id = $1 RETURNING id, owner_id, name, description, image_url, created_at"
+    "UPDATE lab.labs SET name = $1, description = $2, image_url = $3 WHERE id = $4 RETURNING id, owner_id, name, description, image_url, created_at"
   );
-  expect(db.lastParams).toEqual([lab.id, lab.name, lab.description, lab.image_url]);
+  expect(db.lastParams).toEqual([lab.name, lab.description, lab.image_url, lab.id]);
   expect(result).toEqual(lab);
 });
 
 test("createRole inserts expected values", async () => {
   const role = sampleRole();
-  const db = new MockDB([role]);
+  const db = createMockSQL([role]);
   const result = await createRole(db as any, role.lab_id, role.name, role.permissions as number);
   expect(normalize(db.lastQuery)).toBe(
     "INSERT INTO lab.roles (lab_id, name, permissions) VALUES ($1, $2, $3) RETURNING id, lab_id, name, permissions, created_at"
@@ -109,7 +100,7 @@ test("createRole inserts expected values", async () => {
 
 test("addMember inserts expected values", async () => {
   const m = sampleMember();
-  const db = new MockDB([m]);
+  const db = createMockSQL([m]);
   const result = await addMember(db as any, m.lab_id, m.user_id, m.role_id!);
   expect(normalize(db.lastQuery)).toBe(
     "INSERT INTO lab.members (lab_id, user_id, role_id) VALUES ($1, $2, $3) RETURNING lab_id, user_id, role_id, joined_at"
@@ -119,7 +110,7 @@ test("addMember inserts expected values", async () => {
 });
 
 test("removeMember deletes by composite id", async () => {
-  const db = new MockDB();
+  const db = createMockSQL();
   await removeMember(db as any, 1, 2);
   expect(normalize(db.lastQuery)).toBe(
     "DELETE FROM lab.members WHERE lab_id = $1 AND user_id = $2"
@@ -128,7 +119,7 @@ test("removeMember deletes by composite id", async () => {
 });
 
 test("getMemberRolePermissions selects join", async () => {
-  const db = new MockDB([{ permissions: 8 }]);
+  const db = createMockSQL([{ permissions: 8 }]);
   const result = await getMemberRolePermissions(db as any, 1, 2);
   expect(normalize(db.lastQuery)).toBe(
     "SELECT r.permissions FROM lab.members m JOIN lab.roles r ON m.role_id = r.id WHERE m.lab_id = $1 AND m.user_id = $2"

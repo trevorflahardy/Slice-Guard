@@ -1,7 +1,7 @@
 # Bun
 node_modules
 bun.lockb
-bun.lock
+bun.lock*
 dist
 .bun
 .DS_Store
@@ -17,6 +17,4 @@ build/
 
 # General
 .env
-
-# Python local development
-_.py
+slice-guard/backend/uploads/

@@ -1,9 +1,11 @@
 import { OpCode, type OpCodePayload, type OpCodePayloadMap, type OpCodePayloadUnion, type OpCodeValue } from '@shared/ws/opcodes';
 import * as auth from "../handlers/auth";
+import * as requestHandlers from "../handlers/request";
 import type State from '../../utils/state';
 import type { Logger } from 'pino';
 import type { ServerWebSocket } from '..';
-import type { ErrorCode } from '@slice-guard/shared/ws/errors';
+import { ErrorCode } from '@slice-guard/shared/ws/errors';
+import { verifyJwt } from '../../utils/jwt';
 
 
 export class HandlerPayload<D> {
@@ -24,6 +26,23 @@ export type HandlerResponse = ErrorCode | OpCodePayloadUnion;
 
 export type Handler<D> = (payload: HandlerPayload<D>) => Promise<HandlerResponse>;
 
+export interface AuthenticatedPayload<D> extends HandlerPayload<D> {
+    userId: number;
+}
+
+export function withAuth<D>(handler: (payload: AuthenticatedPayload<D>) => Promise<HandlerResponse>): Handler<D & { token: string }> {
+    return async (payload: HandlerPayload<D & { token: string }>): Promise<HandlerResponse> => {
+        let userId: number;
+        try {
+            const decoded = verifyJwt(payload.data.d.token) as any;
+            userId = (decoded as any).id;
+        } catch {
+            return ErrorCode.UNAUTHORIZED;
+        }
+        return handler(Object.assign(payload, { userId }));
+    };
+}
+
 /**
  * Mapping of OpCode to handler function. Generic by default, so modules exporting this do not need to specify exactly
  * the OpCodes they cover.
@@ -42,8 +61,14 @@ export type HandlerMap<K extends OpCodeValue = OpCodeValue> = Partial<{
 type HandlerMapItems = OpCode.AUTH_LOGIN
     | OpCode.AUTH_REGISTER
     | OpCode.AUTH_REFRESH
-    | OpCode.AUTH_LOGOUT;
+    | OpCode.AUTH_LOGOUT
+    | OpCode.REQUEST_CREATE
+    | OpCode.REQUEST_LIST
+    | OpCode.TAG_CREATE
+    | OpCode.TAG_SET_DEFAULT
+    | OpCode.REQUEST_ASSIGN_TAG;
 
 export const handlers: HandlerMap<HandlerMapItems> = {
     ...auth.handlers,
+    ...requestHandlers.handlers,
 }

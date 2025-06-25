@@ -11,7 +11,7 @@ export async function saveRequestFile(labId: number, data: ArrayBuffer | Uint8Ar
     if (data.byteLength > MAX_UPLOAD_SIZE) {
         throw new Error('File exceeds maximum allowed size');
     }
-    const dir = `./slice-guard/backend/uploads/${labId}`;
+    const dir = `./uploads/${labId}`;
     await fs.mkdir(dir, { recursive: true });
     const name = `${crypto.randomUUID()}.3mf.gz`;
     const path = `${dir}/${name}`;

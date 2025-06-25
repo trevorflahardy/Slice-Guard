@@ -28,40 +28,41 @@ storage is sufficient.
 - Docker for easy deployment and management.
 - Bun for the backend + frontend.
 - Vite as the build tool for the frontend.
-- Vue.js for the frontend.
-  - Tailwind CSS for styling.
+  - Vue.js for the frontend.
+  - Tailwind CSS for styling with a custom theme.
   - Pinia for state management (?)
   - Vue Router for routing.
 - PostgreSQL for the database.
 - Redis for caching and session management (?)
 
+### Accent Scheme
+
+The frontend uses a British Racing Green palette with a soft modern accent. `tailwind.config.cjs` defines CSS variables for a full light and dark theme:
+
+- **main**: `#005e3c` (light) / `#1ba56e` (dark) – primary brand colour
+- **accent**: `#30d158` – highlight and focus colour
+- **accent-text**: black in light mode, white in dark mode
+- **background** / **surface** – page and card backgrounds
+- **foreground** / **muted** – primary and secondary text colours
+- **border** – subtle lines and outlines
+- **gray1-3** – tiered neutral shades
+- **success**, **warning**, **error**, **info** – status colours for UI components
+- **white** and **black** remain handy shorthands
+
+Dark mode is toggled by adding the `dark` class to the `<html>` element. Reusable UI pieces like `src/components/Button.vue` keep styles consistent across the app.
+
 ## Three Parser
 
-The Three parser is a simple Python implementation of a parser for the 3MF file format. It extracts all needed information from the 3MF file and converts it into neat objects. This parser is not complete and may not work for all 3MF files.
+The project now includes a TypeScript implementation of the 3MF parser located under `slice-guard/backend/src/three-parser`. It unpacks `.3mf` files using the system `unzip` utility and provides utilities for reading project settings and plate data.
 
-The core of the slice guard is being built beforehand and this parser will be ported to Bun later down the road. The goal is to have a simple way to test the parser and make sure it works as expected. Although a pyproject.toml file has been included, it is not a library yet and should not be used as such - this was only an easy way to keep track of dependencies and other formatting.
-
-```python
-from three_parser import Parser
-import asyncio
-import logging
-
-_log = logging.getLogger(__name__)
-_log.setLevel(logging.DEBUG)
-
-
-async def main():
-    logging.basicConfig(level=logging.DEBUG)
-
-    async with Parser("./tests/sliced_files/benchy_sliced.3mf") as parser:
-        plates = await parser.extract_plates()
-        print(plates)
-
-        for plate in plates:
-            contents = await plate.get_gcode_file()
-            print(contents and next(iter(contents.splitlines())).decode("utf-8"))
-            print(plate.prediction_seconds)
-
-
-asyncio.run(main())
+```ts
+import { Parser } from "./slice-guard/backend/src/three-parser";
+const parser = new Parser("./tests/sliced_files/benchy_sliced.3mf");
+await parser.unpack();
+const plates = await parser.extractPlates();
+console.log(plates[0].platerId);
+await parser.cleanup();
 ```
+
+The parser requires the `unzip` binary on the host system.
+

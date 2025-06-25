@@ -1,5 +1,44 @@
-# Vue 3 + TypeScript + Vite
+# Slice Guard Frontend
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+This project uses **Vue 3**, **TypeScript**, **Vite** and **Tailwind CSS**. The default template has been removed and replaced with a minimal setup that supports light and dark themes.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Development
+
+Install dependencies in the `frontend` directory and start the dev server:
+
+```bash
+bun install
+bun run dev
+```
+
+## Project Structure
+
+The frontend is organised to scale with additional features:
+
+```
+src/
+  components/   reusable UI components
+  views/        page level views used by the router
+  router/       Vue Router configuration
+  store/        application state (Pinia)
+  styles/       global styles and tailwind configuration
+```
+
+Only the `components` and `styles` directories exist initially. Create others as features are added.
+
+## Tailwind and Theme
+
+`tailwind.config.cjs` exposes a comprehensive set of colour variables. The palette follows Apple's soft tones:
+
+- `main` – British Racing Green (`#004225`)
+- `accent` – modern highlight (`#30d158`)
+- `background`/`surface` – page and card backgrounds
+- `foreground`/`muted` – primary and secondary text colours
+- `border` – subtle outlines
+- `gray1`, `gray2`, `gray3` – neutral tiers for layouts
+- `success`, `warning`, `error`, `info` – status colours
+- `white` and `black` remain available
+
+Reference these names in classes like `text-main` or `bg-surface`.
+
+Add or remove the `dark` class on the `html` element to toggle dark mode. `App.vue` includes a sample toggle button.

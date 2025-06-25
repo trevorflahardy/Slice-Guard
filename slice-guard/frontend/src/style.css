@@ -1,79 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Light theme inspired by Apple's palette */
+  --color-background: #f8f8f8;
+  --color-surface: #ffffff;
+  --color-foreground: #1c1c1e;
+  --color-muted: #6e6e73;
+  --color-border: #d1d1d6;
+  --color-main: #004225; /* British Racing Green */
+  --color-accent: #30d158; /* modern accent */
+  --color-success: #34c759;
+  --color-warning: #ff9f0a;
+  --color-error: #ff3b30;
+  --color-info: #5ac8fa;
+  --color-gray-1: #f5f5f7;
+  --color-gray-2: #e5e5ea;
+  --color-gray-3: #d1d1d6;
+  --color-white: #ffffff;
+  --color-black: #000000;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
-}
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.dark {
+  /* Softer dark theme matching Apple's design */
+  --color-background: #1c1c1e;
+  --color-surface: #2c2c2e;
+  --color-foreground: #f2f2f7;
+  --color-muted: #8e8e93;
+  --color-border: #3a3a3c;
+  --color-gray-1: #2c2c2e;
+  --color-gray-2: #3a3a3c;
+  --color-gray-3: #48484a;
+  --color-white: #ffffff;
+  --color-black: #000000;
 }

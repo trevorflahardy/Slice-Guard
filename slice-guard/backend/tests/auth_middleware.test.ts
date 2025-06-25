@@ -13,7 +13,7 @@ class DummyPayload {
 
 test("withAuth denies invalid token", async () => {
   const handler = withAuth(async () => ({ op: 0 as any, d: {} }));
-  const result = await handler({ ...new DummyPayload(), data: { op: 0 as any, d: { token: "bad" } } });
+  const result = await handler({ ...new DummyPayload(), data: { d: { token: "bad" } } });
   expect(result).toBe(ErrorCode.UNAUTHORIZED);
 });
 
@@ -21,6 +21,6 @@ test("withAuth passes userId", async () => {
   const token = jwt.sign({ id: 42 }, "test", { expiresIn: "1h" });
   let id: number | null = null;
   const handler = withAuth(async (p) => { id = p.userId; return { op: 0 as any, d: {} }; });
-  await handler({ ...new DummyPayload(), data: { op: 0 as any, d: { token } } });
+  await handler({ ...new DummyPayload(), data: { d: { token } } });
   expect(id).toBe(42);
 });

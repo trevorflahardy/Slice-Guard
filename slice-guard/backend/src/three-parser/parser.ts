@@ -3,7 +3,7 @@ import { existsSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { spawn } from "child_process";
-import { Plate, PlateMetadata } from "./plate";
+import { Plate, type PlateMetadata } from "./plate";
 
 /** Utility to parse <metadata key="" value=""/> blocks from a plate XML section */
 function parseMetadataBlock(block: string): Record<string, string> {

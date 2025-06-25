@@ -3,9 +3,15 @@
  * Defines handlers for login, register, refresh, and logout operations.
  */
 
-import { OpCode, type AuthLoginPayload, type AuthLogoutPayload, type AuthRefreshPayload, type AuthSuccessPayload, type AuthFailurePayload } from "@shared/ws/opcodes"
-import type { HandlerMap, HandlerPayload } from "."
-import { ErrorCode } from "@slice-guard/shared/ws/errors";
+import {
+    OpCode,
+    type AuthLoginPayload,
+    type AuthLogoutPayload,
+    type AuthRefreshPayload,
+    type AuthSuccessPayload,
+    type AuthFailurePayload,
+} from "@shared/ws/opcodes";
+import type { HandlerMap, HandlerPayload } from ".";
 import { hashPassword, verifyPassword } from "../../utils/hash";
 import { signJwt } from "../../utils/jwt";
 import { generateRefreshToken } from "../../utils/refresh";
@@ -16,8 +22,7 @@ import {
     insertRefreshToken,
     getRefreshToken,
     deleteRefreshToken,
-    deleteTokensForUser,
-    type UserWithPassword
+    type UserWithPassword,
 } from "../../db/user";
 
 export const handlers: HandlerMap = {
@@ -27,9 +32,16 @@ export const handlers: HandlerMap = {
     [OpCode.AUTH_LOGOUT]: handleAuthLogout,
 };
 
-function buildSuccess(user: UserWithPassword, access: string, refresh: string): AuthSuccessPayload {
+function buildSuccess(
+    user: UserWithPassword,
+    access: string,
+    refresh: string
+): AuthSuccessPayload {
     const { password_hash, ...publicUser } = user;
-    return { op: OpCode.AUTH_SUCCESS, d: { accessToken: access, refreshToken: refresh, user: publicUser } };
+    return {
+        op: OpCode.AUTH_SUCCESS,
+        d: { accessToken: access, refreshToken: refresh, user: publicUser },
+    };
 }
 
 function buildFailure(reason: string): AuthFailurePayload {
@@ -52,7 +64,12 @@ async function handleAuthLogin(payload: HandlerPayload<AuthLoginPayload>) {
     const accessToken = signJwt({ id: user.id });
     const refreshToken = generateRefreshToken(user.id.toString());
 
-    await insertRefreshToken(payload.state.db, user.id, refreshToken, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+    await insertRefreshToken(
+        payload.state.db,
+        user.id,
+        refreshToken,
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    );
 
     return buildSuccess(user, accessToken, refreshToken);
 }
@@ -70,7 +87,12 @@ async function handleAuthRegister(payload: HandlerPayload<AuthLoginPayload>) {
 
     const accessToken = signJwt({ id: user.id });
     const refreshToken = generateRefreshToken(user.id.toString());
-    await insertRefreshToken(payload.state.db, user.id, refreshToken, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+    await insertRefreshToken(
+        payload.state.db,
+        user.id,
+        refreshToken,
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    );
 
     return buildSuccess(user, accessToken, refreshToken);
 }
@@ -92,7 +114,12 @@ async function handleAuthRefresh(payload: HandlerPayload<AuthRefreshPayload>) {
 
     const accessToken = signJwt({ id: user.id });
     const newToken = generateRefreshToken(user.id.toString());
-    await insertRefreshToken(payload.state.db, user.id, newToken, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+    await insertRefreshToken(
+        payload.state.db,
+        user.id,
+        newToken,
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    );
 
     const response: OpCode.AUTH_REFRESH_SUCCESS = OpCode.AUTH_REFRESH_SUCCESS;
     return { op: response, d: { accessToken, refreshToken: newToken } };

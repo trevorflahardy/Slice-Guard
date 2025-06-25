@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import Button from './components/Button.vue'
 
 const isDark = ref(false)
 
@@ -22,12 +23,9 @@ onMounted(() => applyTheme())
     <div class="space-y-4 text-center">
       <h1 class="text-4xl font-bold text-main">Slice Guard</h1>
       <p class="text-accent-text">Modern 3D print management</p>
-      <button
-        @click="toggleTheme"
-        class="px-4 py-2 rounded bg-gray2 text-white shadow hover:bg-gray3"
-      >
+      <Button variant="secondary" @click="toggleTheme">
         Toggle {{ isDark ? 'Light' : 'Dark' }} Mode
-      </button>
+      </Button>
     </div>
   </div>
 </template>

@@ -26,6 +26,10 @@ src/
 
 Only the `components` and `styles` directories exist initially. Create others as features are added.
 
+### Reusable Button Component
+
+`src/components/Button.vue` exposes a small button with `primary` and `secondary` variants. Use it throughout the app for consistent styling.
+
 ## Tailwind and Theme
 
 `tailwind.config.cjs` exposes a comprehensive set of colour variables. The palette follows Apple's soft tones:

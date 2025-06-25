@@ -41,7 +41,7 @@ The frontend uses a British Racing Green palette with a soft modern accent. `tai
 - **success**, **warning**, **error**, **info** – status colours for UI components
 - **white** and **black** remain handy shorthands
 
-Dark mode is toggled by adding the `dark` class to the `<html>` element.
+Dark mode is toggled by adding the `dark` class to the `<html>` element. Reusable UI pieces like `src/components/Button.vue` keep styles consistent across the app.
 
 ## Three Parser
 

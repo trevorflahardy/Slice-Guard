@@ -1,13 +1,16 @@
-import { OpCode, type OpCodePayloadUnion, type OpCodeValue } from '@shared/ws/opcodes';
+import {
+  OpCode,
+  type OpCodePayloadUnion,
+  type OpCodeValue,
+} from "@shared/ws/opcodes";
 import * as auth from "../handlers/auth";
 import * as requestHandlers from "../handlers/request";
 import * as labHandlers from "../handlers/lab";
-import type State from '../../utils/state';
-import type { Logger } from 'pino';
-import type { ServerWebSocket } from '..';
-import { ErrorCode } from '@slice-guard/shared/ws/errors';
-import { verifyJwt } from '../../utils/jwt';
-
+import type State from "../../utils/state";
+import type { Logger } from "pino";
+import type { ServerWebSocket } from "..";
+import { ErrorCode } from "@slice-guard/shared/ws/errors";
+import { verifyJwt } from "../../utils/jwt";
 
 export class HandlerPayload<D> {
   public ws: ServerWebSocket;
@@ -25,14 +28,20 @@ export class HandlerPayload<D> {
 
 export type HandlerResponse = ErrorCode | OpCodePayloadUnion;
 
-export type Handler<D> = (payload: HandlerPayload<D>) => Promise<HandlerResponse>;
+export type Handler<D> = (
+  payload: HandlerPayload<D>
+) => Promise<HandlerResponse>;
 
 export interface AuthenticatedPayload<D> extends HandlerPayload<D> {
   userId: number;
 }
 
-export function withAuth<D>(handler: (payload: AuthenticatedPayload<D>) => Promise<HandlerResponse>): Handler<D & { d: { token: string } }> {
-  return async (payload: HandlerPayload<D & { d: { token: string } }>): Promise<HandlerResponse> => {
+export function withAuth<D>(
+  handler: (payload: AuthenticatedPayload<D>) => Promise<HandlerResponse>
+): Handler<D & { d: { token: string } }> {
+  return async (
+    payload: HandlerPayload<D & { d: { token: string } }>
+  ): Promise<HandlerResponse> => {
     let userId: number;
     try {
       const decoded = verifyJwt(payload.data.d.token) as any;
@@ -59,7 +68,8 @@ export type HandlerMap<K extends OpCodeValue = OpCodeValue> = Partial<{
  *
  * This is a union of all OpCodes that are handled by the server from the client as a request for some operation.
  */
-type HandlerMapItems = OpCode.AUTH_LOGIN
+type HandlerMapItems =
+  | OpCode.AUTH_LOGIN
   | OpCode.AUTH_REGISTER
   | OpCode.AUTH_REFRESH
   | OpCode.AUTH_LOGOUT
@@ -79,4 +89,4 @@ export const handlers: HandlerMap<HandlerMapItems> = {
   ...auth.handlers,
   ...requestHandlers.handlers,
   ...labHandlers.handlers,
-}
+};

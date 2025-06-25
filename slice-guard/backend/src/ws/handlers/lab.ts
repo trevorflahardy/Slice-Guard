@@ -1,28 +1,70 @@
-import { OpCode, type LabCreatePayload, type LabUpdatePayload, type LabDeletePayload, type RoleCreatePayload, type MemberAddPayload, type MemberRemovePayload } from '@shared/ws/opcodes';
-import { withAuth, type AuthenticatedPayload, type HandlerMap } from '.';
-import { createLab, updateLab, deleteLab, createRole, addMember, removeMember, getMemberRolePermissions } from '../../db/lab';
-import { LabPermission } from '@shared/db/lab';
-import { ErrorCode } from '@slice-guard/shared/ws/errors';
+import {
+    OpCode,
+    type LabCreatePayload,
+    type LabUpdatePayload,
+    type LabDeletePayload,
+    type RoleCreatePayload,
+    type MemberAddPayload,
+    type MemberRemovePayload,
+} from "@shared/ws/opcodes";
+import { withAuth, type AuthenticatedPayload, type HandlerMap } from ".";
+import {
+    createLab,
+    updateLab,
+    deleteLab,
+    createRole,
+    addMember,
+    removeMember,
+    getMemberRolePermissions,
+} from "../../db/lab";
+import { LabPermission } from "@shared/db/lab";
+import { ErrorCode } from "@slice-guard/shared/ws/errors";
 
-async function handleCreateLab(payload: AuthenticatedPayload<LabCreatePayload>) {
+async function handleCreateLab(
+    payload: AuthenticatedPayload<LabCreatePayload>
+) {
     const { name, description, imageUrl } = payload.data.d;
-    const lab = await createLab(payload.state.db, payload.userId, name, description ?? null, imageUrl ?? null);
+    const lab = await createLab(
+        payload.state.db,
+        payload.userId,
+        name,
+        description ?? null,
+        imageUrl ?? null
+    );
     return { op: OpCode.LAB_CREATE, d: lab };
 }
 
-async function handleUpdateLab(payload: AuthenticatedPayload<LabUpdatePayload>) {
+async function handleUpdateLab(
+    payload: AuthenticatedPayload<LabUpdatePayload>
+) {
     const { labId, name, description, imageUrl } = payload.data.d;
-    const perms = await getMemberRolePermissions(payload.state.db, labId, payload.userId);
+    const perms = await getMemberRolePermissions(
+        payload.state.db,
+        labId,
+        payload.userId
+    );
     if (perms === null || !(perms & LabPermission.EDIT_LAB)) {
         return ErrorCode.UNAUTHORIZED;
     }
-    const lab = await updateLab(payload.state.db, labId, name, description ?? null, imageUrl ?? null);
+    const lab = await updateLab(
+        payload.state.db,
+        labId,
+        name,
+        description ?? null,
+        imageUrl ?? null
+    );
     return { op: OpCode.LAB_UPDATE, d: lab };
 }
 
-async function handleDeleteLab(payload: AuthenticatedPayload<LabDeletePayload>) {
+async function handleDeleteLab(
+    payload: AuthenticatedPayload<LabDeletePayload>
+) {
     const { labId } = payload.data.d;
-    const perms = await getMemberRolePermissions(payload.state.db, labId, payload.userId);
+    const perms = await getMemberRolePermissions(
+        payload.state.db,
+        labId,
+        payload.userId
+    );
     if (perms === null || !(perms & LabPermission.DELETE_LAB)) {
         return ErrorCode.UNAUTHORIZED;
     }
@@ -30,9 +72,15 @@ async function handleDeleteLab(payload: AuthenticatedPayload<LabDeletePayload>) 
     return { op: OpCode.LAB_DELETE, d: {} };
 }
 
-async function handleCreateRole(payload: AuthenticatedPayload<RoleCreatePayload>) {
+async function handleCreateRole(
+    payload: AuthenticatedPayload<RoleCreatePayload>
+) {
     const { labId, name, permissions } = payload.data.d;
-    const perms = await getMemberRolePermissions(payload.state.db, labId, payload.userId);
+    const perms = await getMemberRolePermissions(
+        payload.state.db,
+        labId,
+        payload.userId
+    );
     if (perms === null || !(perms & LabPermission.MANAGE_ROLES)) {
         return ErrorCode.UNAUTHORIZED;
     }
@@ -40,9 +88,15 @@ async function handleCreateRole(payload: AuthenticatedPayload<RoleCreatePayload>
     return { op: OpCode.ROLE_CREATE, d: role };
 }
 
-async function handleAddMember(payload: AuthenticatedPayload<MemberAddPayload>) {
+async function handleAddMember(
+    payload: AuthenticatedPayload<MemberAddPayload>
+) {
     const { labId, userId, roleId } = payload.data.d;
-    const perms = await getMemberRolePermissions(payload.state.db, labId, payload.userId);
+    const perms = await getMemberRolePermissions(
+        payload.state.db,
+        labId,
+        payload.userId
+    );
     if (perms === null || !(perms & LabPermission.MANAGE_ROLES)) {
         return ErrorCode.UNAUTHORIZED;
     }
@@ -50,9 +104,15 @@ async function handleAddMember(payload: AuthenticatedPayload<MemberAddPayload>) 
     return { op: OpCode.MEMBER_ADD, d: member };
 }
 
-async function handleRemoveMember(payload: AuthenticatedPayload<MemberRemovePayload>) {
+async function handleRemoveMember(
+    payload: AuthenticatedPayload<MemberRemovePayload>
+) {
     const { labId, userId } = payload.data.d;
-    const perms = await getMemberRolePermissions(payload.state.db, labId, payload.userId);
+    const perms = await getMemberRolePermissions(
+        payload.state.db,
+        labId,
+        payload.userId
+    );
     if (perms === null || !(perms & LabPermission.REMOVE_USER)) {
         return ErrorCode.UNAUTHORIZED;
     }

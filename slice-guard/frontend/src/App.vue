@@ -21,8 +21,11 @@ onMounted(() => applyTheme())
   <div class="min-h-screen flex items-center justify-center bg-background text-foreground transition-colors">
     <div class="space-y-4 text-center">
       <h1 class="text-4xl font-bold text-main">Slice Guard</h1>
-      <p class="text-accent">Modern 3D print management</p>
-      <button @click="toggleTheme" class="px-4 py-2 rounded bg-main text-white hover:bg-accent">
+      <p class="text-accent-text">Modern 3D print management</p>
+      <button
+        @click="toggleTheme"
+        class="px-4 py-2 rounded bg-gray2 text-white shadow hover:bg-gray3"
+      >
         Toggle {{ isDark ? 'Light' : 'Dark' }} Mode
       </button>
     </div>

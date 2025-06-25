@@ -30,8 +30,9 @@ Only the `components` and `styles` directories exist initially. Create others as
 
 `tailwind.config.cjs` exposes a comprehensive set of colour variables. The palette follows Apple's soft tones:
 
-- `main` – British Racing Green (`#004225`)
+- `main` – lighter British Racing Green (`#005e3c` in light mode, `#1ba56e` in dark mode)
 - `accent` – modern highlight (`#30d158`)
+- `accent-text` – black in light mode, white in dark mode
 - `background`/`surface` – page and card backgrounds
 - `foreground`/`muted` – primary and secondary text colours
 - `border` – subtle outlines

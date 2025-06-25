@@ -11,6 +11,7 @@ module.exports = {
         border: 'var(--color-border)',
         main: 'var(--color-main)',
         accent: 'var(--color-accent)',
+        'accent-text': 'var(--color-accent-text)',
         success: 'var(--color-success)',
         warning: 'var(--color-warning)',
         error: 'var(--color-error)',

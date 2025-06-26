@@ -40,7 +40,7 @@ The project now includes `views` and `router` out of the box so routing can be e
 - `background`/`surface` – page and card backgrounds
 - `foreground`/`muted` – primary and secondary text colours
 - `border` – subtle outlines
-- `gray1`, `gray2`, `gray3` – neutral tiers for layouts
+- `gray-1`, `gray-2`, `gray-3` – neutral tiers for layouts
 - `success`, `warning`, `error`, `info` – status colours
 - `white` and `black` remain available
 

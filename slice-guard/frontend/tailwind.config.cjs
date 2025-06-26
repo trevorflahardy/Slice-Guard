@@ -16,11 +16,9 @@ module.exports = {
         warning: 'var(--color-warning)',
         error: 'var(--color-error)',
         info: 'var(--color-info)',
-        gray1: 'var(--color-gray-1)',
-        gray2: 'var(--color-gray-2)',
-        gray3: 'var(--color-gray-3)',
-        white: 'var(--color-white)',
-        black: 'var(--color-black)'
+        "gray-1": 'var(--color-gray-1)',
+        "gray-2": 'var(--color-gray-2)',
+        "gray-3": 'var(--color-gray-3)',
       }
     }
   },

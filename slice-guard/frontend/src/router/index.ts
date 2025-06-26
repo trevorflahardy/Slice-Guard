@@ -6,6 +6,18 @@ const routes: RouteRecordRaw[] = [
     name: 'Home',
     component: () => import('../views/HomeView.vue'),
   },
+  {
+    path: '/lab',
+    name: 'Lab',
+    component: () => import('../layouts/lab/LabLayout.vue'),
+    children: [
+      {
+        path: '/lab/dashboard',
+        name: 'LabDashboard',
+        component: () => import('../layouts/lab/LabDashboard.vue'),
+      }
+    ]
+  }
 ]
 
 const router = createRouter({

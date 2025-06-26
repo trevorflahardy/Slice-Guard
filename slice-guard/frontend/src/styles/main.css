@@ -2,11 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@theme {
+  --radius-5xl: 3rem;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
 :root {
   /* Light theme inspired by Apple's palette */
-  --color-background: #f8f8f8;
-  --color-surface: #ffffff;
-  --color-foreground: #1c1c1e;
+  --color-background: oklch(96.7% 0.003 264.542);
+  --color-foreground: oklch(98.5% 0.002 247.839);
   --color-muted: #6e6e73;
   --color-border: #c7c7d1;
   --color-main: #007f3c; /* lighter British Racing Green */
@@ -16,25 +29,21 @@
   --color-warning: #ff9f0a;
   --color-error: #ff3b30;
   --color-info: #5ac8fa;
-  --color-gray-1: #f5f5f7;
-  --color-gray-2: #e3e3e8;
-  --color-gray-3: #c7c7d1;
-  --color-white: #ffffff;
-  --color-black: #000000;
+  --color-gray-1: oklch(98.4% 0.003 247.858);
+  --color-gray-2: oklch(92.9% 0.013 255.508);
+  --color-gray-3: oklch(86.9% 0.022 252.894);
 }
 
 .dark {
   /* Softer dark theme matching Apple's design */
-  --color-background: #1c1c1e;
-  --color-surface: #3e3e41;
-  --color-foreground: #f2f2f7;
+  --color-background: oklch(21% 0.034 264.665);
+  --color-surface: oklch(37.3% 0.034 259.733);
+  --color-foreground: oklch(55.1% 0.027 264.364);
   --color-muted: #8e8e93;
-  --color-border: #57575b;
+  --color-border: oklch(37.3% 0.034 259.733);
   --color-main: #1ba56e; /* lighter in dark mode */
   --color-accent-text: #ffffff; /* accent text is white */
-  --color-gray-1: #3e3e41;
-  --color-gray-2: #57575b;
-  --color-gray-3: #a4a4a8;
-  --color-white: #ffffff;
-  --color-black: #000000;
+  --color-gray-1: oklch(27.8% 0.033 256.848);
+  --color-gray-2: oklch(37.3% 0.034 259.733);
+  --color-gray-3: oklch(55.1% 0.027 264.364);
 }

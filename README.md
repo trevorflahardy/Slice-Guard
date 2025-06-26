@@ -45,7 +45,7 @@ The frontend uses a British Racing Green palette with a soft modern accent. `tai
 - **background** / **surface** – page and card backgrounds
 - **foreground** / **muted** – primary and secondary text colours
 - **border** – subtle lines and outlines
-- **gray1-3** – tiered neutral shades
+- **gray 1-3** – tiered neutral shades
 - **success**, **warning**, **error**, **info** – status colours for UI components
 - **white** and **black** remain handy shorthands
 

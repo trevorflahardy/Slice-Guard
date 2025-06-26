@@ -1,6 +1,6 @@
 # Slice Guard Frontend
 
-This project uses **Vue 3**, **TypeScript**, **Vite** and **Tailwind CSS**. The default template has been removed and replaced with a minimal setup that supports light and dark themes.
+This project uses **Vue 3**, **TypeScript**, **Vite** and **Tailwind CSS**. The default template has been removed and replaced with a minimal setup that supports light and dark themes. Vue Router is configured for future page navigation.
 
 ## Development
 
@@ -24,7 +24,7 @@ src/
   styles/       global styles and tailwind configuration
 ```
 
-Only the `components` and `styles` directories exist initially. Create others as features are added.
+The project now includes `views` and `router` out of the box so routing can be expanded easily. Use these directories when adding new pages.
 
 ### Reusable Button Component
 
@@ -46,4 +46,4 @@ Only the `components` and `styles` directories exist initially. Create others as
 
 Reference these names in classes like `text-main` or `bg-surface`.
 
-Add or remove the `dark` class on the `html` element to toggle dark mode. `App.vue` includes a sample toggle button.
+Add or remove the `dark` class on the `html` element to toggle dark mode. `HomeView.vue` includes a sample toggle button.

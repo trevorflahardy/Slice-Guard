@@ -7,8 +7,8 @@ let randomUsers: { [key: string]: Array<{ name: string, id: number }> } = {
         { name: "Charlie", id: 3 },
         { name: "Diana", id: 4 },
     ],
-    "bitches": [
-        { name: "Ethan Is a little bitch asojdhalkdsjhaslidhiasudh", id: 5 }
+    "random users": [
+        { name: "Ethan has a really super duper long name", id: 5 }
     ]
 }
 </script>

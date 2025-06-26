@@ -2,6 +2,8 @@
 
 Welcome to Slice Guard, a tool to help University 3D-print labs manage requests for printing. Slice Guard is designed to keep track of students' 3D print requests, ensure they are within the allowed limits, and get useful statistics abotu your printers.
 
+<img width="1512" alt="image" src="https://github.com/user-attachments/assets/479b8e0d-e288-4542-84e9-939d208968af" />
+
 ## Planned Features
 
 - An easy system for students to request 3D print files for approval.

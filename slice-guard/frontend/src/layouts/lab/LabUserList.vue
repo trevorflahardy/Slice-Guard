@@ -35,7 +35,7 @@ let randomUsers: { [key: string]: Array<{ name: string, id: number }> } = {
             <ul class="space-y-1">
                 <li v-for="user in users" :key="user.id">
                     <div
-                        class="flex items-center justify-start gap-3 p-2 rounded-md hover:shadow-md transition-all duration-200 hover:text-black text-gray-600">
+                        class="flex items-center justify-start gap-3 p-2 rounded-xl hover:shadow-md transition-all duration-200 hover:text-black text-gray-600">
                         <!-- Placeholder user avatar -->
                         <div class="w-7 h-7 rounded-full bg-gray-500 flex-none"></div>
 

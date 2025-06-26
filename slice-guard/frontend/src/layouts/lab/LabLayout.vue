@@ -12,20 +12,19 @@ import LabUserList from './LabUserList.vue';
         </aside>
 
         <!-- Main content area -->
-        <div class="rounded-l-[3rem] bg-foreground w-full p-[1.5rem] drop-shadow-lg flex gap-0">
+        <div class="rounded-l-[3rem] bg-foreground w-full drop-shadow-lg flex gap-0">
             <div class="p-[1.5rem] flex-1 w-full">
                 <!-- Actual insert content-->
-                Foo bar
+                TODO
             </div>
 
             <!--User list for lab layout-->
-            <div>
+            <!--! TODO: This does not resize and rather the main content does - make this collapse later down the road when I'm not so lazy.
+            -->
+            <div class="h-full bg-background p-4 min-w-52 max-w-60">
                 <!-- User list for the lab layout -->
-                <div class="w-64 lg:w-72 xl:w-80 h-full bg-background p-4 flex-initial">
-                    <LabUserList />
-                </div>
+                <LabUserList />
             </div>
         </div>
     </div>
-
 </template>

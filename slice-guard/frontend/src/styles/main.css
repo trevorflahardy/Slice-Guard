@@ -37,7 +37,6 @@
 .dark {
   /* Softer dark theme matching Apple's design */
   --color-background: oklch(21% 0.034 264.665);
-  --color-surface: oklch(37.3% 0.034 259.733);
   --color-foreground: oklch(55.1% 0.027 264.364);
   --color-muted: #8e8e93;
   --color-border: oklch(37.3% 0.034 259.733);

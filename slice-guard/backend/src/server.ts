@@ -18,8 +18,8 @@ export class Server {
     constructor(options: { sql: SQLOptions }) {
         logger.debug("Initializing server with options: %o", options);
         const db = new SQL(options.sql);
-        this.state = new State(db); // Hand off DB ownership
         this.logger = logger.child({ component: "server" });
+        this.state = new State(db, this.logger); // Hand off DB ownership
 
         this.logger.debug("Server initialized with database connection");
     }

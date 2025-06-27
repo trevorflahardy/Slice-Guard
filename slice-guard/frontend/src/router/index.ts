@@ -13,18 +13,24 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/NoLabsView.vue'),
   },
   {
-    path: '/lab/create',
-    name: 'CreateLab',
-    component: () => import('../views/CreateLabView.vue'),
-  },
-  {
-    path: '/lab/:id',
-    component: () => import('../layouts/lab/LabLayout.vue'),
+    path: '/lab',
+    component: () => import('../views/lab/LabMainRoute.vue'),
     children: [
       {
-        path: '',
-        name: 'LabDashboard',
-        component: () => import('../layouts/lab/LabDashboard.vue'),
+        path: 'create',
+        name: 'CreateLab',
+        component: () => import('../views/CreateLabView.vue'),
+      },
+      {
+        path: ':id',
+        component: () => import('../layouts/lab/LabLayout.vue'),
+        children: [
+          {
+            path: '',
+            name: 'LabDashboard',
+            component: () => import('../layouts/lab/LabDashboard.vue'),
+          },
+        ],
       },
     ],
   },

@@ -8,6 +8,7 @@ const lookup = async (_db: any, key: string) => {
 
 class DummyState {
   db = {} as any;
+  logger = { child: () => ({ debug() {} }) } as any;
 }
 
 const state = new DummyState() as any;

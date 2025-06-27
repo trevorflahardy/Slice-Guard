@@ -4,7 +4,17 @@ WORKDIR /usr/src/app
 COPY frontend/package.json ./package.json
 RUN bun install --frozen-lockfile
 
-# Stage 2: build frontend
+# Stage 2: development image
+FROM oven/bun:1 AS dev
+WORKDIR /usr/src/app
+COPY --from=deps /usr/src/app/node_modules ./node_modules
+COPY frontend/ .
+COPY shared/ ./shared
+USER bun
+EXPOSE 5173
+CMD ["bun", "run", "dev"]
+
+# Stage 3: build frontend
 FROM oven/bun:1 AS build
 WORKDIR /usr/src/app
 COPY --from=deps /usr/src/app/node_modules ./node_modules
@@ -16,7 +26,7 @@ ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_WS_URL=$VITE_WS_URL
 RUN bun run build
 
-# Stage 3: production image
+# Stage 4: production image
 FROM oven/bun:1 AS release
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/node_modules ./node_modules

@@ -6,7 +6,7 @@
     "scripts": {
         "start": "bun run src/server.ts",
         "dev": "bun run src/server.ts --watch",
-        "build": "bun build ./src/server.ts --target=bun",
+        "build": "bun build ./src/server.ts --target=bun --outfile=dist/server",
         "test": "bun test"
     },
     "dependencies": {

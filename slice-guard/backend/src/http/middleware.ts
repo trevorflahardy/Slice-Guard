@@ -1,6 +1,5 @@
 import { getApiKey } from '../db/user';
 import type State from '../utils/state';
-import { withCors } from '../utils/cors';
 import type { Logger } from 'pino';
 
 export async function authenticate(
@@ -28,12 +27,12 @@ export function withAuth(
         const userId = await authenticate(req, state);
         if (!userId) {
             log.debug('Unauthorized request');
-            return withCors(new Response('Unauthorized', { status: 401 }));
+            return new Response('Unauthorized', { status: 401 });
         }
         log.debug({ userId }, 'Authenticated user');
         const res = await handler(req, userId, state, params);
         log.debug({ status: res.status }, 'Request handled');
-        return withCors(res);
+        return res;
     };
 }
 

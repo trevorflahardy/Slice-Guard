@@ -65,7 +65,16 @@ export class Server {
                 '/api/requests/:requestId/tags/:tagId': {
                     POST: req => withLogging(requestHandlers.assignTagRoute)(req, this.state, req.params),
                 },
-                '/api/*': () => Response.json({ message: 'Not found' }, { status: 404 }),
+                '/api/*': {
+                    OPTIONS: _req => {
+                        // Handle CORS preflight (in the future)
+                        return new Response("Not Found", { status: 404 });
+                    },
+                    // For all other methods, let the request pass through to the routes
+                    '*': req => withLogging(async (_r, _s) => {
+                        return new Response("Not Found", { status: 404 });
+                    })
+                },
             },
             fetch: this.handleFetch.bind(this),
             websocket: {
@@ -82,25 +91,23 @@ export class Server {
     }
 
     private async handleFetch(req: Request, server: Bun.Server) {
-        if (req.method === 'OPTIONS') {
-            return new Response(null, {
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                    'Access-Control-Allow-Methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS'
-                }
-            });
-        }
         const url = new URL(req.url);
+
+        // Only handle WebSocket upgrades, let everything else go to routes
         if (url.pathname === "/ws") {
             const now = Date.now();
             const upgraded = server.upgrade<WebSocketData>(req, {
                 data: { created_at: now, id: String(Bun.hash(`${now}-${Math.random()}`)) }
             });
-            if (!upgraded) return new Response("Upgrade failed", { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
-            return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*' } });
+            if (!upgraded) return new Response("Upgrade failed", { status: 400 });
+            return new Response(null);
         }
-        return new Response("Not Found", { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } });
+
+        // Handle CORS preflight for all API routes (in the future)
+        if (req.method === 'OPTIONS') { }
+
+        // Return undefined to let Bun's router handle the request
+        return undefined;
     }
 
     private async handleWebSocketMessage(ws: ServerWebSocket, message: string | Buffer<ArrayBufferLike>) {

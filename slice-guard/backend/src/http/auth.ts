@@ -3,7 +3,6 @@ import { generateApiKey } from '../utils/apiKey';
 import { createUser, findUserByEmail, getOrCreateApiKey } from '../db/user';
 import type State from '../utils/state';
 import type { AuthLoginPayload, AuthRegisterPayload } from '@shared/payloads';
-import { withCors } from '../utils/cors';
 
 /**
  * POST /api/register
@@ -15,7 +14,7 @@ export async function register(req: Request, state: State): Promise<Response> {
     const existing = await findUserByEmail(state.db, email);
     state.logger.debug({ found: !!existing }, 'Checked existing user');
     if (existing)
-        return withCors(new Response('Email in use', { status: 400 }));
+        return new Response('Email in use', { status: 400 });
 
     const hash = await hashPassword(password);
     const user = await createUser(state.db, email, hash, name);
@@ -24,7 +23,7 @@ export async function register(req: Request, state: State): Promise<Response> {
 
     await getOrCreateApiKey(state.db, user.id, key);
     state.logger.debug({ id: user.id }, 'Issued API key');
-    return withCors(Response.json({ apiKey: key }));
+    return Response.json({ apiKey: key });
 }
 
 /**
@@ -37,16 +36,16 @@ export async function login(req: Request, state: State): Promise<Response> {
     const user = await findUserByEmail(state.db, email);
     if (!user) {
         state.logger.debug('User not found');
-        return withCors(new Response('Invalid credentials', { status: 401 }));
+        return new Response('Invalid credentials', { status: 401 });
     }
 
     const ok = await verifyPassword(password, user.password_hash);
     if (!ok) {
         state.logger.debug('Invalid password');
-        return withCors(new Response('Invalid credentials', { status: 401 }));
+        return new Response('Invalid credentials', { status: 401 });
     }
 
     const keyRow = await getOrCreateApiKey(state.db, user.id, generateApiKey(user.id));
     state.logger.debug({ userId: user.id }, 'Issued API key');
-    return withCors(Response.json({ apiKey: keyRow.key }));
+    return Response.json({ apiKey: keyRow.key });
 }

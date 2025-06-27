@@ -1,5 +1,6 @@
 import { getApiKey } from '../db/user';
 import type State from '../utils/state';
+import { withCors } from '../utils/cors';
 
 export async function authenticate(
     req: Request,
@@ -7,8 +8,9 @@ export async function authenticate(
     lookup: typeof getApiKey = getApiKey
 ): Promise<number | null> {
     const header = req.headers.get('authorization');
-    if (!header)
-        return null;
+            return withCors(new Response('Unauthorized', { status: 401 }));
+        const res = await handler(req, userId, state, params);
+        return withCors(res);
 
     const [scheme, key] = header.split(' ');
     if (!key || scheme.toLowerCase() !== 'apikey')

@@ -1,17 +1,18 @@
-import { withAuth } from "./middleware";
-import {
-    createLab,
-    updateLab,
-    deleteLab,
-    createRole,
-    addMember,
-    removeMember,
-    getMemberRolePermissions,
-    getLab,
-    listLabsForUser,
-} from "../db/lab";
-import { LabPermission } from "@shared/db/lab";
-import type {
+import { withCors } from '../utils/cors';
+    return withCors(Response.json(lab));
+    if (!lab) return withCors(new Response('Not found', { status: 404 }))
+    return withCors(Response.json(lab))
+    return withCors(Response.json(labs))
+    if (perms === null || !(perms & LabPermission.EDIT_LAB)) return withCors(new Response('Unauthorized', { status: 403 }));
+    return withCors(Response.json(lab));
+    if (perms === null || !(perms & LabPermission.DELETE_LAB)) return withCors(new Response('Unauthorized', { status: 403 }));
+    return withCors(new Response(null, { status: 204 }));
+    if (perms === null || !(perms & LabPermission.MANAGE_ROLES)) return withCors(new Response('Unauthorized', { status: 403 }));
+    return withCors(Response.json(role));
+    if (perms === null || !(perms & LabPermission.MANAGE_ROLES)) return withCors(new Response('Unauthorized', { status: 403 }));
+    return withCors(Response.json(member));
+    if (perms === null || !(perms & LabPermission.REMOVE_USER)) return withCors(new Response('Unauthorized', { status: 403 }));
+    return withCors(new Response(null, { status: 204 }));
     LabCreatePayload,
     LabUpdatePayload,
     RoleCreatePayload,

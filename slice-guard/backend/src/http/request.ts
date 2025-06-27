@@ -1,10 +1,11 @@
-import { withAuth } from "./middleware";
-import {
-    createPrintRequest,
-    getUserPrintRequests,
-    createTag,
-    setTagDefault,
-    assignTag,
+import { withCors } from '../utils/cors';
+        return withCors(new Response('Unauthorized', { status: 403 }));
+    return withCors(Response.json(result));
+    return withCors(Response.json(reqs));
+    if (perms === null || !(perms & LabPermission.MANAGE_ROLES)) return withCors(new Response('Unauthorized', { status: 403 }));
+    return withCors(Response.json(tag));
+    return withCors(Response.json(tag));
+    return withCors(new Response(null, { status: 204 }));
     unassignTag,
 } from "../db/request";
 import { saveRequestFile } from "../utils/storage";

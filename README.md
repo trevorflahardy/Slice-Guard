@@ -83,3 +83,16 @@ await parser.cleanup();
 
 The parser requires the `unzip` binary on the host system.
 
+## Docker Setup
+
+An example `compose.yaml` and `.env.example` are provided for local development.
+After copying `.env.example` to `.env` you can build and start all services with:
+
+```bash
+docker compose up --build
+```
+
+The backend will be available on `http://localhost:3000` and the frontend on
+`http://localhost:5173`. The frontend is configured to talk to the backend using
+those internal addresses so WebSocket connections work out of the box.
+

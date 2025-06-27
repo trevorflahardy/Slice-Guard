@@ -1,7 +1,8 @@
-import { hashPassword, verifyPassword } from "../utils/hash";
-import { generateApiKey } from "../utils/apiKey";
-import { createUser, findUserByEmail, getOrCreateApiKey } from "../db/user";
-import type State from "../utils/state";
+import { withCors } from '../utils/cors';
+    return withCors(Response.json({ apiKey: key }));
+    if (!user) return withCors(new Response('Invalid credentials', { status: 401 }));
+    if (!ok) return withCors(new Response('Invalid credentials', { status: 401 }));
+    return withCors(Response.json({ apiKey: keyRow.key }));
 import type { AuthLoginPayload, AuthRegisterPayload } from "@shared/payloads";
 
 /**

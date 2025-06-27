@@ -79,16 +79,25 @@ export class Server {
     }
 
     private async handleFetch(req: Request, server: Bun.Server) {
+        if (req.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    'Access-Control-Allow-Methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS'
+                }
+            });
+        }
         const url = new URL(req.url);
         if (url.pathname === "/ws") {
             const now = Date.now();
             const upgraded = server.upgrade<WebSocketData>(req, {
                 data: { created_at: now, id: String(Bun.hash(`${now}-${Math.random()}`)) }
             });
-            if (!upgraded) return new Response("Upgrade failed", { status: 400 });
-            return new Response(null);
+            if (!upgraded) return new Response("Upgrade failed", { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
+            return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*' } });
         }
-        return new Response("Not Found", { status: 404 });
+        return new Response("Not Found", { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
 
     private async handleWebSocketMessage(ws: ServerWebSocket, message: string | Buffer<ArrayBufferLike>) {

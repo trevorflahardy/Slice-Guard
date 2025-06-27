@@ -1,36 +1,48 @@
 services:
-
   postgres:
-    container_name: postgres
     image: postgres
+    container_name: postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-slice}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-slice}
+      POSTGRES_DB: ${POSTGRES_DB:-slice_guard}
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
     ports:
-      - 5432:5432
+      - "5432:5432"
     restart: always
 
   backend:
-    container_name: slice_guard_backend
+    image: slice_guard_backend
     build:
       context: ./slice-guard
       dockerfile: backend/Dockerfile
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-slice}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-slice}
+      POSTGRES_DB: ${POSTGRES_DB:-slice_guard}
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
     depends_on:
       - postgres
-    restart:
-      unless-stopped
+    restart: unless-stopped
     ports:
-      - 3000:3000
+      - "3000:3000"
+
+  frontend:
+    image: slice_guard_frontend
+    build:
+      context: ./slice-guard/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://backend:3000/api
+        VITE_WS_URL: ws://backend:3000/ws
+    depends_on:
+      - backend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
 
 volumes:
   postgres:

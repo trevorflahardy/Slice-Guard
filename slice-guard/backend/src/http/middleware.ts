@@ -8,9 +8,8 @@ export async function authenticate(
     lookup: typeof getApiKey = getApiKey
 ): Promise<number | null> {
     const header = req.headers.get('authorization');
-            return withCors(new Response('Unauthorized', { status: 401 }));
-        const res = await handler(req, userId, state, params);
-        return withCors(res);
+    if (!header)
+        return null;
 
     const [scheme, key] = header.split(' ');
     if (!key || scheme.toLowerCase() !== 'apikey')
@@ -26,9 +25,9 @@ export function withAuth(
     return async (req, state, params) => {
         const userId = await authenticate(req, state);
         if (!userId) {
-            return new Response('Unauthorized', { status: 401 });
+            return withCors(new Response('Unauthorized', { status: 401 }));
         }
-
-        return handler(req, userId, state, params);
+        const res = await handler(req, userId, state, params);
+        return withCors(res);
     };
 }

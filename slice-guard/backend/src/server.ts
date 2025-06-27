@@ -4,6 +4,7 @@ import State from "./utils/state";
 import { SQL, type SQLOptions } from "bun";
 import * as auth from './http/auth';
 import * as lab from './http/lab';
+import * as requestHandlers from './http/request';
 
 import pino from "pino";
 const logger = pino({ level: 'debug' });
@@ -23,7 +24,46 @@ export class Server {
     start() {
         Bun.serve({
             port: 3000,
-            routes: {}, // TODO
+            routes: {
+                '/api/login': {
+                    POST: req => auth.login(req, this.state),
+                },
+                '/api/register': {
+                    POST: req => auth.register(req, this.state),
+                },
+                '/api/labs': {
+                    GET: req => lab.list(req, this.state, {}),
+                    POST: req => lab.create(req, this.state, {}),
+                },
+                '/api/labs/:id': {
+                    GET: req => lab.get(req, this.state, req.params),
+                    PATCH: req => lab.update(req, this.state, req.params),
+                    DELETE: req => lab.del(req, this.state, req.params),
+                },
+                '/api/labs/:labId/roles': {
+                    POST: req => lab.createRoleRoute(req, this.state, req.params),
+                },
+                '/api/labs/:labId/members': {
+                    POST: req => lab.addMemberRoute(req, this.state, req.params),
+                },
+                '/api/labs/:labId/members/:userId': {
+                    DELETE: req => lab.removeMemberRoute(req, this.state, req.params),
+                },
+                '/api/labs/:labId/requests': {
+                    POST: req => requestHandlers.create(req, this.state, req.params),
+                    GET: req => requestHandlers.list(req, this.state, req.params),
+                },
+                '/api/labs/:labId/tags': {
+                    POST: req => requestHandlers.createTagRoute(req, this.state, req.params),
+                },
+                '/api/tags/:tagId': {
+                    PATCH: req => requestHandlers.setTagDefaultRoute(req, this.state, req.params),
+                },
+                '/api/requests/:requestId/tags/:tagId': {
+                    POST: req => requestHandlers.assignTagRoute(req, this.state, req.params),
+                },
+                '/api/*': () => Response.json({ message: 'Not found' }, { status: 404 }),
+            },
             fetch: this.handleFetch.bind(this),
             websocket: {
                 message: this.handleWebSocketMessage.bind(this),
@@ -31,8 +71,6 @@ export class Server {
                 close: this.handleWebSocketClose.bind(this),
             }
         })
-
-
     }
 
     async stop() {
@@ -50,42 +88,7 @@ export class Server {
             if (!upgraded) return new Response("Upgrade failed", { status: 400 });
             return new Response(null);
         }
-
-        if (url.pathname.startsWith('/api')) {
-            return this.handleApi(req, url);
-        }
-
-        return new Response("Not found", { status: 404 });
-    }
-
-    private async handleApi(req: Request, url: URL): Promise<Response> {
-        const path = url.pathname.slice(4);
-        (req as any).state = this.state;
-
-        if (path === '/login' && req.method === 'POST') return auth.login(req, this.state);
-        if (path === '/register' && req.method === 'POST') return auth.register(req, this.state);
-        if (path === '/labs' && req.method === 'POST') return lab.create(req, this.state, {});
-        if (path === '/labs' && req.method === 'GET') return lab.list(req, this.state, {});
-        if (path.match(/^\/labs\/\d+$/)) {
-            const id = path.split('/')[2];
-            if (req.method === 'GET') return lab.get(req, this.state, { id });
-            if (req.method === 'PATCH') return lab.update(req, this.state, { id });
-            if (req.method === 'DELETE') return lab.del(req, this.state, { id });
-        }
-        if (path.match(/^\/labs\/\d+\/roles$/) && req.method === 'POST') {
-            const labId = path.split('/')[2];
-            return lab.createRoleRoute(req, this.state, { labId });
-        }
-        if (path.match(/^\/labs\/\d+\/members$/) && req.method === 'POST') {
-            const labId = path.split('/')[2];
-            return lab.addMemberRoute(req, this.state, { labId });
-        }
-        if (path.match(/^\/labs\/\d+\/members\/\d+$/) && req.method === 'DELETE') {
-            const [, labId,, userId] = path.split('/');
-            return lab.removeMemberRoute(req, this.state, { labId, userId });
-        }
-
-        return new Response('Not found', { status: 404 });
+        return new Response("Not Found", { status: 404 });
     }
 
     private async handleWebSocketMessage(ws: ServerWebSocket, message: string | Buffer<ArrayBufferLike>) {

@@ -13,6 +13,11 @@
     "moduleDetection": "force",
     "noEmit": true,
 
+    "baseUrl": "../",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

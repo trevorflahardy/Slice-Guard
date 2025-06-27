@@ -3,7 +3,6 @@ import type State from '../utils/state';
 import type { Server } from '../server';
 import { handlers, HandlerPayload, type Handler, type HandlerResponse } from "./handlers";
 import { ErrorCode, toErrorCodeValue, type ErrorCodeValue } from '@slice-guard/shared/ws/errors';
-import { type WsPayload } from '@shared/payloads/ws';
 
 
 export type WebSocketData = {
@@ -49,7 +48,7 @@ export async function validateAndDispatchMessage(
     const payload = new HandlerPayload(ws, data, state, loggerChild);
 
     try {
-        let response: HandlerResponse | ErrorPayload<ErrorCode> = await handler(payload);
+        let response: HandlerResponse = await handler(payload);
 
         if (Object.values(ErrorCode).includes(response as ErrorCodeValue)) {
             response = {

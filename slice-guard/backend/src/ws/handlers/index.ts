@@ -1,5 +1,4 @@
 import {
-  WsEvent,
   type WsPayloadUnion,
   type WsEventValue,
 } from "@shared/payloads/ws";
@@ -58,7 +57,7 @@ export function withAuth<D>(
  */
 export type HandlerMap<K extends WsEventValue = WsEventValue> = Partial<{
   [P in K]: Handler<any>;
-}>; 
+}>;
 
 /**
  * Constraints on the handler map - not all OpCodes are handled, IE some are responses and do not need handlers.

@@ -7,9 +7,13 @@ export async function authenticate(
     lookup: typeof getApiKey = getApiKey
 ): Promise<number | null> {
     const header = req.headers.get('authorization');
-    if (!header) return null;
+    if (!header)
+        return null;
+
     const [scheme, key] = header.split(' ');
-    if (!key || scheme.toLowerCase() !== 'apikey') return null;
+    if (!key || scheme.toLowerCase() !== 'apikey')
+        return null;
+
     const row = await lookup(state.db, key);
     return row ? row.user_id : null;
 }
@@ -22,6 +26,7 @@ export function withAuth(
         if (!userId) {
             return new Response('Unauthorized', { status: 401 });
         }
+
         return handler(req, userId, state, params);
     };
 }

@@ -1,0 +1,6 @@
+CREATE TABLE auth.api_keys (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    key TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);

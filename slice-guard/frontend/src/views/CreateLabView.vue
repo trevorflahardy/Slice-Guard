@@ -29,11 +29,14 @@ async function submit() {
 
 <template>
   <div class="min-h-screen flex flex-col items-center justify-start bg-background text-foreground">
-    <h1 class="text-3xl font-semibold mt-10 mb-6">Create a Lab</h1>
+    <h1 class="text-3xl font-semibold mt-10 mb-6 text-black">Create a Lab</h1>
     <form @submit.prevent="submit" class="flex flex-col gap-3 w-full max-w-md text-sm text-gray-400">
-      <input v-model="name" type="text" placeholder="Name" required class="bg-foreground shadow-md py-3 px-5 rounded-xl w-full focus:outline-main" />
-      <input v-model="description" type="text" placeholder="Description" class="bg-foreground shadow-md py-3 px-5 rounded-xl w-full focus:outline-main" />
-      <input v-model="imageUrl" type="url" placeholder="Image URL" class="bg-foreground shadow-md py-3 px-5 rounded-xl w-full focus:outline-main" />
+      <input v-model="name" type="text" placeholder="Name" required
+        class="bg-foreground shadow-md py-3 px-5 rounded-xl w-full focus:outline-main" />
+      <input v-model="description" type="text" placeholder="Description"
+        class="bg-foreground shadow-md py-3 px-5 rounded-xl w-full focus:outline-main" />
+      <input v-model="imageUrl" type="url" placeholder="Image URL"
+        class="bg-foreground shadow-md py-3 px-5 rounded-xl w-full focus:outline-main" />
       <p v-if="error" class="text-red-600 px-1">{{ error }}</p>
       <Button variant="primary" class="mt-2 py-2">Create Lab</Button>
     </form>

@@ -15,9 +15,12 @@ export class Server {
     public logger: pino.Logger;
 
     constructor(options: { sql: SQLOptions }) {
+        logger.debug("Initializing server with options: %o", options);
         const db = new SQL(options.sql);
         this.state = new State(db); // Hand off DB ownership
         this.logger = logger.child({ component: "server" });
+
+        this.logger.debug("Server initialized with database connection");
     }
 
     start() {
@@ -101,7 +104,7 @@ export class Server {
 
     private async handleWebSocketMessage(ws: ServerWebSocket, message: string | Buffer<ArrayBufferLike>) {
         // For now, just print out what we received
-        logger.debug("Received message:", message);
+        logger.debug("Received message: %o", message);
 
         // Process this message, assuming all is good
         await validateAndDispatchMessage(this, ws, message, this.state);
@@ -111,12 +114,12 @@ export class Server {
         // ! TODO: Handle a new connection
         // ! For now, simply print out this connection request and upgrade
         // ! the user
-        logger.debug("New connection:", ws);
+        logger.debug("New connection: %o", ws);
     }
 
     private handleWebSocketClose(ws: ServerWebSocket) {
         // ! TODO: Handle closed connections
-        logger.debug("Connection closed:", ws);
+        logger.debug("Connection closed: %o", ws);
     }
 
 };

@@ -3,8 +3,8 @@ import { onMounted, watch, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from '../Sidebar.vue'
 import LabUserList from './LabUserList.vue'
-import { ws, authState } from '../../services/auth'
-import { OpCode } from '@shared/ws/opcodes'
+import { authorizedFetch } from '../../services/auth'
+import { ws } from '../../services/ws'
 
 const route = useRoute()
 
@@ -12,25 +12,19 @@ const lab = ref<any | null>(null)
 const loading = ref(true)
 const error = ref('')
 
-function fetchLab() {
+async function fetchLab() {
   const labId = Number(route.params.id)
   loading.value = true
   error.value = ''
-  const onLab = (data: any) => {
-    ws.removeListener(OpCode.LAB_UPDATE, onLab)
-    ws.removeListener(OpCode.ERROR, onErr)
-    lab.value = data
-    loading.value = false
-  }
-  const onErr = () => {
-    ws.removeListener(OpCode.LAB_UPDATE, onLab)
-    ws.removeListener(OpCode.ERROR, onErr)
+  try {
+    const res = await authorizedFetch(`/labs/${labId}`)
+    if (!res.ok) throw new Error()
+    lab.value = await res.json()
+  } catch {
     error.value = 'Failed to load lab'
+  } finally {
     loading.value = false
   }
-  ws.addListener(OpCode.LAB_UPDATE, onLab)
-  ws.addListener(OpCode.ERROR, onErr)
-  ws.send(OpCode.LAB_UPDATE, { labId, token: authState.accessToken })
 }
 
 onMounted(fetchLab)

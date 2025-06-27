@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { authState, tryRefresh } from '../services/auth'
+import { authState } from '../services/auth'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -40,21 +40,9 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach(async (to) => {
+router.beforeEach((to) => {
   if (to.name === 'Login' || to.name === 'Register') return true
-
-  if (!authState.accessToken && authState.refreshToken) {
-    try {
-      await tryRefresh()
-    } catch {
-      return { name: 'Login' }
-    }
-  }
-
-  if (!authState.accessToken) {
-    return { name: 'Login' }
-  }
-
+  if (!authState.apiKey) return { name: 'Login' }
   return true
 })
 

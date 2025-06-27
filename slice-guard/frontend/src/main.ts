@@ -2,8 +2,9 @@ import { createApp } from 'vue'
 import './styles/main.css'
 import App from './App.vue'
 import router from './router'
-import { tryRefresh } from './services/auth'
+import { authState } from './services/auth'
+import { ws } from './services/ws'
 
-tryRefresh().catch(() => {})
+if (authState.apiKey) ws.connect(authState.apiKey)
 
 createApp(App).use(router).mount('#app')

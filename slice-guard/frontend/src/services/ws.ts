@@ -12,9 +12,10 @@ export class WebSocketClient {
     this.url = url
   }
 
-  connect() {
+  connect(key?: string) {
     if (this.ws) return
-    this.ws = new WebSocket(this.url)
+    const url = key ? `${this.url}?key=${encodeURIComponent(key)}` : this.url
+    this.ws = new WebSocket(url)
     this.ws.addEventListener('message', (ev) => {
       try {
         const msg: OpCodePayload<OpCode> = JSON.parse(ev.data)
@@ -59,3 +60,6 @@ export class WebSocketClient {
     }
   }
 }
+
+const WS_URL = (import.meta as any).env.VITE_WS_URL ?? 'ws://localhost:3000/ws'
+export const ws = new WebSocketClient(WS_URL)

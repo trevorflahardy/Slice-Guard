@@ -2,6 +2,8 @@
 import { validateAndDispatchMessage, type WebSocketData, type ServerWebSocket } from "./ws";
 import State from "./utils/state";
 import { SQL, type SQLOptions } from "bun";
+import * as auth from './http/auth';
+import * as lab from './http/lab';
 
 import pino from "pino";
 const logger = pino({ level: 'debug' });
@@ -38,26 +40,52 @@ export class Server {
         await this.state.db.close();
     }
 
-    private handleFetch(req: Request, server: Bun.Server) {
+    private async handleFetch(req: Request, server: Bun.Server) {
         const url = new URL(req.url);
         if (url.pathname === "/ws") {
             const now = Date.now();
-            const upgraded = server.upgrade<WebSocketData>(
-                req, {
-                data: {
-                    created_at: now,
-                    id: new String(Bun.hash(`${now}-${Math.random()}`)) as string, // TODO: Update - this is bad
-                }
-            }
-            );
-
-            if (!upgraded) {
-                logger.error("Failed to upgrade request");
-                return new Response("Upgrade failed", { status: 400 });
-            }
+            const upgraded = server.upgrade<WebSocketData>(req, {
+                data: { created_at: now, id: String(Bun.hash(`${now}-${Math.random()}`)) }
+            });
+            if (!upgraded) return new Response("Upgrade failed", { status: 400 });
+            return new Response(null);
         }
 
-        return new Response("Hello World");
+        if (url.pathname.startsWith('/api')) {
+            return this.handleApi(req, url);
+        }
+
+        return new Response("Not found", { status: 404 });
+    }
+
+    private async handleApi(req: Request, url: URL): Promise<Response> {
+        const path = url.pathname.slice(4);
+        (req as any).state = this.state;
+
+        if (path === '/login' && req.method === 'POST') return auth.login(req, this.state);
+        if (path === '/register' && req.method === 'POST') return auth.register(req, this.state);
+        if (path === '/labs' && req.method === 'POST') return lab.create(req, this.state, {});
+        if (path === '/labs' && req.method === 'GET') return lab.list(req, this.state, {});
+        if (path.match(/^\/labs\/\d+$/)) {
+            const id = path.split('/')[2];
+            if (req.method === 'GET') return lab.get(req, this.state, { id });
+            if (req.method === 'PATCH') return lab.update(req, this.state, { id });
+            if (req.method === 'DELETE') return lab.del(req, this.state, { id });
+        }
+        if (path.match(/^\/labs\/\d+\/roles$/) && req.method === 'POST') {
+            const labId = path.split('/')[2];
+            return lab.createRoleRoute(req, this.state, { labId });
+        }
+        if (path.match(/^\/labs\/\d+\/members$/) && req.method === 'POST') {
+            const labId = path.split('/')[2];
+            return lab.addMemberRoute(req, this.state, { labId });
+        }
+        if (path.match(/^\/labs\/\d+\/members\/\d+$/) && req.method === 'DELETE') {
+            const [, labId,, userId] = path.split('/');
+            return lab.removeMemberRoute(req, this.state, { labId, userId });
+        }
+
+        return new Response('Not found', { status: 404 });
     }
 
     private async handleWebSocketMessage(ws: ServerWebSocket, message: string | Buffer<ArrayBufferLike>) {

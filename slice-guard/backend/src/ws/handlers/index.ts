@@ -3,9 +3,7 @@ import {
   type OpCodePayloadUnion,
   type OpCodeValue,
 } from "@shared/ws/opcodes";
-import * as auth from "../handlers/auth";
 import * as requestHandlers from "../handlers/request";
-import * as labHandlers from "../handlers/lab";
 import type State from "../../utils/state";
 import type { Logger } from "pino";
 import type { ServerWebSocket } from "..";
@@ -69,24 +67,13 @@ export type HandlerMap<K extends OpCodeValue = OpCodeValue> = Partial<{
  * This is a union of all OpCodes that are handled by the server from the client as a request for some operation.
  */
 type HandlerMapItems =
-  | OpCode.AUTH_LOGIN
-  | OpCode.AUTH_REGISTER
-  | OpCode.AUTH_REFRESH
-  | OpCode.AUTH_LOGOUT
   | OpCode.REQUEST_CREATE
   | OpCode.REQUEST_LIST
   | OpCode.TAG_CREATE
   | OpCode.TAG_SET_DEFAULT
   | OpCode.REQUEST_ASSIGN_TAG
-  | OpCode.LAB_CREATE
-  | OpCode.LAB_UPDATE
-  | OpCode.LAB_DELETE
-  | OpCode.ROLE_CREATE
-  | OpCode.MEMBER_ADD
-  | OpCode.MEMBER_REMOVE;
+  ;
 
 export const handlers: HandlerMap<HandlerMapItems> = {
-  ...auth.handlers,
   ...requestHandlers.handlers,
-  ...labHandlers.handlers,
 };

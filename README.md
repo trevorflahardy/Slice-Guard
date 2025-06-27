@@ -15,7 +15,15 @@ Welcome to Slice Guard, a tool to help University 3D-print labs manage requests 
   - A simple 3MF file parser that extracts all the needed information for you and informs you of any errors.
   - A simple GCode parser that extracts all the needed information for you and informs you of any errors.
   - A modern, clean GUI for staff to approve or deny requests, with notifications for students when their requests are approved or denied.
-- Concurrent file management between multiple users.
+ - Concurrent file management between multiple users.
+
+## REST API
+
+All client interactions now use a simple REST API secured by per-user API keys.
+When a user registers they receive a unique key which must be sent in the
+`Authorization` header as `ApiKey <key>` for all subsequent requests.
+Authentication and lab management endpoints formerly available over WebSockets
+are now exposed via HTTP routes.
 
 ## File Storage
 

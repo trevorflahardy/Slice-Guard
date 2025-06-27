@@ -15,7 +15,7 @@ import LabUserList from './LabUserList.vue';
         <div class="rounded-l-[3rem] bg-foreground w-full drop-shadow-lg flex gap-0">
             <div class="p-[1.5rem] flex-1 w-full">
                 <!-- Actual insert content-->
-                TODO
+                <router-view />
             </div>
 
             <!--User list for lab layout-->

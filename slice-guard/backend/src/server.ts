@@ -142,8 +142,6 @@ const server = new Server({
         idleTimeout: 30,
         maxLifetime: 0,
         connectionTimeout: 30,
-
-        tls: true,
     }
 })
 

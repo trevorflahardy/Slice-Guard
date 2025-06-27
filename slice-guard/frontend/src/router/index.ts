@@ -18,8 +18,8 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        name: 'LabHome',
-        component: () => import('../views/LabView.vue'),
+        name: 'LabDashboard',
+        component: () => import('../layouts/lab/LabDashboard.vue'),
       },
     ],
   },

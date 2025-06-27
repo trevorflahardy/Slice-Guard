@@ -15,7 +15,7 @@ export async function register(req: Request, state: State): Promise<Response> {
     const existing = await findUserByEmail(state.db, email);
     state.logger.debug({ found: !!existing }, 'Checked existing user');
     if (existing)
-        return new Response('Email in use', { status: 400 });
+        return withCors(new Response('Email in use', { status: 400 }));
 
     const hash = await hashPassword(password);
     const user = await createUser(state.db, email, hash, name);

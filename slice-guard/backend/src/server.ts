@@ -1,4 +1,3 @@
-// import { handlers as wsOpHandlers } from "./ws";
 import { validateAndDispatchMessage, type WebSocketData, type ServerWebSocket } from "./ws";
 import State from "./utils/state";
 import { SQL, type SQLOptions } from "bun";
@@ -16,7 +15,7 @@ export class Server {
     public logger: pino.Logger;
 
     constructor(options: { sql: SQLOptions }) {
-        const db: SQL = new SQL(options.sql);
+        const db = new SQL(options.sql);
         this.state = new State(db); // Hand off DB ownership
         this.logger = logger.child({ component: "server" });
     }

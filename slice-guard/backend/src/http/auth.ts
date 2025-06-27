@@ -2,7 +2,7 @@ import { hashPassword, verifyPassword } from '../utils/hash';
 import { generateApiKey } from '../utils/apiKey';
 import { createUser, findUserByEmail, getOrCreateApiKey } from '../db/user';
 import type State from '../utils/state';
-import type { AuthLoginPayload, AuthRegisterPayload } from '@shared/ws/opcodes';
+import type { AuthLoginPayload, AuthRegisterPayload } from '@shared/payloads';
 
 /**
  * POST /api/register

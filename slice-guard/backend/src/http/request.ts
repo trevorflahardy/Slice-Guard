@@ -10,7 +10,7 @@ import type {
     TagCreatePayload,
     TagSetDefaultPayload,
     RequestAssignTagPayload,
-} from '@shared/ws/opcodes';
+} from '@shared/payloads';
 
 /**
  * POST /api/labs/:labId/requests

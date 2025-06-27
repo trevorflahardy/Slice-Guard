@@ -1,9 +1,9 @@
-import { OpCode, type OpCodePayloadUnion, type OpCodeValue } from '@shared/ws/opcodes';
+import { WsEvent, type WsPayloadUnion, type WsEventValue } from '@shared/payloads/ws';
 import type State from '../utils/state';
 import type { Server } from '../server';
 import { handlers, HandlerPayload, type Handler, type HandlerResponse } from "./handlers";
 import { ErrorCode, toErrorCodeValue, type ErrorCodeValue } from '@slice-guard/shared/ws/errors';
-import { type ErrorPayload } from '@shared/ws/opcodes';
+import { type WsPayload } from '@shared/payloads/ws';
 
 
 export type WebSocketData = {
@@ -20,7 +20,7 @@ export async function validateAndDispatchMessage(
     state: State,
 ): Promise<void> {
     const raw = typeof message === "string" ? message : message.toString();
-    let data: OpCodePayloadUnion;
+    let data: WsPayloadUnion;
 
     try {
         data = JSON.parse(raw);
@@ -34,9 +34,9 @@ export async function validateAndDispatchMessage(
         return;
     }
 
-    const handler: Handler<OpCodePayloadUnion> | undefined = handlers[data.op as OpCodeValue];
+    const handler: Handler<WsPayloadUnion> | undefined = handlers[data.op as WsEventValue];
     if (!handler) {
-        server.logger.error({ op: data.op }, "Unknown OpCode");
+        server.logger.error({ op: data.op }, "Unknown event");
         return;
     }
 
@@ -53,7 +53,7 @@ export async function validateAndDispatchMessage(
 
         if (Object.values(ErrorCode).includes(response as ErrorCodeValue)) {
             response = {
-                op: OpCode.ERROR,
+                op: WsEvent.ERROR,
                 d: {
                     code: response as ErrorCode,
                     message: toErrorCodeValue(response as ErrorCodeValue),
@@ -66,7 +66,7 @@ export async function validateAndDispatchMessage(
         loggerChild.error({ err }, "Handler threw an exception");
         ws.send(
             JSON.stringify({
-                op: OpCode.ERROR,
+                op: WsEvent.ERROR,
                 d: {
                     code: ErrorCode.INTERNAL_ERROR,
                     message: toErrorCodeValue(ErrorCode.INTERNAL_ERROR),

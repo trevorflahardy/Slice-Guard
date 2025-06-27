@@ -9,7 +9,7 @@ import type {
     RoleCreatePayload,
     MemberAddPayload,
     MemberRemovePayload,
-} from '@shared/ws/opcodes';
+} from '@shared/payloads';
 
 /**
  * POST /api/labs

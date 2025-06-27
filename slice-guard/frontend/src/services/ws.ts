@@ -1,4 +1,4 @@
-import { OpCode, type OpCodePayload } from '@shared/ws/opcodes'
+import { WsEvent, type WsPayload } from '@shared/payloads/ws'
 
 export type Listener = (data: any) => void
 
@@ -6,7 +6,7 @@ export class WebSocketClient {
   private ws: WebSocket | null = null
   private url: string
   private reconnectId: number | null = null
-  private listeners = new Map<OpCode, Set<Listener>>()
+  private listeners = new Map<WsEvent, Set<Listener>>()
 
   constructor(url: string) {
     this.url = url
@@ -18,7 +18,7 @@ export class WebSocketClient {
     this.ws = new WebSocket(url)
     this.ws.addEventListener('message', (ev) => {
       try {
-        const msg: OpCodePayload<OpCode> = JSON.parse(ev.data)
+        const msg: WsPayload<WsEvent> = JSON.parse(ev.data)
         this.dispatch(msg)
       } catch {
         console.error('Invalid WS message', ev.data)
@@ -35,20 +35,20 @@ export class WebSocketClient {
     })
   }
 
-  send(op: OpCode, d: any) {
+  send(op: WsEvent, d: any) {
     this.ws?.send(JSON.stringify({ op, d }))
   }
 
-  addListener(op: OpCode, cb: Listener) {
+  addListener(op: WsEvent, cb: Listener) {
     if (!this.listeners.has(op)) this.listeners.set(op, new Set())
     this.listeners.get(op)!.add(cb)
   }
 
-  removeListener(op: OpCode, cb: Listener) {
+  removeListener(op: WsEvent, cb: Listener) {
     this.listeners.get(op)?.delete(cb)
   }
 
-  private dispatch(msg: OpCodePayload<OpCode>) {
+  private dispatch(msg: WsPayload<WsEvent>) {
     const set = this.listeners.get(msg.op)
     if (!set) return
     for (const cb of Array.from(set)) {

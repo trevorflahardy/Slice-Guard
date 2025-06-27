@@ -1,9 +1,8 @@
 import {
-  OpCode,
-  type OpCodePayloadUnion,
-  type OpCodeValue,
-} from "@shared/ws/opcodes";
-import * as requestHandlers from "../handlers/request";
+  WsEvent,
+  type WsPayloadUnion,
+  type WsEventValue,
+} from "@shared/payloads/ws";
 import type State from "../../utils/state";
 import type { Logger } from "pino";
 import type { ServerWebSocket } from "..";
@@ -24,7 +23,7 @@ export class HandlerPayload<D> {
   }
 }
 
-export type HandlerResponse = ErrorCode | OpCodePayloadUnion;
+export type HandlerResponse = ErrorCode | WsPayloadUnion;
 
 export type Handler<D> = (
   payload: HandlerPayload<D>
@@ -57,23 +56,15 @@ export function withAuth<D>(
  *
  * See below, where all OpCodes are specified in the HandlerMapItems type as a requirement for type safety.
  */
-export type HandlerMap<K extends OpCodeValue = OpCodeValue> = Partial<{
+export type HandlerMap<K extends WsEventValue = WsEventValue> = Partial<{
   [P in K]: Handler<any>;
-}>;
+}>; 
 
 /**
  * Constraints on the handler map - not all OpCodes are handled, IE some are responses and do not need handlers.
  *
  * This is a union of all OpCodes that are handled by the server from the client as a request for some operation.
  */
-type HandlerMapItems =
-  | OpCode.REQUEST_CREATE
-  | OpCode.REQUEST_LIST
-  | OpCode.TAG_CREATE
-  | OpCode.TAG_SET_DEFAULT
-  | OpCode.REQUEST_ASSIGN_TAG
-  ;
+type HandlerMapItems = never;
 
-export const handlers: HandlerMap<HandlerMapItems> = {
-  ...requestHandlers.handlers,
-};
+export const handlers: HandlerMap<HandlerMapItems> = {};

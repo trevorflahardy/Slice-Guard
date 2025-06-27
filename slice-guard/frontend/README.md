@@ -46,4 +46,4 @@ The project now includes `views` and `router` out of the box so routing can be e
 
 Reference these names in classes like `text-main` or `bg-surface`.
 
-Add or remove the `dark` class on the `html` element to toggle dark mode. `HomeView.vue` includes a sample toggle button.
+Add or remove the `dark` class on the `html` element to toggle dark mode. The project includes a sample toggle button in earlier demos.

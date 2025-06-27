@@ -1,6 +1,7 @@
 import { getApiKey } from '../db/user';
 import type State from '../utils/state';
 import { withCors } from '../utils/cors';
+import logger from '../utils/logger';
 
 export async function authenticate(
     req: Request,
@@ -29,5 +30,14 @@ export function withAuth(
         }
         const res = await handler(req, userId, state, params);
         return withCors(res);
+    };
+}
+
+export function withLogging(
+    handler: (req: Request, state: State, params: Record<string, string>) => Promise<Response>
+): (req: Request, state: State, params: Record<string, string>) => Promise<Response> {
+    return async (req, state, params) => {
+        logger.debug({ method: req.method, path: new URL(req.url).pathname }, 'REST request');
+        return handler(req, state, params);
     };
 }

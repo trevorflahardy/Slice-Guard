@@ -4,13 +4,18 @@ import { authState } from '../services/auth'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    name: 'Home',
-    component: () => import('../views/HomeView.vue'),
+    name: 'Root',
+    component: () => import('../views/RootRedirect.vue'),
   },
   {
     path: '/nolabs',
     name: 'NoLabs',
     component: () => import('../views/NoLabsView.vue'),
+  },
+  {
+    path: '/lab/create',
+    name: 'CreateLab',
+    component: () => import('../views/CreateLabView.vue'),
   },
   {
     path: '/lab/:id',

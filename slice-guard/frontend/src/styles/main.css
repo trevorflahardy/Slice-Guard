@@ -1,20 +1,16 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
   --radius-5xl: 3rem;
 }
 
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
     display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
   }
 }
 
-:root {
+@theme {
   /* Light theme inspired by Apple's palette */
   --color-background: oklch(96.7% 0.003 264.542);
   --color-foreground: oklch(98.5% 0.002 247.839);
@@ -30,17 +26,4 @@
   --color-gray-1: oklch(98.4% 0.003 247.858);
   --color-gray-2: oklch(92.9% 0.013 255.508);
   --color-gray-3: oklch(86.9% 0.022 252.894);
-}
-
-.dark {
-  /* Softer dark theme matching Apple's design */
-  --color-background: oklch(21% 0.034 264.665);
-  --color-foreground: oklch(55.1% 0.027 264.364);
-  --color-muted: #8e8e93;
-  --color-border: oklch(37.3% 0.034 259.733);
-  --color-main: #1ba56e; /* lighter in dark mode */
-  --color-accent-text: #ffffff; /* accent text is white */
-  --color-gray-1: oklch(27.8% 0.033 256.848);
-  --color-gray-2: oklch(37.3% 0.034 259.733);
-  --color-gray-3: oklch(55.1% 0.027 264.364);
 }

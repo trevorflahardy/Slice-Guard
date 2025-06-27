@@ -30,19 +30,5 @@ services:
     ports:
       - "3000:3000"
 
-  frontend:
-    image: slice_guard_frontend
-    build:
-      context: ./slice-guard
-      dockerfile: frontend/Dockerfile
-      args:
-        VITE_API_URL: http://backend:3000/api
-        VITE_WS_URL: ws://backend:3000/ws
-    depends_on:
-      - backend
-    restart: unless-stopped
-    ports:
-      - "5173:5173"
-
 volumes:
   postgres:

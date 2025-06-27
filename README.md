@@ -86,10 +86,17 @@ The parser requires the `unzip` binary on the host system.
 ## Docker Setup
 
 An example `compose.yaml` and `.env.example` are provided for local development.
-After copying `.env.example` to `.env` you can build and start all services with:
+After copying `.env.example` to `.env` you can build and start the production
+containers with:
 
 ```bash
 docker compose up --build
+```
+
+During development start the services built from the `dev` stages instead:
+
+```bash
+docker compose --profile dev up --build
 ```
 
 The backend will be available on `http://localhost:3000` and the frontend on

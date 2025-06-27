@@ -27,10 +27,10 @@ export enum OpCode {
 export type OpCodeType = keyof typeof OpCode;
 export type OpCodeValue = typeof OpCode[OpCodeType];
 
-export type OpCodePayload<T extends OpCodeValue> = {
+export interface OpCodePayload<T extends OpCodeValue> {
     op: T;
     d: any;
-};
+}
 
 /**
  * Mapped type that creates a generic payload type for every possible OpCodeValue.
@@ -63,59 +63,98 @@ export type OpCodePayloadUnion = OpCodePayloadMap[OpCodeValue];
  *
  * - CLIENT -> SERVER when logging in or registering.
  **/
-export type AuthLoginPayload =
-    (OpCodePayload<OpCode.AUTH_LOGIN> & { d: { email: string; password: string } }) |
-    (OpCodePayload<OpCode.AUTH_REGISTER> & { d: { email: string; password: string; name: string } });
+export interface AuthLoginPayload extends OpCodePayload<OpCode.AUTH_LOGIN> {
+    d: { email: string; password: string };
+}
+
+export interface AuthRegisterPayload extends OpCodePayload<OpCode.AUTH_REGISTER> {
+    d: { email: string; password: string; name: string };
+}
+
+export type AuthRequestPayload = AuthLoginPayload | AuthRegisterPayload;
 
 /**
  * Success response when logging in or registering.
  *
  * - SERVER -> CLIENT when login/register is successful.
  */
-export type AuthSuccessPayload = OpCodePayload<OpCode.AUTH_SUCCESS> & { d: { accessToken: string; refreshToken: string; user: User } }
+export interface AuthSuccessPayload extends OpCodePayload<OpCode.AUTH_SUCCESS> {
+    d: { accessToken: string; refreshToken: string; user: User };
+}
 
 /**
  * Failure response when login/register fails.
  *
  * - SERVER -> CLIENT when login/register fails.
  */
-export type AuthFailurePayload =
-    OpCodePayload<OpCode.AUTH_FAILURE> & { d: { reason: string } };
+export interface AuthFailurePayload extends OpCodePayload<OpCode.AUTH_FAILURE> {
+    d: { reason: string };
+}
 /**
  * Refresh request of an access toke using a refresh token.
  *
  * - CLIENT -> SERVER when refreshing the access token.
  */
-export type AuthRefreshPayload = OpCodePayload<OpCode.AUTH_REFRESH> & { d: { refreshToken: string } }
+export interface AuthRefreshPayload extends OpCodePayload<OpCode.AUTH_REFRESH> {
+    d: { refreshToken: string };
+}
 
 /**
  * Success response when refreshing the access token.
  *
  * - SERVER -> CLIENT when refresh is successful.
  */
-export type AuthRefreshSuccessPayload = OpCodePayload<OpCode.AUTH_REFRESH_SUCCESS> & { d: { accessToken: string; refreshToken: string } }
+export interface AuthRefreshSuccessPayload extends OpCodePayload<OpCode.AUTH_REFRESH_SUCCESS> {
+    d: { accessToken: string; refreshToken: string };
+}
 
 // Logs out the user and invalidates the refresh token.
 
 // - CLIENT -> SERVER when logging out.
-export type AuthLogoutPayload = OpCodePayload<OpCode.AUTH_LOGOUT> & { d: { refreshToken: string } };
+export interface AuthLogoutPayload extends OpCodePayload<OpCode.AUTH_LOGOUT> {
+    d: { refreshToken: string };
+}
 
 /**
  * Denotes any error response from the server.
  */
 
-export type ErrorPayload<E extends ErrorCodeType> = OpCodePayload<OpCode.ERROR> & { d: { error: E, response: ErrorCodeMappingValue } };
+export interface ErrorPayload<E extends ErrorCodeType> extends OpCodePayload<OpCode.ERROR> {
+    d: { error: E; response: ErrorCodeMappingValue };
+}
 
-export type RequestCreatePayload = OpCodePayload<OpCode.REQUEST_CREATE> & { d: { labId: number; file: string; metadata: any; description?: string; token: string } };
-export type RequestListPayload = OpCodePayload<OpCode.REQUEST_LIST> & { d: { labId: number; token: string } };
-export type TagCreatePayload = OpCodePayload<OpCode.TAG_CREATE> & { d: { labId: number; name: string; isDefault?: boolean; token: string } };
-export type TagSetDefaultPayload = OpCodePayload<OpCode.TAG_SET_DEFAULT> & { d: { tagId: number; isDefault: boolean; token: string } };
-export type RequestAssignTagPayload = OpCodePayload<OpCode.REQUEST_ASSIGN_TAG> & { d: { requestId: number; tagId: number; assign: boolean; token: string } };
+export interface RequestCreatePayload extends OpCodePayload<OpCode.REQUEST_CREATE> {
+    d: { labId: number; file: string; metadata: any; description?: string; token: string };
+}
+export interface RequestListPayload extends OpCodePayload<OpCode.REQUEST_LIST> {
+    d: { labId: number; token: string };
+}
+export interface TagCreatePayload extends OpCodePayload<OpCode.TAG_CREATE> {
+    d: { labId: number; name: string; isDefault?: boolean; token: string };
+}
+export interface TagSetDefaultPayload extends OpCodePayload<OpCode.TAG_SET_DEFAULT> {
+    d: { tagId: number; isDefault: boolean; token: string };
+}
+export interface RequestAssignTagPayload extends OpCodePayload<OpCode.REQUEST_ASSIGN_TAG> {
+    d: { requestId: number; tagId: number; assign: boolean; token: string };
+}
 
-export type LabCreatePayload = OpCodePayload<OpCode.LAB_CREATE> & { d: { name: string; description?: string | null; imageUrl?: string | null; token: string } };
-export type LabUpdatePayload = OpCodePayload<OpCode.LAB_UPDATE> & { d: { labId: number; name: string; description?: string | null; imageUrl?: string | null; token: string } };
-export type LabDeletePayload = OpCodePayload<OpCode.LAB_DELETE> & { d: { labId: number; token: string } };
-export type RoleCreatePayload = OpCodePayload<OpCode.ROLE_CREATE> & { d: { labId: number; name: string; permissions: number; token: string } };
-export type MemberAddPayload = OpCodePayload<OpCode.MEMBER_ADD> & { d: { labId: number; userId: number; roleId: number | null; token: string } };
-export type MemberRemovePayload = OpCodePayload<OpCode.MEMBER_REMOVE> & { d: { labId: number; userId: number; token: string } };
+export interface LabCreatePayload extends OpCodePayload<OpCode.LAB_CREATE> {
+    d: { name: string; description?: string | null; imageUrl?: string | null; token: string };
+}
+export interface LabUpdatePayload extends OpCodePayload<OpCode.LAB_UPDATE> {
+    d: { labId: number; name: string; description?: string | null; imageUrl?: string | null; token: string };
+}
+export interface LabDeletePayload extends OpCodePayload<OpCode.LAB_DELETE> {
+    d: { labId: number; token: string };
+}
+export interface RoleCreatePayload extends OpCodePayload<OpCode.ROLE_CREATE> {
+    d: { labId: number; name: string; permissions: number; token: string };
+}
+export interface MemberAddPayload extends OpCodePayload<OpCode.MEMBER_ADD> {
+    d: { labId: number; userId: number; roleId: number | null; token: string };
+}
+export interface MemberRemovePayload extends OpCodePayload<OpCode.MEMBER_REMOVE> {
+    d: { labId: number; userId: number; token: string };
+}
 

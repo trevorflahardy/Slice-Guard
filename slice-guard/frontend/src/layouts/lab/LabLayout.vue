@@ -1,7 +1,34 @@
 <script setup lang="ts">
+import { onMounted, watch, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import Sidebar from '../Sidebar.vue'
+import LabUserList from './LabUserList.vue'
+import { authorizedFetch } from '../../services/auth'
+import { ws } from '../../services/ws'
 
-import Sidebar from '../Sidebar.vue';
-import LabUserList from './LabUserList.vue';
+const route = useRoute()
+
+const lab = ref<any | null>(null)
+const loading = ref(true)
+const error = ref('')
+
+async function fetchLab() {
+  const labId = Number(route.params.id)
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await authorizedFetch(`/labs/${labId}`)
+    if (!res.ok) throw new Error()
+    lab.value = await res.json()
+  } catch {
+    error.value = 'Failed to load lab'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchLab)
+watch(() => route.params.id, fetchLab)
 </script>
 
 <template>
@@ -15,7 +42,7 @@ import LabUserList from './LabUserList.vue';
         <div class="rounded-l-[3rem] bg-foreground w-full drop-shadow-lg flex gap-0">
             <div class="p-[1.5rem] flex-1 w-full">
                 <!-- Actual insert content-->
-                <router-view />
+                <router-view :lab="lab" :error="error" :loading="loading" />
             </div>
 
             <!--User list for lab layout-->

@@ -1,26 +1,25 @@
 import { expect, test } from "bun:test";
-import jwt from "jsonwebtoken";
-import { ErrorCode } from "@slice-guard/shared/ws/errors";
+import { authenticate } from "../src/http/middleware";
 
-process.env.JWT_SECRET = "test";
-const { withAuth } = await import("../src/ws/handlers");
+const lookup = async (_db: any, key: string) => {
+  if (key === "good") return { user_id: 1 } as any;
+  return null;
+};
 
-class DummyPayload {
-  ws = {} as any;
-  state = {} as any;
-  logger = console as any;
+class DummyState {
+  db = {} as any;
 }
 
-test("withAuth denies invalid token", async () => {
-  const handler = withAuth(async () => ({ op: 0 as any, d: {} }));
-  const result = await handler({ ...new DummyPayload(), data: { d: { token: "bad" } } });
-  expect(result).toBe(ErrorCode.UNAUTHORIZED);
+const state = new DummyState() as any;
+
+test("authenticate rejects missing header", async () => {
+  const req = new Request("http://test");
+  const id = await authenticate(req, state, lookup);
+  expect(id).toBeNull();
 });
 
-test("withAuth passes userId", async () => {
-  const token = jwt.sign({ id: 42 }, "test", { expiresIn: "1h" });
-  let id: number | null = null;
-  const handler = withAuth(async (p) => { id = p.userId; return { op: 0 as any, d: {} }; });
-  await handler({ ...new DummyPayload(), data: { d: { token } } });
-  expect(id).toBe(42);
+test("authenticate returns user id", async () => {
+  const req = new Request("http://test", { headers: { Authorization: "ApiKey good" } });
+  const id = await authenticate(req, state, lookup);
+  expect(id).toBe(1);
 });

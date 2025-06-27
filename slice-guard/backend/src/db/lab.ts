@@ -96,3 +96,22 @@ export async function getMemberRolePermissions(
     const [row] = rows;
     return row ? row.permissions : null;
 }
+
+export async function getLab(db: SQL, id: number): Promise<LabRow | null> {
+    const rows: LabRow[] = await db`
+        SELECT id, owner_id, name, description, image_url, created_at
+          FROM lab.labs
+         WHERE id = ${id}
+    `;
+    return rows[0] ?? null;
+}
+
+export async function listLabsForUser(db: SQL, userId: number): Promise<LabRow[]> {
+    const rows: LabRow[] = await db`
+        SELECT l.id, l.owner_id, l.name, l.description, l.image_url, l.created_at
+          FROM lab.labs l
+          JOIN lab.members m ON m.lab_id = l.id
+         WHERE m.user_id = ${userId}
+    `;
+    return rows;
+}

@@ -1,39 +1,27 @@
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1 AS base
+# Stage 1: install dependencies
+FROM oven/bun:1 AS deps
 WORKDIR /usr/src/app
+COPY frontend/package.json ./package.json
+RUN bun install --frozen-lockfile
 
-# install dependencies into temp directory
-# this will cache them and speed up future builds
-FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lock /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
-
-# install with --production (exclude devDependencies)
-RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
-
-# copy node_modules from temp directory
-# then copy all (non-ignored) project files into the image
-FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
-COPY . .
-COPY ../shared ./shared
-
-# [optional] tests & build
-ENV NODE_ENV=production
-RUN bun test
+# Stage 2: build frontend
+FROM oven/bun:1 AS build
+WORKDIR /usr/src/app
+COPY --from=deps /usr/src/app/node_modules ./node_modules
+COPY frontend/ .
+COPY shared/ ./shared
+ARG VITE_API_URL
+ARG VITE_WS_URL
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_WS_URL=$VITE_WS_URL
 RUN bun run build
 
-# copy production dependencies and source code into final image
-FROM base AS release
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/index.ts .
-COPY --from=prerelease /usr/src/app/package.json .
-
-# Run Bun's static server
+# Stage 3: production image
+FROM oven/bun:1 AS release
+WORKDIR /usr/src/app
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/dist ./dist
+COPY frontend/package.json ./package.json
 USER bun
-EXPOSE 3000/
-ENTRYPOINT [ "bun", "run", "serve" ]
+EXPOSE 5173
+ENTRYPOINT ["bun", "run", "serve"]

@@ -15,7 +15,22 @@ Welcome to Slice Guard, a tool to help University 3D-print labs manage requests 
   - A simple 3MF file parser that extracts all the needed information for you and informs you of any errors.
   - A simple GCode parser that extracts all the needed information for you and informs you of any errors.
   - A modern, clean GUI for staff to approve or deny requests, with notifications for students when their requests are approved or denied.
-- Concurrent file management between multiple users.
+ - Concurrent file management between multiple users.
+
+## REST API
+
+All client interactions now use a simple REST API secured by per-user API keys.
+When a user registers they receive a unique key which must be sent in the
+`Authorization` header as `ApiKey <key>` for all subsequent requests.
+Authentication and lab management endpoints formerly available over WebSockets
+are now exposed via HTTP routes. Request creation and tagging have moved to REST
+as well. Example endpoints:
+
+- `POST /api/login` – exchange credentials for an API key
+- `POST /api/register` – create a new user and receive an API key
+- `GET /api/labs` – list labs for the authenticated user
+- `POST /api/labs/:labId/requests` – submit a print request (base64 file upload)
+- `GET /api/labs/:labId/requests` – list your requests for a lab
 
 ## File Storage
 
@@ -67,4 +82,17 @@ await parser.cleanup();
 ```
 
 The parser requires the `unzip` binary on the host system.
+
+## Docker Setup
+
+An example `compose.yaml` and `.env.example` are provided for local development.
+After copying `.env.example` to `.env` you can build and start all services with:
+
+```bash
+docker compose up --build
+```
+
+The backend will be available on `http://localhost:3000` and the frontend on
+`http://localhost:5173`. The frontend is configured to talk to the backend using
+those internal addresses so WebSocket connections work out of the box.
 

@@ -2,7 +2,7 @@ import { reactive } from "vue";
 import { ws } from "./ws";
 
 const API_URL =
-  (import.meta as any).env.VITE_API_URL ?? "http://localhost:3000/api";
+  (import.meta as any).env.VITE_API_URL ?? "/api";
 
 export const authState = reactive<{ apiKey: string | null }>({
   apiKey: localStorage.getItem("apiKey"),

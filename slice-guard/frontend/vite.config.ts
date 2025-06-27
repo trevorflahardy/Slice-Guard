@@ -11,4 +11,14 @@ export default defineConfig({
       '@shared': fileURLToPath(new URL('../shared', import.meta.url)),
     },
   },
-})
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+      'ws': {
+        target: 'ws://localhost:3000',
+        ws: true
+      }
+    }
+  }
+}
+)

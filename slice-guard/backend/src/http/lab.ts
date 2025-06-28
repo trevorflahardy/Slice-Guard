@@ -14,7 +14,7 @@ import {
     listLabsForUser,
 } from "../db/lab";
 import { findPublicUserById } from "../db/user";
-import { LabPermission } from "@shared/db/lab";
+import { LabPermission, type LabMember } from "@shared/db/lab";
 import type {
     LabCreatePayload,
     LabUpdatePayload,

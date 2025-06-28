@@ -1,4 +1,9 @@
+[![wakatime](https://wakatime.com/badge/user/9e70bc6a-2430-4dc3-a452-4ec4d2a7a8b9/project/e65260a4-bd30-40cf-8b4e-ffe8366cb859.svg)](https://wakatime.com/badge/user/9e70bc6a-2430-4dc3-a452-4ec4d2a7a8b9/project/e65260a4-bd30-40cf-8b4e-ffe8366cb859)
+
+-----
+
 # SliceGuard
+
 
 Welcome to Slice Guard, a tool to help University 3D-print labs manage requests for printing. Slice Guard is designed to keep track of students' 3D print requests, ensure they are within the allowed limits, and get useful statistics abotu your printers.
 

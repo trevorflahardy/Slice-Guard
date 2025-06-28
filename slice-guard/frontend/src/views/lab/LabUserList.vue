@@ -1,16 +1,14 @@
 <script setup lang="ts">
+import { Lab } from '@shared/db/lab'
 
-let randomUsers: { [key: string]: Array<{ name: string, id: number }> } = {
-    "administrator": [
-        { name: "Alice", id: 1 },
-        { name: "Bob", id: 2 },
-        { name: "Charlie", id: 3 },
-        { name: "Diana", id: 4 },
-    ],
-    "random users": [
-        { name: "Ethan has a really super duper long name", id: 5 }
-    ]
-}
+// When the value of the lab changes to null (or the lab instance changes), we want to re-fetch the users
+const props = defineProps<{
+    lab: Lab | null
+}>();
+
+// Mapping of {top level role: {id, name}[]};
+// TODO: Fetch the members** from the API (lab member object that also includes a list of their complete roles (sorted top down), permissions, etc.)
+const members = ref<{ [key: string]: { id: number, name: string }[] }>({});
 </script>
 
 <template>

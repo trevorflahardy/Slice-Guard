@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { authState, authorizedFetch } from '../services/auth'
+import { useAuthStore } from '../store/auth'
+import { authorizedFetch } from '../services/auth'
 
 const router = useRouter()
+const auth = useAuthStore()
 
 onMounted(async () => {
-  if (!authState.apiKey) {
+  if (!auth.apiKey) {
+    const stored = localStorage.getItem('apiKey')
+    if (stored) auth.apiKey = stored
+  }
+
+  if (!auth.apiKey) {
     router.replace('/login')
     return
   }

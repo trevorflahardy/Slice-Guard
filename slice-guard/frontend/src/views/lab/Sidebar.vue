@@ -1,4 +1,17 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from '../../store/auth'
+import { Lab } from '@shared/db/lab'
+
+const auth = useAuthStore()
+
+const route = useRoute()
+const labId = computed(() => route.params.id)
+
+const props = defineProps<{
+    lab: Lab | null
+}>();
 </script>
 
 <template>
@@ -6,10 +19,8 @@
     <div class="flex flex-col gap-5 h-full justify-items-start">
         <!--Currently active lab information (and way to change lab)-->
         <div class="text-left flex flex-col items-start gap-2">
-            <h1 class="text-lg/5 font-semibold text-pretty">Slice Guard Testing Development Lab</h1>
-            <p class="text-xs text-gray-500 line-clamp-2">Slice Guard Lab is a fictional print lab used for
-                testing purposes with a really really long name that should be truncated if it is too long.
-            </p>
+            <h1 class="text-lg/5 font-semibold text-pretty">{{ props.lab?.name }}</h1>
+            <p class="text-xs text-gray-500 line-clamp-2">{{ props.lab?.description }}</p>
         </div>
 
 
@@ -31,11 +42,13 @@
 
             <!-- Navigation links (need gear icon at the right side of each later on) -->
             <nav class="flex flex-col space-y-1">
-                <a href="#"
-                    class="text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md hover:font-medium">dashboard</a>
+                <RouterLink :to="`/lab/${labId}/dashboard`"
+                    class="text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md hover:font-medium">
+                    dashboard</RouterLink>
 
-                <a href="#"
-                    class="text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md hover:font-medium">print-requests</a>
+                <RouterLink :to="`/lab/${labId}/print-requests`"
+                    class="text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md hover:font-medium">
+                    print-requests</RouterLink>
             </nav>
         </div>
 
@@ -75,8 +88,7 @@
             </div>
 
             <div>
-                <h2 class="text-sm font-semibold">John Doe</h2>
-                <p class="text-xs text-gray-500">Administrator</p>
+                <h2 class="text-sm font-semibold">{{ auth.user?.name ?? 'Unknown User' }}</h2>
             </div>
 
             <!--Settings gear icon at the end of the flex -->

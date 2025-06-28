@@ -89,6 +89,16 @@ export async function removeMember(
     `;
 }
 
+export async function getMember(db: SQL, labId: number, userId: number): Promise<LabMemberRow | null> {
+    const rows: LabMemberRow[] = await db`
+        SELECT lab_id, user_id, role_id, joined_at
+          FROM lab.members
+         WHERE lab_id = ${labId} AND user_id = ${userId}
+    `;
+    const [row] = rows;
+    return row ?? null;
+}
+
 export async function getMemberRolePermissions(
     db: SQL,
     labId: number,
@@ -102,6 +112,20 @@ export async function getMemberRolePermissions(
     `;
     const [row] = rows;
     return row ? row.permissions : null;
+}
+
+export async function getMemberRoles(
+    db: SQL,
+    labId: number,
+    userId: number
+): Promise<LabRoleRow[]> {
+    const rows: LabRoleRow[] = await db`
+        SELECT r.id, r.lab_id, r.name, r.permissions, r.created_at
+          FROM lab.members m
+          JOIN lab.roles r ON m.role_id = r.id
+         WHERE m.lab_id = ${labId} AND m.user_id = ${userId}
+    `;
+    return rows;
 }
 
 export async function getLab(db: SQL, id: number): Promise<LabRow | null> {

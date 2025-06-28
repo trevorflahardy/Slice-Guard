@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { authState } from '../services/auth'
+import { useAuthStore } from '../store/auth'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -23,12 +23,12 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: ':id',
-        component: () => import('../layouts/lab/LabLayout.vue'),
+    component: () => import('../views/lab/LabLayout.vue'),
         children: [
           {
             path: '',
             name: 'LabDashboard',
-            component: () => import('../layouts/lab/LabDashboard.vue'),
+            component: () => import('../views/lab/LabDashboard.vue'),
           },
         ],
       },
@@ -37,12 +37,12 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../layouts/login/LoginPage.vue'),
+    component: () => import('../views/auth/LoginPage.vue'),
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('../layouts/register/RegisterPage.vue'),
+    component: () => import('../views/auth/RegisterPage.vue'),
   },
 ]
 
@@ -52,8 +52,9 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  const auth = useAuthStore()
   if (to.name === 'Login' || to.name === 'Register') return true
-  if (!authState.apiKey) return { name: 'Login' }
+  if (!auth.apiKey) return { name: 'Login' }
   return true
 })
 

@@ -23,7 +23,15 @@ export async function register(req: Request, state: State): Promise<Response> {
 
     await getOrCreateApiKey(state.db, user.id, key);
     state.logger.debug({ id: user.id }, 'Issued API key');
-    return Response.json({ apiKey: key });
+    return Response.json({
+        apiKey: key,
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            created_at: user.created_at,
+        },
+    });
 }
 
 /**
@@ -47,5 +55,13 @@ export async function login(req: Request, state: State): Promise<Response> {
 
     const keyRow = await getOrCreateApiKey(state.db, user.id, generateApiKey(user.id));
     state.logger.debug({ userId: user.id }, 'Issued API key');
-    return Response.json({ apiKey: keyRow.key });
+    return Response.json({
+        apiKey: keyRow.key,
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            created_at: user.created_at,
+        },
+    });
 }

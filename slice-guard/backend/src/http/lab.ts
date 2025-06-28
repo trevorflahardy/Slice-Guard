@@ -11,7 +11,6 @@ import {
     listLabsForUser,
 } from "../db/lab";
 import { LabPermission } from "@shared/db/lab";
-import { withCors } from "../utils/cors";
 import type {
     LabCreatePayload,
     LabUpdatePayload,
@@ -33,7 +32,7 @@ export const create = withAuth(async (req, userId, state) => {
         imageUrl ?? null
     );
 
-    return withCors(Response.json(lab));
+    return Response.json(lab);
 });
 
 /**
@@ -41,9 +40,9 @@ export const create = withAuth(async (req, userId, state) => {
  */
 export const get = withAuth(async (_req, _userId, state, params) => {
     const lab = await getLab(state.db, Number(params.id));
-    if (!lab) return withCors(new Response("Not found", { status: 404 }));
+    if (!lab) return new Response("Not found", { status: 404 });
 
-    return withCors(Response.json(lab));
+    return Response.json(lab);
 });
 
 /**
@@ -51,7 +50,7 @@ export const get = withAuth(async (_req, _userId, state, params) => {
  */
 export const list = withAuth(async (_req, userId, state) => {
     const labs = await listLabsForUser(state.db, userId);
-    return withCors(Response.json(labs));
+    return Response.json(labs);
 });
 
 /**
@@ -63,7 +62,7 @@ export const update = withAuth(async (req, userId, state, params) => {
         (await req.json()) as LabUpdatePayload;
     const perms = await getMemberRolePermissions(state.db, id, userId);
     if (perms === null || !(perms & LabPermission.EDIT_LAB))
-        return withCors(new Response("Unauthorized", { status: 403 }));
+        return new Response("Unauthorized", { status: 403 });
     const lab = await updateLab(
         state.db,
         id,
@@ -72,7 +71,7 @@ export const update = withAuth(async (req, userId, state, params) => {
         imageUrl ?? null
     );
 
-    return withCors(Response.json(lab));
+    return Response.json(lab);
 });
 
 /**
@@ -83,10 +82,10 @@ export const del = withAuth(async (req, userId, state, params) => {
     const perms = await getMemberRolePermissions(state.db, id, userId);
 
     if (perms === null || !(perms & LabPermission.DELETE_LAB))
-        return withCors(new Response("Unauthorized", { status: 403 }));
+        return new Response("Unauthorized", { status: 403 });
     await deleteLab(state.db, id);
 
-    return withCors(new Response(null, { status: 204 }));
+    return new Response(null, { status: 204 });
 });
 
 /**
@@ -98,10 +97,10 @@ export const createRoleRoute = withAuth(async (req, userId, state, params) => {
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     if (perms === null || !(perms & LabPermission.MANAGE_ROLES))
-        return withCors(new Response("Unauthorized", { status: 403 }));
+        return new Response("Unauthorized", { status: 403 });
     const role = await createRole(state.db, labId, name, permissions);
 
-    return withCors(Response.json(role));
+    return Response.json(role);
 });
 
 /**
@@ -113,10 +112,10 @@ export const addMemberRoute = withAuth(async (req, userId, state, params) => {
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     if (perms === null || !(perms & LabPermission.MANAGE_ROLES))
-        return withCors(new Response("Unauthorized", { status: 403 }));
+        return new Response("Unauthorized", { status: 403 });
 
     const member = await addMember(state.db, labId, addId, roleId ?? null);
-    return withCors(Response.json(member));
+    return Response.json(member);
 });
 
 /**
@@ -128,9 +127,9 @@ export const removeMemberRoute = withAuth(async (req, userId, state, params) => 
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     if (perms === null || !(perms & LabPermission.REMOVE_USER))
-        return withCors(new Response("Unauthorized", { status: 403 }));
+        return new Response("Unauthorized", { status: 403 });
 
     await removeMember(state.db, labId, removeId);
-    return withCors(new Response(null, { status: 204 }));
+    return new Response(null, { status: 204 });
 }
 );

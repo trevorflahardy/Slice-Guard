@@ -1,6 +1,6 @@
 import { getApiKey } from '../db/user';
 import type State from '../utils/state';
-import { withCors } from '../utils/cors';
+import type { Logger } from 'pino';
 
 export async function authenticate(
     req: Request,
@@ -23,11 +23,27 @@ export function withAuth(
     handler: (req: Request, userId: number, state: State, params: Record<string, string>) => Promise<Response>
 ): (req: Request, state: State, params: Record<string, string>) => Promise<Response> {
     return async (req, state, params) => {
+        const log: Logger = state.logger.child({ endpoint: new URL(req.url).pathname, params });
         const userId = await authenticate(req, state);
         if (!userId) {
-            return withCors(new Response('Unauthorized', { status: 401 }));
+            log.debug('Unauthorized request');
+            return new Response('Unauthorized', { status: 401 });
         }
+        log.debug({ userId }, 'Authenticated user');
         const res = await handler(req, userId, state, params);
-        return withCors(res);
+        log.debug({ status: res.status }, 'Request handled');
+        return res;
+    };
+}
+
+export function withLogging(
+    handler: (req: Request, state: State, params: Record<string, string>) => Promise<Response>
+): (req: Request, state: State, params: Record<string, string>) => Promise<Response> {
+    return async (req, state, params) => {
+        const log = state.logger.child({ endpoint: new URL(req.url).pathname, params });
+        log.debug({ method: req.method }, 'REST request');
+        const res = await handler(req, state, params);
+        log.debug({ status: res.status }, 'REST response');
+        return res;
     };
 }

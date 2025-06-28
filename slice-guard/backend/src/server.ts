@@ -5,20 +5,21 @@ import * as auth from './http/auth';
 import * as lab from './http/lab';
 import * as requestHandlers from './http/request';
 
-import pino from "pino";
-const logger = pino({ level: 'debug' });
+import logger from "./utils/logger";
+import { withLogging } from "./http/middleware";
+import type { Logger } from "pino";
 
 
 
 export class Server {
     private state: State;
-    public logger: pino.Logger;
+    public logger: Logger;
 
     constructor(options: { sql: SQLOptions }) {
         logger.debug("Initializing server with options: %o", options);
         const db = new SQL(options.sql);
-        this.state = new State(db); // Hand off DB ownership
         this.logger = logger.child({ component: "server" });
+        this.state = new State(db, this.logger); // Hand off DB ownership
 
         this.logger.debug("Server initialized with database connection");
     }
@@ -28,43 +29,52 @@ export class Server {
             port: 3000,
             routes: {
                 '/api/login': {
-                    POST: req => auth.login(req, this.state),
+                    POST: req => withLogging((r, s) => auth.login(r, s))(req, this.state, req.params),
                 },
                 '/api/register': {
-                    POST: req => auth.register(req, this.state),
+                    POST: req => withLogging((r, s) => auth.register(r, s))(req, this.state, req.params),
                 },
                 '/api/labs': {
-                    GET: req => lab.list(req, this.state, {}),
-                    POST: req => lab.create(req, this.state, {}),
+                    GET: req => withLogging(lab.list)(req, this.state, {}),
+                    POST: req => withLogging(lab.create)(req, this.state, {}),
                 },
                 '/api/labs/:id': {
-                    GET: req => lab.get(req, this.state, req.params),
-                    PATCH: req => lab.update(req, this.state, req.params),
-                    DELETE: req => lab.del(req, this.state, req.params),
+                    GET: req => withLogging(lab.get)(req, this.state, req.params),
+                    PATCH: req => withLogging(lab.update)(req, this.state, req.params),
+                    DELETE: req => withLogging(lab.del)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/roles': {
-                    POST: req => lab.createRoleRoute(req, this.state, req.params),
+                    POST: req => withLogging(lab.createRoleRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/members': {
-                    POST: req => lab.addMemberRoute(req, this.state, req.params),
+                    POST: req => withLogging(lab.addMemberRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/members/:userId': {
-                    DELETE: req => lab.removeMemberRoute(req, this.state, req.params),
+                    DELETE: req => withLogging(lab.removeMemberRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/requests': {
-                    POST: req => requestHandlers.create(req, this.state, req.params),
-                    GET: req => requestHandlers.list(req, this.state, req.params),
+                    POST: req => withLogging(requestHandlers.create)(req, this.state, req.params),
+                    GET: req => withLogging(requestHandlers.list)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/tags': {
-                    POST: req => requestHandlers.createTagRoute(req, this.state, req.params),
+                    POST: req => withLogging(requestHandlers.createTagRoute)(req, this.state, req.params),
                 },
                 '/api/tags/:tagId': {
-                    PATCH: req => requestHandlers.setTagDefaultRoute(req, this.state, req.params),
+                    PATCH: req => withLogging(requestHandlers.setTagDefaultRoute)(req, this.state, req.params),
                 },
                 '/api/requests/:requestId/tags/:tagId': {
-                    POST: req => requestHandlers.assignTagRoute(req, this.state, req.params),
+                    POST: req => withLogging(requestHandlers.assignTagRoute)(req, this.state, req.params),
                 },
-                '/api/*': () => Response.json({ message: 'Not found' }, { status: 404 }),
+                '/api/*': {
+                    OPTIONS: _req => {
+                        // Handle CORS preflight (in the future)
+                        return new Response("Not Found", { status: 404 });
+                    },
+                    // For all other methods, let the request pass through to the routes
+                    '*': req => withLogging(async (_r, _s) => {
+                        return new Response("Not Found", { status: 404 });
+                    })
+                },
             },
             fetch: this.handleFetch.bind(this),
             websocket: {
@@ -81,25 +91,23 @@ export class Server {
     }
 
     private async handleFetch(req: Request, server: Bun.Server) {
-        if (req.method === 'OPTIONS') {
-            return new Response(null, {
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                    'Access-Control-Allow-Methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS'
-                }
-            });
-        }
         const url = new URL(req.url);
+
+        // Only handle WebSocket upgrades, let everything else go to routes
         if (url.pathname === "/ws") {
             const now = Date.now();
             const upgraded = server.upgrade<WebSocketData>(req, {
                 data: { created_at: now, id: String(Bun.hash(`${now}-${Math.random()}`)) }
             });
-            if (!upgraded) return new Response("Upgrade failed", { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
-            return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*' } });
+            if (!upgraded) return new Response("Upgrade failed", { status: 400 });
+            return new Response(null);
         }
-        return new Response("Not Found", { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } });
+
+        // Handle CORS preflight for all API routes (in the future)
+        if (req.method === 'OPTIONS') { }
+
+        // Return undefined to let Bun's router handle the request
+        return undefined;
     }
 
     private async handleWebSocketMessage(ws: ServerWebSocket, message: string | Buffer<ArrayBufferLike>) {
@@ -134,8 +142,6 @@ const server = new Server({
         idleTimeout: 30,
         maxLifetime: 0,
         connectionTimeout: 30,
-
-        tls: true,
     }
 })
 

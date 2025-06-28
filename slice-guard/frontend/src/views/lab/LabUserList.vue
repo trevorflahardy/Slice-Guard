@@ -7,6 +7,7 @@ const props = defineProps<{
 }>();
 
 // Mapping of {top level role: {id, name}[]};
+// TODO: Fetch the members** from the API (lab member object that also includes a list of their complete roles (sorted top down), permissions, etc.)
 const members = ref<{ [key: string]: { id: number, name: string }[] }>({});
 </script>
 

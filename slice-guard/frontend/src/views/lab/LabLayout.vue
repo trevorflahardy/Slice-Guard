@@ -49,10 +49,10 @@ watch(() => route.params.id, fetchLab)
       <!--User list for lab layout-->
       <!--! TODO: This does not resize and rather the main content does - make this collapse later down the road when I'm not so lazy.
             -->
-      <div class="h-full bg-background p-4 min-w-52 max-w-60">
-        <!-- User list for the lab layout -->
-        <LabUserList />
-      </div>
+        <div class="h-full bg-background p-4 min-w-52 max-w-60">
+          <!-- User list for the lab layout -->
+          <LabUserList :lab="lab" />
+        </div>
     </div>
   </div>
 </template>

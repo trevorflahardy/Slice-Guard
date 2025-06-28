@@ -50,6 +50,17 @@ export async function findUserById(db: SQL, id: number): Promise<UserWithPasswor
     return row ?? null;
 }
 
+/** Fetch a user by id returning only public fields. */
+export async function findPublicUserById(db: SQL, id: number): Promise<User | null> {
+    const rows: User[] = await db`
+        SELECT id, email, name, created_at
+          FROM auth.users
+         WHERE id = ${id}
+    `;
+    const [row] = rows;
+    return row ?? null;
+}
+
 /** Create a new user in the database. */
 export async function createUser(db: SQL, email: string, passwordHash: string, name: string): Promise<UserWithPassword> {
     const rows: UserWithPassword[] = await db`

@@ -1,14 +1,36 @@
 <script setup lang="ts">
-import { Lab } from '@shared/db/lab'
+import { ref, onMounted, watch } from 'vue'
+import type { Lab, LabRole, LabMember } from '@shared/db/lab'
+import type { User } from '@shared/db/user'
+import { authorizedFetch } from '../../services/auth'
 
-// When the value of the lab changes to null (or the lab instance changes), we want to re-fetch the users
 const props = defineProps<{
     lab: Lab | null
-}>();
+}>()
 
-// Mapping of {top level role: {id, name}[]};
-// TODO: Fetch the members** from the API (lab member object that also includes a list of their complete roles (sorted top down), permissions, etc.)
-const members = ref<{ [key: string]: { id: number, name: string }[] }>({});
+interface MemberResponse {
+    member: LabMember
+    user: User
+}
+
+const members = ref<Record<string, { id: number; name: string }[]>>({})
+
+async function fetchMembers() {
+    if (!props.lab) return
+    const res = await authorizedFetch(`/labs/${props.lab.id}/members`)
+    if (!res.ok) return
+    const data = (await res.json()) as MemberResponse[]
+    const map: Record<string, { id: number; name: string }[]> = {}
+    for (const item of data) {
+        const category = item.member.roles[0]?.name ?? 'Member'
+        if (!map[category]) map[category] = []
+        map[category].push({ id: item.user.id, name: item.user.name ?? item.user.email })
+    }
+    members.value = map
+}
+
+onMounted(fetchMembers)
+watch(() => props.lab?.id, fetchMembers)
 </script>
 
 <template>
@@ -22,8 +44,8 @@ const members = ref<{ [key: string]: { id: number, name: string }[] }>({});
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
         </div>
-        <!-- Display the list of users to use the variable -->
-        <div v-for="(users, category) in randomUsers" :key="category" class="flex flex-col gap-2">
+        <!-- Display the list of users categorized by role -->
+        <div v-for="(users, category) in members" :key="category" class="flex flex-col gap-2">
             <!-- Category header -->
             <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide px-2">
                 {{ category }}

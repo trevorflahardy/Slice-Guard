@@ -1,4 +1,4 @@
-import type { Lab, LabRole, LabMember } from "@shared/db/lab";
+import { type Lab, type LabRole, type LabMember, LabPermission } from "@shared/db/lab";
 import type { SQL } from "bun";
 
 export interface LabRow extends Lab { }
@@ -17,7 +17,14 @@ export async function createLab(
              VALUES (${ownerId}, ${name}, ${description}, ${imageUrl})
         RETURNING id, owner_id, name, description, image_url, created_at
     `;
-    return rows[0];
+    const lab: LabRow = rows[0];
+
+    // Create a default role for every member, @everyone
+    const role = await createRole(db, lab.id, "everyone", LabPermission.READ | LabPermission.WRITE);
+
+    // Add this owner to the member list
+    await addMember(db, lab.id, ownerId, role.id);
+    return lab;
 }
 
 export async function deleteLab(db: SQL, labId: number): Promise<void> {

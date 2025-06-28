@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, watch, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import Sidebar from '../Sidebar.vue'
+import Sidebar from './Sidebar.vue'
 import LabUserList from './LabUserList.vue'
 import { authorizedFetch } from '../../services/auth'
 import { ws } from '../../services/ws'

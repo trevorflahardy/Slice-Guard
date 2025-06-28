@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from '../../store/auth'
+
+const auth = useAuthStore()
+
+const route = useRoute()
+const labId = computed(() => route.params.id)
 </script>
 
 <template>
@@ -31,11 +39,11 @@
 
             <!-- Navigation links (need gear icon at the right side of each later on) -->
             <nav class="flex flex-col space-y-1">
-                <a href="#"
-                    class="text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md hover:font-medium">dashboard</a>
+                <RouterLink :to="`/lab/${labId}/dashboard`"
+                    class="text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md hover:font-medium">dashboard</RouterLink>
 
-                <a href="#"
-                    class="text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md hover:font-medium">print-requests</a>
+                <RouterLink :to="`/lab/${labId}/print-requests`"
+                    class="text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md hover:font-medium">print-requests</RouterLink>
             </nav>
         </div>
 
@@ -75,7 +83,7 @@
             </div>
 
             <div>
-                <h2 class="text-sm font-semibold">John Doe</h2>
+                <h2 class="text-sm font-semibold">{{ auth.user?.name ?? 'Unknown User' }}</h2>
                 <p class="text-xs text-gray-500">Administrator</p>
             </div>
 

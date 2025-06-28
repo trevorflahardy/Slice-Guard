@@ -1,12 +1,9 @@
-import { reactive } from "vue";
 import { ws } from "./ws";
+import { useAuthStore } from "../store/auth";
 
-const API_URL =
-  (import.meta as any).env.VITE_API_URL ?? "/api";
+const API_URL = (import.meta as any).env.VITE_API_URL ?? "/api";
 
-export const authState = reactive<{ apiKey: string | null }>({
-  apiKey: localStorage.getItem("apiKey"),
-});
+const auth = useAuthStore();
 
 export async function login(email: string, password: string) {
   const res = await fetch(`${API_URL}/login`, {
@@ -20,8 +17,7 @@ export async function login(email: string, password: string) {
 
   const data = await res.json();
 
-  authState.apiKey = data.apiKey;
-  localStorage.setItem("apiKey", data.apiKey);
+  auth.setSession(data.apiKey, data.user);
   ws.connect(data.apiKey);
 }
 
@@ -37,20 +33,18 @@ export async function register(email: string, password: string, name: string) {
 
   const data = await res.json();
 
-  authState.apiKey = data.apiKey;
-  localStorage.setItem("apiKey", data.apiKey);
+  auth.setSession(data.apiKey, data.user);
   ws.connect(data.apiKey);
 }
 
 export function logout() {
-  localStorage.removeItem("apiKey");
-  authState.apiKey = null;
+  auth.clearSession();
 }
 
 export async function authorizedFetch(input: string, init: RequestInit = {}) {
-  if (!authState.apiKey) throw new Error("Not authenticated");
+  if (!auth.apiKey) throw new Error("Not authenticated");
   const headers = new Headers(init.headers);
 
-  headers.set("Authorization", `ApiKey ${authState.apiKey}`);
+  headers.set("Authorization", `ApiKey ${auth.apiKey}`);
   return fetch(`${API_URL}${input}`, { ...init, headers });
 }

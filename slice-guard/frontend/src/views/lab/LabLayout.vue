@@ -5,10 +5,11 @@ import Sidebar from './Sidebar.vue'
 import LabUserList from './LabUserList.vue'
 import { authorizedFetch } from '../../services/auth'
 import { ws } from '../../services/ws'
+import { Lab } from '@shared/db/lab';
 
 const route = useRoute()
 
-const lab = ref<any | null>(null)
+const lab = ref<Lab | null>(null)
 const loading = ref(true)
 const error = ref('')
 
@@ -35,7 +36,7 @@ watch(() => route.params.id, fetchLab)
   <div class="flex min-h-screen bg-background">
     <!-- Sidebar has no background and takes on that of the main -->
     <aside class="w-56 lg:w-64 xl:w-72 bg-background min-h-screen p-7 shrink-0">
-      <Sidebar />
+      <Sidebar :lab="lab" />
     </aside>
 
     <!-- Main content area -->

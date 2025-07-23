@@ -10,20 +10,56 @@
   }
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
+  /*
+  * Custom branding colors
+  */
+
+  --color-salem-50: #ecfff5;
+  --color-salem-100: #d3ffe8;
+  --color-salem-200: #aaffd3;
+  --color-salem-300: #69ffb2;
+  --color-salem-400: #21ff8a;
+  --color-salem-500: #00f268;
+  --color-salem-600: #00ca53;
+  --color-salem-700: #009e44;
+  --color-salem-800: #007f3c;
+  --color-salem-900: #026532;
+  --color-salem-950: #003919;
+
+  --color-bird-flower-50: #fafcea;
+  --color-bird-flower-100: #f3f9c8;
+  --color-bird-flower-200: #ecf494;
+  --color-bird-flower-300: #e6ed57;
+  --color-bird-flower-400: #e5e629;
+  --color-bird-flower-500: #c7c11a;
+  --color-bird-flower-600: #b9a615;
+  --color-bird-flower-700: #937a15;
+  --color-bird-flower-800: #7a6019;
+  --color-bird-flower-900: #694f1a;
+  --color-bird-flower-950: #3d2b0b;
+
+  /*
+  * Surface colors
+  */
+  --color-surface-lowest: #fffdfc;
+  --color-surface-low: #f8f7f5;
+  --color-surface: #f2f2f7;
+  --color-surface-high: #e5e5ea;
+  --color-surface-highest: #d1d1d6;
+
   /* Light theme inspired by Apple's palette */
-  --color-background: oklch(96.7% 0.003 264.542);
-  --color-foreground: oklch(98.5% 0.002 247.839);
-  --color-muted: #6e6e73;
-  --color-border: #c7c7d1;
-  --color-main: #007f3c; /* lighter British Racing Green */
-  --color-accent: #30d158; /* modern accent */
-  --color-accent-text: #000000; /* accent text is black */
-  --color-success: #34c759;
-  --color-warning: #ff9f0a;
-  --color-error: #ff3b30;
-  --color-info: #5ac8fa;
   --color-gray-1: oklch(98.4% 0.003 247.858);
   --color-gray-2: oklch(92.9% 0.013 255.508);
   --color-gray-3: oklch(86.9% 0.022 252.894);
+}
+
+.dark {
+  --color-surface-lowest: #000000;
+  --color-surface-low: #1c1c1e;
+  --color-surface: #2c2c2e;
+  --color-surface-high: #3a3a3c;
+  --color-surface-highest: #48484a;
 }

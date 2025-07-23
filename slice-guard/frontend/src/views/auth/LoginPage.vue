@@ -21,11 +21,11 @@ async function submit() {
 </script>
 
 <template>
-  <div class="w-full bg-foreground drop-shadow-sm py-3 px-5">
+  <div class="w-full bg-surface-low drop-shadow-sm py-3 px-5">
     <p class="text-lg font-semibold text-start">Slice Guard</p>
   </div>
 
-  <div class="flex flex-col items-center min-h-screen bg-background gap-5">
+  <div class="flex flex-col items-center min-h-screen bg-surface-lowest gap-5">
     <div>
       <h1 class="text-4xl font-semibold text-center mt-20">Hello again</h1>
       <p class="text-sm text-gray-500 text-center mt-2">It's nice to see you :)</p>
@@ -34,9 +34,9 @@ async function submit() {
     <form @submit.prevent="submit"
       class="flex flex-col items-center justify-center w-full max-w-sm md:max-w-md gap-3 mt-10 text-sm text-gray-400">
       <input v-model="email" type="email" placeholder="Email" required
-        class="col-span-2 bg-foreground shadow-md py-3 px-5 rounded-xl w-full focus:outline-main" />
+        class="col-span-2 bg-surface-low shadow-md py-3 px-5 rounded-xl w-full focus:outline-salem-800" />
       <input v-model="password" type="password" placeholder="Password" required
-        class="col-span-2 bg-foreground shadow-md py-3 px-5 rounded-xl w-full focus:outline-main" />
+        class="col-span-2 bg-surface-low shadow-md py-3 px-5 rounded-xl w-full focus:outline-salem-800" />
       <p v-if="error" class="text-red-600 text-sm w-full text-left px-1">{{ error }}</p>
       <div class="w-full">
         <Button variant="primary" class="col-span-2 mt-4 w-full py-2">Log In</Button>

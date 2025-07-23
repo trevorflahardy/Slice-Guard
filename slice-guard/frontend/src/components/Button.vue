@@ -11,8 +11,8 @@ const props = defineProps({
   <button :class="[
     'px-4 py-2 rounded-xl transition-colors shadow',
     variant === 'primary'
-      ? 'bg-main text-white hover:bg-main/90 font-medium'
-      : 'bg-gray-1 text-main hover:bg-gray2 outline outline-main outline-1'
+      ? 'bg-salem-800 text-white hover:bg-salem-800/90 font-medium'
+      : 'bg-gray-1 text-salem-800 hover:bg-gray2 outline outline-salem-800'
   ]">
     <slot />
   </button>

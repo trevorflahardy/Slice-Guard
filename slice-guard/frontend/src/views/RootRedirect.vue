@@ -37,5 +37,5 @@ onMounted(async () => {
 
 <template>
   <!--TODO: Very silly loading screen needed-->
-  <div class="min-h-screen flex items-center justify-center bg-background text-foreground">Loading...</div>
+  <div class="min-h-screen flex items-center justify-center bg-surface-lowest text-white">Loading...</div>
 </template>

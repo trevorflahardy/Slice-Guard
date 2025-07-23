@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import type { Lab, LabRole, LabMember } from '@shared/db/lab'
+import type { Lab, LabMember } from '@shared/db/lab'
 import type { User } from '@shared/db/user'
 import { authorizedFetch } from '../../services/auth'
 
@@ -36,7 +36,7 @@ watch(() => props.lab?.id, fetchMembers)
 <template>
     <div class="flex flex-col gap-4">
         <!-- Placeholder for search bar of users -->
-        <div class="w-full bg-foreground shadow-md rounded-lg py-2 px-4 flex items-center justify-end">
+        <div class="w-full bg-surface-low shadow-md rounded-lg py-2 px-4 flex items-center justify-end">
             <!-- Magnifying glass SVG -->
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">

@@ -1,19 +1,25 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
-import { Lab } from '@shared/db/lab'
+import { type Lab } from '@shared/db/lab'
 
 const auth = useAuthStore()
 
 const route = useRoute()
 const labId = computed(() => route.params.id)
 
-function navClasses(name: string) {
-    const base =
-        'text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md hover:font-medium'
-    return route.name === name ? base + ' bg-gray-100' : base
+const navClass = ref(
+    'text-sm text-gray-800 hover:text-black hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md'
+)
+
+const navIsActive = (name: string) => {
+    return route.name === name
 }
+
+const isActiveClass = ref(
+    'bg-surface-high text-black shadow-md font-medium'
+)
 
 const props = defineProps<{
     lab: Lab | null
@@ -48,18 +54,22 @@ const props = defineProps<{
 
             <!-- Navigation links (need gear icon at the right side of each later on) -->
             <nav class="flex flex-col space-y-1">
-                <RouterLink :to="{ name: 'LabDashboard', params: { id: labId } }" :class="navClasses('LabDashboard')">
-                    dashboard</RouterLink>
+                <RouterLink :to="{ name: 'LabDashboard', params: { id: labId } }"
+                    :class="[navIsActive('LabDashboard') ? isActiveClass : '', navClass]">
+                    dashboard
+                </RouterLink>
 
-                <RouterLink :to="`/lab/${labId}/print-requests`" :class="navClasses('PrintRequests')">
-                    print-requests</RouterLink>
+                <RouterLink :to="`/lab/${labId}/print-requests`"
+                    :class="[navIsActive('LabPrintRequests') ? isActiveClass : '', navClass]">
+                    print-requests
+                </RouterLink>
             </nav>
         </div>
 
         <!-- Navigation for Lab text channels - very similar to the above should be made into a dynamic system soon -->
         <div>
             <!-- Similar to Discord style, has stats information and channels, each separated by a divider -->
-            <div class="flex flex-row justify-between items-center">
+            <div class=" flex flex-row justify-between items-center">
                 <h2 class="text-sm font-medium text-gray-500 mb-2 uppercase">Channels</h2>
 
                 <!-- Dropdown arrow to collapse category -->

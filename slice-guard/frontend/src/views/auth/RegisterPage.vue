@@ -41,6 +41,7 @@ async function submit() {
       <input v-model="password" type="password" placeholder="Password" required
         class="col-span-2 bg-surface-low shadow-md py-3 px-5 rounded-xl w-full focus:outline-salem-800" />
       <p v-if="error" class="text-red-600 text-sm w-full text-left px-1">{{ error }}</p>
+
       <div class="w-full">
         <Button variant="primary" class="col-span-2 mt-4 w-full py-2">Create Account</Button>
         <Button variant="secondary" class="col-span-2 mt-2 w-full py-2" @click.prevent="router.push('/login')">

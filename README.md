@@ -22,28 +22,6 @@ Welcome to Slice Guard, a tool to help University 3D-print labs manage requests 
   - A modern, clean GUI for staff to approve or deny requests, with notifications for students when their requests are approved or denied.
  - Concurrent file management between multiple users.
 
-## REST API
-
-All client interactions now use a simple REST API secured by per-user API keys.
-When a user registers they receive a unique key which must be sent in the
-`Authorization` header as `ApiKey <key>` for all subsequent requests.
-Authentication and lab management endpoints formerly available over WebSockets
-are now exposed via HTTP routes. Request creation and tagging have moved to REST
-as well. Example endpoints:
-
-- `POST /api/login` – exchange credentials for an API key
-- `POST /api/register` – create a new user and receive an API key
-- `GET /api/labs` – list labs for the authenticated user
-- `POST /api/labs/:labId/requests` – submit a print request (base64 file upload)
-- `GET /api/labs/:labId/requests` – list your requests for a lab
-
-## File Storage
-
-Uploaded 3MF files are stored on the backend under `slice-guard/backend/uploads`.
-Files larger than 30MB are rejected. Each file is compressed using gzip to save
-space and its path is stored in the database. For large scale deployments an
-external storage service such as S3 is recommended, but for development local
-storage is sufficient.
 
 ### Planned Technologies
 
@@ -56,22 +34,6 @@ storage is sufficient.
   - Vue Router for routing.
 - PostgreSQL for the database.
 - Redis for caching and session management (?)
-
-### Accent Scheme
-
-The frontend uses a British Racing Green palette with a soft modern accent. `tailwind.config.cjs` defines CSS variables for a full light and dark theme:
-
-- **main**: `#005e3c` (light) / `#1ba56e` (dark) – primary brand colour
-- **accent**: `#30d158` – highlight and focus colour
-- **accent-text**: black in light mode, white in dark mode
-- **background** / **surface** – page and card backgrounds
-- **foreground** / **muted** – primary and secondary text colours
-- **border** – subtle lines and outlines
-- **gray 1-3** – tiered neutral shades
-- **success**, **warning**, **error**, **info** – status colours for UI components
-- **white** and **black** remain handy shorthands
-
-Dark mode is toggled by adding the `dark` class to the `<html>` element. Reusable UI pieces like `src/components/Button.vue` keep styles consistent across the app.
 
 ## Three Parser
 
@@ -100,4 +62,9 @@ docker compose up --build
 The backend will be available on `http://localhost:3000` and the frontend on
 `http://localhost:5173`. The frontend is configured to talk to the backend using
 those internal addresses so WebSocket connections work out of the box.
+
+# Developmental Preview Images
+
+<img width="1503" height="763" alt="image" src="https://github.com/user-attachments/assets/4c43791a-f4fa-4735-bd74-7d4892cd2199" />
+<img width="1510" height="750" alt="image" src="https://github.com/user-attachments/assets/4067a3fe-8b9f-4caf-8a31-728311e90728" />
 

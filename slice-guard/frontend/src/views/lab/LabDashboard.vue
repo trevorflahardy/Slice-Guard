@@ -9,7 +9,7 @@ interface Props {
     loading: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const tagName = ref('')
 

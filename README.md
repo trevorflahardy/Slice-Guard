@@ -65,6 +65,23 @@ those internal addresses so WebSocket connections work out of the box.
 
 # Developmental Preview Images
 
+## Jul 24th Update
+Created and updated system for creating mock requests to start buildout of the print requests page. Will refine the page filters, filtering, etc in the coming updates. Goals are the following, for now:
+
+- Ability to create and edit tags
+- Ability to assign tags to requests
+- Better UI for print request page
+- Later: Dashboard for lab
+- Lab settings page for admins
+- Websocket channel communications and updates (*BIG one, very important)
+- User settings page with actual avatars
+- Channel creation, deletion, etc
+- Lab request dashboard
+- ...and many more, this is just on our minds for now.
+
+<img width="1508" height="787" alt="image" src="https://github.com/user-attachments/assets/3970d420-825a-4d7f-82af-aac746bda40c" />
+
+## Jul 23rd Update
 <img width="1503" height="763" alt="image" src="https://github.com/user-attachments/assets/4c43791a-f4fa-4735-bd74-7d4892cd2199" />
 <img width="1510" height="750" alt="image" src="https://github.com/user-attachments/assets/4067a3fe-8b9f-4caf-8a31-728311e90728" />
 

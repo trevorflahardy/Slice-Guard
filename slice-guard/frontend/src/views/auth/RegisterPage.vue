@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from '../../components/Button.vue'
 import { register } from '../../services/auth'
+import { useAuthStore } from '../../store/auth'
 
 const name = ref('')
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const router = useRouter()
+const auth = useAuthStore()
+
+onMounted(() => {
+  if (auth.apiKey) {
+    alert('Please logout before creating a new account.')
+    router.replace('/')
+  }
+})
 
 async function submit() {
   error.value = ''

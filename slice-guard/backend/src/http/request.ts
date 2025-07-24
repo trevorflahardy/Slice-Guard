@@ -1,7 +1,18 @@
 import { withAuth } from './middleware';
-import { createPrintRequest, getUserPrintRequests, createTag, setTagDefault, assignTag, unassignTag } from '../db/request';
+import {
+    createPrintRequest,
+    getUserPrintRequests,
+    getAllPrintRequests,
+    createTag,
+    setTagDefault,
+    assignTag,
+    unassignTag,
+    listTags,
+    getTagsForRequest,
+} from '../db/request';
 import { saveRequestFile } from '../utils/storage';
 import { getMemberRolePermissions } from '../db/lab';
+import { findPublicUserById } from '../db/user';
 import { LabPermission } from '@shared/db/lab';
 import type {
     RequestCreatePayload,
@@ -37,8 +48,18 @@ export const create = withAuth(async (req, userId, state, params) => {
 export const list = withAuth(async (_req, userId, state, params) => {
     const labId = Number(params.labId);
     state.logger.debug({ labId, userId }, 'Listing requests');
-    const reqs = await getUserPrintRequests(state.db, labId, userId);
-    return Response.json(reqs);
+    const perms = await getMemberRolePermissions(state.db, labId, userId);
+    let rows = await getUserPrintRequests(state.db, labId, userId);
+    if (perms !== null && (perms & LabPermission.MANAGE_REQUESTS)) {
+        rows = await getAllPrintRequests(state.db, labId);
+    }
+    const results = [] as any[];
+    for (const r of rows) {
+        const user = await findPublicUserById(state.db, r.user_id);
+        const tags = await getTagsForRequest(state.db, r.id);
+        results.push({ request: r, user, tags });
+    }
+    return Response.json(results);
 });
 
 /**
@@ -68,6 +89,17 @@ export const setTagDefaultRoute = withAuth(async (req, _userId, state, params) =
     const tag = await setTagDefault(state.db, tagId, isDefault);
     state.logger.debug({ tagId }, 'Updated tag');
     return Response.json(tag);
+});
+
+/**
+ * GET /api/labs/:labId/tags
+ */
+export const listTagsRoute = withAuth(async (_req, userId, state, params) => {
+    const labId = Number(params.labId);
+    const perms = await getMemberRolePermissions(state.db, labId, userId);
+    if (perms === null) return new Response('Unauthorized', { status: 403 });
+    const tags = await listTags(state.db, labId);
+    return Response.json(tags);
 });
 
 /**

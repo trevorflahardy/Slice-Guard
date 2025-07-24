@@ -96,3 +96,27 @@ export async function getTagsForRequest(
     `;
     return rows;
 }
+
+export async function getAllPrintRequests(
+    db: SQL,
+    labId: number,
+): Promise<PrintRequestRow[]> {
+    const rows: PrintRequestRow[] = await db`
+        SELECT id, lab_id, user_id, file_path, metadata, description, created_at
+          FROM lab.print_requests
+         WHERE lab_id = ${labId}
+    `;
+    return rows;
+}
+
+export async function listTags(
+    db: SQL,
+    labId: number,
+): Promise<RequestTagRow[]> {
+    const rows: RequestTagRow[] = await db`
+        SELECT id, lab_id, name, is_default, created_at
+          FROM lab.request_tags
+         WHERE lab_id = ${labId}
+    `;
+    return rows;
+}

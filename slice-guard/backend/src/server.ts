@@ -60,6 +60,7 @@ export class Server {
                 },
                 '/api/labs/:labId/tags': {
                     POST: req => withLogging(requestHandlers.createTagRoute)(req, this.state, req.params),
+                    GET: req => withLogging(requestHandlers.listTagsRoute)(req, this.state, req.params),
                 },
                 '/api/tags/:tagId': {
                     PATCH: req => withLogging(requestHandlers.setTagDefaultRoute)(req, this.state, req.params),

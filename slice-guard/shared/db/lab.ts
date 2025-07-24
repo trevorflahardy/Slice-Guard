@@ -37,6 +37,7 @@ export enum LabPermission {
     REMOVE_USER = 1 << 2,
     DELETE_LAB = 1 << 3,
     CREATE_REQUEST = 1 << 4,
-    READ = 1 << 5,
-    WRITE = 1 << 6,
+    MANAGE_REQUESTS = 1 << 5,
+    READ = 1 << 6,
+    WRITE = 1 << 7,
 }

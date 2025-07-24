@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import ThemeToggle from '../../components/ThemeToggle.vue';
+import { ref } from 'vue'
+import { authorizedFetch } from '../../services/auth'
 
 interface Props {
     lab: any | null
@@ -8,6 +10,27 @@ interface Props {
 }
 
 defineProps<Props>()
+
+const tagName = ref('')
+
+async function createTag() {
+    if (!props.lab) return
+    await authorizedFetch(`/labs/${props.lab.id}/tags`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: tagName.value }),
+    })
+    tagName.value = ''
+}
+
+async function createMockRequest() {
+    if (!props.lab) return
+    await authorizedFetch(`/labs/${props.lab.id}/requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: btoa('mock'), metadata: {}, description: 'Mock request' }),
+    })
+}
 
 
 
@@ -25,5 +48,15 @@ defineProps<Props>()
 
     <!-- Theme Toggle Button -->
     <ThemeToggle class="mt-4" variant="secondary" />
+
+    <!-- Development helpers -->
+    <div class="mt-6 space-y-2">
+        <h2 class="text-fg-primary font-semibold">Dev Tools</h2>
+        <div class="flex gap-2 items-center">
+            <input v-model="tagName" placeholder="Tag name" class="bg-surface-low px-2 py-1 rounded-md" />
+            <button @click="createTag" class="bg-salem-800 text-white px-2 py-1 rounded-md">Create Tag</button>
+        </div>
+        <button @click="createMockRequest" class="bg-surface-low px-2 py-1 rounded-md">Create Mock Request</button>
+    </div>
 
 </template>

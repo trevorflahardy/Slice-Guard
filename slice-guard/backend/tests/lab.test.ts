@@ -131,12 +131,16 @@ test("removeMember deletes by composite id", async () => {
 });
 
 test("getMemberRolePermissions selects join", async () => {
-  const db = createMockSQL([[{ permissions: 8 }]]);
+  const db = createMockSQL([[{ owner_id: 3 }], [{ permissions: 8 }]]);
   const result = await getMemberRolePermissions(db as any, 1, 2);
-  expect(normalize(db.queries.at(-1))).toBe(
+  expect(normalize(db.queries[0])).toBe(
+    "SELECT owner_id FROM lab.labs WHERE id = $1"
+  );
+  expect(db.params[0]).toEqual([1]);
+  expect(normalize(db.queries[1])).toBe(
     "SELECT r.permissions FROM lab.member_roles mr JOIN lab.roles r ON mr.role_id = r.id WHERE mr.lab_id = $1 AND mr.user_id = $2"
   );
-  expect(db.params.at(-1)).toEqual([1, 2]);
+  expect(db.params[1]).toEqual([1, 2]);
   expect(result).toEqual(8);
 });
 

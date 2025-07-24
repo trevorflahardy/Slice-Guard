@@ -35,6 +35,7 @@ function sampleRequest(): PrintRequestRow {
     file_data: new Uint8Array([1, 2, 3]),
     metadata: { a: 1 },
     description: "desc",
+    is_closed: false,
     created_at: new Date(),
   };
 }
@@ -54,7 +55,7 @@ test("createPrintRequest inserts expected values", async () => {
   const db = createMockSQL([req]);
   const result = await createPrintRequest(db as any, req.lab_id, req.user_id, req.file_data as any, req.metadata, req.description!);
   expect(normalize(db.lastQuery)).toBe(
-    "INSERT INTO lab.print_requests (lab_id, user_id, file_data, metadata, description) VALUES ($1, $2, $3, $4, $5) RETURNING id, lab_id, user_id, file_data, metadata, description, created_at"
+    "INSERT INTO lab.print_requests (lab_id, user_id, file_data, metadata, description) VALUES ($1, $2, $3, $4, $5) RETURNING id, lab_id, user_id, file_data, metadata, description, is_closed, created_at"
   );
   expect(db.lastParams).toEqual([req.lab_id, req.user_id, req.file_data, JSON.stringify(req.metadata), req.description]);
   expect(result).toEqual(req);
@@ -65,7 +66,7 @@ test("getUserPrintRequests selects expected", async () => {
   const db = createMockSQL([req]);
   const result = await getUserPrintRequests(db as any, req.lab_id, req.user_id);
   expect(normalize(db.lastQuery)).toBe(
-    "SELECT id, lab_id, user_id, file_data, metadata, description, created_at FROM lab.print_requests WHERE lab_id = $1 AND user_id = $2"
+    "SELECT id, lab_id, user_id, file_data, metadata, description, is_closed, created_at FROM lab.print_requests WHERE lab_id = $1 AND user_id = $2"
   );
   expect(db.lastParams).toEqual([req.lab_id, req.user_id]);
   expect(result).toEqual([req]);

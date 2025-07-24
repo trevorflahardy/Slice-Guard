@@ -47,7 +47,7 @@ watch(() => props.lab?.id, fetchMembers)
         <!-- Display the list of users categorized by role -->
         <div v-for="(users, category) in members" :key="category" class="flex flex-col gap-2">
             <!-- Category header -->
-            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide px-2">
+            <h3 class="text-xs font-medium text-fg-primary uppercase tracking-wide px-2">
                 {{ category }}
             </h3>
 
@@ -55,9 +55,9 @@ watch(() => props.lab?.id, fetchMembers)
             <ul class="space-y-1">
                 <li v-for="user in users" :key="user.id">
                     <div
-                        class="flex items-center justify-start gap-3 p-2 rounded-xl hover:shadow-md transition-all duration-200 hover:text-black text-gray-600">
+                        class="flex items-center justify-start gap-3 p-2 rounded-xl hover:shadow-md transition-all duration-200 hover:text-black text-fg-primary">
                         <!-- Placeholder user avatar -->
-                        <div class="w-7 h-7 rounded-full bg-gray-500 flex-none"></div>
+                        <div class="w-7 h-7 rounded-full bg-gray-700 flex-none"></div>
 
                         <span class="text-sm truncate">
                             {{ user.name }}
@@ -67,7 +67,7 @@ watch(() => props.lab?.id, fetchMembers)
             </ul>
 
             <!-- Divider line -->
-            <hr class="border-gray-200 my-2">
+            <hr class="border-surface-high my-2">
 
         </div>
     </div>

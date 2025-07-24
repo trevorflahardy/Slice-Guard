@@ -50,16 +50,34 @@
   --color-surface-high: #e5e5ea;
   --color-surface-highest: #d1d1d6;
 
-  /* Light theme inspired by Apple's palette */
-  --color-gray-1: oklch(98.4% 0.003 247.858);
-  --color-gray-2: oklch(92.9% 0.013 255.508);
-  --color-gray-3: oklch(86.9% 0.022 252.894);
+  /**
+  * Text colors
+  */
+  --color-fg-primary: #000000ff;
+  --color-fg-secondary: #3c3c4399;
+  --color-fg-tertiary: #3c3c434c;
+  --color-fg-quaternary: #3c3c432d;
+  --color-fg-inverse: #ffffffe6;
+  --color-fg-accent: #007aff;
 }
 
 .dark {
+  /*
+  * Dark theme surface colors
+  */
   --color-surface-lowest: #000000;
   --color-surface-low: #1c1c1e;
   --color-surface: #2c2c2e;
   --color-surface-high: #3a3a3c;
   --color-surface-highest: #48484a;
+
+  /*
+  * Dark theme text colors
+  */
+  --color-fg-primary: #ffffffff;
+  --color-fg-secondary: #ebebf599;
+  --color-fg-tertiary: #ebebf54c;
+  --color-fg-quaternary: #ebebf52d;
+  --color-fg-inverse: #000000e6;
+  --color-fg-accent: #0a84ff;
 }

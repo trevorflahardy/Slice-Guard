@@ -29,21 +29,3 @@ The project now includes `views` and `router` out of the box so routing can be e
 ### Reusable Button Component
 
 `src/components/Button.vue` exposes a small button with `primary` and `secondary` variants. Use it throughout the app for consistent styling.
-
-## Tailwind and Theme
-
-`tailwind.config.cjs` exposes a comprehensive set of colour variables. The palette follows Apple's soft tones:
-
-- `main` – lighter British Racing Green (`#005e3c` in light mode, `#1ba56e` in dark mode)
-- `accent` – modern highlight (`#30d158`)
-- `accent-text` – black in light mode, white in dark mode
-- `background`/`surface` – page and card backgrounds
-- `foreground`/`muted` – primary and secondary text colours
-- `border` – subtle outlines
-- `gray-1`, `gray-2`, `gray-3` – neutral tiers for layouts
-- `success`, `warning`, `error`, `info` – status colours
-- `white` and `black` remain available
-
-Reference these names in classes like `text-main` or `bg-surface`.
-
-Add or remove the `dark` class on the `html` element to toggle dark mode. The project includes a sample toggle button in earlier demos.

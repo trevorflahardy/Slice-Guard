@@ -2,7 +2,7 @@
 </script>
 
 <template>
-    <div>
+    <div class="text-fg-primary">
         I am the Lab Print Requests page.
     </div>
 </template>

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from '../components/Button.vue'
-import { authorizedFetch } from '../services/auth'
+import { apiFetch } from '../services/api'
 
 const name = ref('')
 const description = ref('')
@@ -13,7 +13,7 @@ const router = useRouter()
 async function submit() {
   error.value = ''
   try {
-    const res = await authorizedFetch('/labs', {
+    const res = await apiFetch('/labs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: name.value, description: description.value || undefined, imageUrl: imageUrl.value || undefined }),

@@ -3,7 +3,7 @@ import { onMounted, watch, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from './Sidebar.vue'
 import LabUserList from './LabUserList.vue'
-import { authorizedFetch } from '../../services/auth'
+import { apiFetch } from '../../services/api'
 import { type Lab } from '@shared/db/lab';
 
 const route = useRoute()
@@ -17,7 +17,7 @@ async function fetchLab() {
   loading.value = true
   error.value = ''
   try {
-    const res = await authorizedFetch(`/labs/${labId}`)
+    const res = await apiFetch(`/labs/${labId}`)
     if (!res.ok) throw new Error()
     lab.value = await res.json()
   } catch {

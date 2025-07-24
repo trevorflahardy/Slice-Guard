@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ThemeToggle from '../../components/ThemeToggle.vue';
 import { ref } from 'vue'
-import { authorizedFetch } from '../../services/auth'
+import { apiFetch } from '../../services/api'
 
 interface Props {
     lab: any | null
@@ -15,7 +15,7 @@ const tagName = ref('')
 
 async function createTag() {
     if (!props.lab) return
-    await authorizedFetch(`/labs/${props.lab.id}/tags`, {
+    await apiFetch(`/labs/${props.lab.id}/tags`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: tagName.value }),
@@ -25,7 +25,7 @@ async function createTag() {
 
 async function createMockRequest() {
     if (!props.lab) return
-    await authorizedFetch(`/labs/${props.lab.id}/requests`, {
+    await apiFetch(`/labs/${props.lab.id}/requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file: btoa('mock'), metadata: {}, description: 'Mock request' }),

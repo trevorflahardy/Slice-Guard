@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { authorizedFetch } from '../../services/auth'
+import { apiFetch } from '../../services/api'
 import type { PrintRequest, RequestTag } from '@shared/db/request'
 import type { User } from '@shared/db/user'
 import { useAuthStore } from '../../store/auth'
@@ -27,12 +27,12 @@ const stateFilter = ref<'all' | 'open' | 'closed'>('all')
 
 async function fetchRequests() {
   const q = stateFilter.value === 'all' ? '' : `?state=${stateFilter.value}`
-  const res = await authorizedFetch(`/labs/${labId.value}/requests${q}`)
+  const res = await apiFetch(`/labs/${labId.value}/requests${q}`)
   if (res.ok) requests.value = await res.json()
 }
 
 async function fetchTags() {
-  const res = await authorizedFetch(`/labs/${labId.value}/tags`)
+  const res = await apiFetch(`/labs/${labId.value}/tags`)
   if (res.ok) tags.value = await res.json()
 }
 
@@ -71,7 +71,7 @@ const filtered = computed(() => {
 })
 
 async function toggleState(item: RequestItem) {
-  const res = await authorizedFetch(`/requests/${item.request.id}/state`, {
+  const res = await apiFetch(`/labs/${labId.value}/requests/${item.request.id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ isClosed: !item.request.is_closed })

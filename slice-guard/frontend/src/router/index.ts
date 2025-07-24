@@ -58,7 +58,10 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const auth = useAuthStore()
-  if (to.name === 'Login' || to.name === 'Register') return true
+  if (to.name === 'Login' || to.name === 'Register') {
+    if (auth.apiKey) return { name: 'Root' }
+    return true
+  }
   if (!auth.apiKey) return { name: 'Login' }
   return true
 })

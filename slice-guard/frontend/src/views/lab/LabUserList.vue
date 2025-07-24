@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import type { Lab, LabMember } from '@shared/db/lab'
 import type { User } from '@shared/db/user'
-import { authorizedFetch } from '../../services/auth'
+import { apiFetch } from '../../services/api'
 
 const props = defineProps<{
     lab: Lab | null
@@ -17,7 +17,7 @@ const members = ref<Record<string, { id: number; name: string }[]>>({})
 
 async function fetchMembers() {
     if (!props.lab) return
-    const res = await authorizedFetch(`/labs/${props.lab.id}/members`)
+    const res = await apiFetch(`/labs/${props.lab.id}/members`)
     if (!res.ok) return
     const data = (await res.json()) as MemberResponse[]
     const map: Record<string, { id: number; name: string }[]> = {}

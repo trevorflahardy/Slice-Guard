@@ -4,20 +4,37 @@ import type { SQL } from "bun";
 export interface PrintRequestRow extends PrintRequest { }
 export interface RequestTagRow extends RequestTag { }
 
+function normalizeRequest(row: PrintRequestRow): PrintRequestRow {
+    return {
+        ...row,
+        id: Number(row.id),
+        lab_id: Number(row.lab_id),
+        user_id: Number(row.user_id),
+    };
+}
+
+function normalizeTag(row: RequestTagRow): RequestTagRow {
+    return {
+        ...row,
+        id: Number(row.id),
+        lab_id: Number(row.lab_id),
+    };
+}
+
 export async function createPrintRequest(
     db: SQL,
     labId: number,
     userId: number,
-    filePath: string,
+    fileData: Buffer,
     metadata: unknown,
     description: string | null = null,
 ): Promise<PrintRequestRow> {
     const rows: PrintRequestRow[] = await db`
-        INSERT INTO lab.print_requests (lab_id, user_id, file_path, metadata, description)
-             VALUES (${labId}, ${userId}, ${filePath}, ${JSON.stringify(metadata)}, ${description})
-        RETURNING id, lab_id, user_id, file_path, metadata, description, created_at
+        INSERT INTO lab.print_requests (lab_id, user_id, file_data, metadata, description)
+             VALUES (${labId}, ${userId}, ${fileData}, ${JSON.stringify(metadata)}, ${description})
+        RETURNING id, lab_id, user_id, file_data, metadata, description, is_closed, created_at
     `;
-    return rows[0];
+    return normalizeRequest(rows[0]);
 }
 
 export async function getUserPrintRequests(
@@ -26,11 +43,11 @@ export async function getUserPrintRequests(
     userId: number
 ): Promise<PrintRequestRow[]> {
     const rows: PrintRequestRow[] = await db`
-        SELECT id, lab_id, user_id, file_path, metadata, description, created_at
+        SELECT id, lab_id, user_id, file_data, metadata, description, is_closed, created_at
           FROM lab.print_requests
          WHERE lab_id = ${labId} AND user_id = ${userId}
     `;
-    return rows;
+    return rows.map(normalizeRequest);
 }
 
 export async function createTag(
@@ -44,7 +61,7 @@ export async function createTag(
              VALUES (${labId}, ${name}, ${isDefault})
         RETURNING id, lab_id, name, is_default, created_at
     `;
-    return rows[0];
+    return normalizeTag(rows[0]);
 }
 
 export async function setTagDefault(
@@ -58,7 +75,7 @@ export async function setTagDefault(
          WHERE id = ${tagId}
         RETURNING id, lab_id, name, is_default, created_at
     `;
-    return rows[0];
+    return normalizeTag(rows[0]);
 }
 
 export async function assignTag(
@@ -94,5 +111,55 @@ export async function getTagsForRequest(
           JOIN lab.request_tags t ON a.tag_id = t.id
          WHERE a.request_id = ${requestId}
     `;
-    return rows;
+    return rows.map(normalizeTag);
+}
+
+export async function getAllPrintRequests(
+    db: SQL,
+    labId: number,
+): Promise<PrintRequestRow[]> {
+    const rows: PrintRequestRow[] = await db`
+        SELECT id, lab_id, user_id, file_data, metadata, description, is_closed, created_at
+          FROM lab.print_requests
+         WHERE lab_id = ${labId}
+    `;
+    return rows.map(normalizeRequest);
+}
+
+export async function listTags(
+    db: SQL,
+    labId: number,
+): Promise<RequestTagRow[]> {
+    const rows: RequestTagRow[] = await db`
+        SELECT id, lab_id, name, is_default, created_at
+          FROM lab.request_tags
+         WHERE lab_id = ${labId}
+    `;
+    return rows.map(normalizeTag);
+}
+
+export async function getPrintRequestById(
+    db: SQL,
+    requestId: number,
+): Promise<PrintRequestRow | null> {
+    const rows: PrintRequestRow[] = await db`
+        SELECT id, lab_id, user_id, file_data, metadata, description, is_closed, created_at
+          FROM lab.print_requests
+         WHERE id = ${requestId}
+    `;
+    return rows[0] ? normalizeRequest(rows[0]) : null;
+}
+
+export async function setRequestClosed(
+    db: SQL,
+    requestId: number,
+    isClosed: boolean,
+): Promise<PrintRequestRow> {
+    const rows: PrintRequestRow[] = await db`
+        UPDATE lab.print_requests
+           SET is_closed = ${isClosed}
+         WHERE id = ${requestId}
+        RETURNING id, lab_id, user_id, file_data, metadata, description, is_closed, created_at
+    `;
+    return normalizeRequest(rows[0]);
 }

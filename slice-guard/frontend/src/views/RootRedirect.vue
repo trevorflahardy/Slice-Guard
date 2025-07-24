@@ -2,7 +2,7 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
-import { authorizedFetch } from '../services/auth'
+import { apiFetch } from '../services/api'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -19,7 +19,7 @@ onMounted(async () => {
   }
 
   try {
-    const res = await authorizedFetch('/labs')
+    const res = await apiFetch('/labs')
 
     if (!res.ok) throw new Error()
     const labs = await res.json()

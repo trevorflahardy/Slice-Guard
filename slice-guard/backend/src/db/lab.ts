@@ -149,6 +149,11 @@ export async function getMemberRolePermissions(
     labId: number,
     userId: number
 ): Promise<number | null> {
+    const owners: { owner_id: number }[] = await db`
+        SELECT owner_id FROM lab.labs WHERE id = ${labId}
+    `;
+    if (!owners[0]) return null;
+    if (Number(owners[0].owner_id) === userId) return LabPermission.ALL;
     const rows: { permissions: number }[] = await db`
         SELECT r.permissions
           FROM lab.member_roles mr

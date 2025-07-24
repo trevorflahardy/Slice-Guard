@@ -58,14 +58,19 @@ export class Server {
                     POST: req => withLogging(requestHandlers.create)(req, this.state, req.params),
                     GET: req => withLogging(requestHandlers.list)(req, this.state, req.params),
                 },
+                '/api/labs/:labId/requests/:requestId': {
+                    GET: req => withLogging(requestHandlers.getRoute)(req, this.state, req.params),
+                    PATCH: req => withLogging(requestHandlers.setRequestStateRoute)(req, this.state, req.params),
+                },
+                '/api/labs/:labId/requests/:requestId/tags/:tagId': {
+                    POST: req => withLogging(requestHandlers.assignTagRoute)(req, this.state, req.params),
+                },
                 '/api/labs/:labId/tags': {
                     POST: req => withLogging(requestHandlers.createTagRoute)(req, this.state, req.params),
+                    GET: req => withLogging(requestHandlers.listTagsRoute)(req, this.state, req.params),
                 },
-                '/api/tags/:tagId': {
+                '/api/labs/:labId/tags/:tagId': {
                     PATCH: req => withLogging(requestHandlers.setTagDefaultRoute)(req, this.state, req.params),
-                },
-                '/api/requests/:requestId/tags/:tagId': {
-                    POST: req => withLogging(requestHandlers.assignTagRoute)(req, this.state, req.params),
                 },
                 '/api/*': {
                     OPTIONS: _req => {

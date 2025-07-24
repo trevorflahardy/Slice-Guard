@@ -40,4 +40,8 @@ export enum LabPermission {
     MANAGE_REQUESTS = 1 << 5,
     READ = 1 << 6,
     WRITE = 1 << 7,
+    /**
+     * Grants every permission regardless of explicit role entries.
+     */
+    ALL = 1 << 30,
 }

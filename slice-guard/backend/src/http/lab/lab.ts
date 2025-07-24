@@ -8,6 +8,7 @@ import {
     getMemberRolePermissions,
 } from "../../db/lab";
 import { LabPermission } from "@shared/db/lab";
+import { hasLabPermission } from "../../utils/permissions";
 import type { LabCreatePayload, LabUpdatePayload } from "@shared/payloads";
 
 /**
@@ -53,7 +54,7 @@ export const update = withAuth(async (req, userId, state, params) => {
     const { name, description, imageUrl } =
         (await req.json()) as LabUpdatePayload;
     const perms = await getMemberRolePermissions(state.db, id, userId);
-    if (perms === null || !(perms & LabPermission.EDIT_LAB))
+    if (!hasLabPermission(perms, LabPermission.EDIT_LAB))
         return new Response("Unauthorized", { status: 403 });
     const lab = await updateLab(
         state.db,
@@ -73,7 +74,7 @@ export const del = withAuth(async (req, userId, state, params) => {
     const id = Number(params.id);
     const perms = await getMemberRolePermissions(state.db, id, userId);
 
-    if (perms === null || !(perms & LabPermission.DELETE_LAB))
+    if (!hasLabPermission(perms, LabPermission.DELETE_LAB))
         return new Response("Unauthorized", { status: 403 });
     await deleteLab(state.db, id);
 

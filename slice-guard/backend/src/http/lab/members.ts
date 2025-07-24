@@ -9,6 +9,7 @@ import {
 } from "../../db/lab";
 import { findPublicUserById } from "../../db/user";
 import { LabPermission, type LabMember } from "@shared/db/lab";
+import { hasLabPermission } from "../../utils/permissions";
 import type { MemberAddPayload } from "@shared/payloads";
 
 /**
@@ -19,7 +20,7 @@ export const addMemberRoute = withAuth(async (req, userId, state, params) => {
     const { userId: addId, roleId } = (await req.json()) as MemberAddPayload;
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (perms === null || !(perms & LabPermission.MANAGE_ROLES))
+    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES))
         return new Response("Unauthorized", { status: 403 });
 
     const member = await addMember(state.db, labId, addId, roleId ?? null);
@@ -34,7 +35,7 @@ export const removeMemberRoute = withAuth(async (req, userId, state, params) => 
     const removeId = Number(params.userId);
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (perms === null || !(perms & LabPermission.REMOVE_USER))
+    if (!hasLabPermission(perms, LabPermission.REMOVE_USER))
         return new Response("Unauthorized", { status: 403 });
 
     await removeMember(state.db, labId, removeId);

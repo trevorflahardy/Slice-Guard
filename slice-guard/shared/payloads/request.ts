@@ -27,3 +27,7 @@ export interface RequestAssignTagPayload {
   tagId: number
   assign: boolean
 }
+
+export interface RequestStateUpdatePayload {
+  isClosed: boolean
+}

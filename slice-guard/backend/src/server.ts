@@ -68,6 +68,9 @@ export class Server {
                 '/api/requests/:requestId/tags/:tagId': {
                     POST: req => withLogging(requestHandlers.assignTagRoute)(req, this.state, req.params),
                 },
+                '/api/requests/:requestId/state': {
+                    PATCH: req => withLogging(requestHandlers.setRequestStateRoute)(req, this.state, req.params),
+                },
                 '/api/*': {
                     OPTIONS: _req => {
                         // Handle CORS preflight (in the future)

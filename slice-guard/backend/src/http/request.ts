@@ -3,6 +3,8 @@ import {
     createPrintRequest,
     getUserPrintRequests,
     getAllPrintRequests,
+    getPrintRequestById,
+    setRequestClosed,
     createTag,
     setTagDefault,
     assignTag,
@@ -20,6 +22,7 @@ import type {
     TagCreatePayload,
     TagSetDefaultPayload,
     RequestAssignTagPayload,
+    RequestStateUpdatePayload,
 } from '@shared/payloads';
 
 /**
@@ -45,20 +48,30 @@ export const create = withAuth(async (req, userId, state, params) => {
 /**
  * GET /api/labs/:labId/requests
  */
-export const list = withAuth(async (_req, userId, state, params) => {
+export const list = withAuth(async (req, userId, state, params) => {
     const labId = Number(params.labId);
+    const url = new URL(req.url);
+    const stateFilter = url.searchParams.get('state');
     state.logger.debug({ labId, userId }, 'Listing requests');
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     let rows = await getUserPrintRequests(state.db, labId, userId);
     if (perms !== null && (perms & LabPermission.MANAGE_REQUESTS)) {
         rows = await getAllPrintRequests(state.db, labId);
     }
+    if (stateFilter === 'open') rows = rows.filter(r => !r.is_closed);
+    else if (stateFilter === 'closed') rows = rows.filter(r => r.is_closed);
     const results = [] as any[];
     for (const r of rows) {
         const user = await findPublicUserById(state.db, r.user_id);
         const tags = await getTagsForRequest(state.db, r.id);
         results.push({ request: r, user, tags });
     }
+    results.sort((a, b) => {
+        if (a.request.is_closed !== b.request.is_closed) {
+            return a.request.is_closed ? 1 : -1;
+        }
+        return new Date(b.request.created_at).getTime() - new Date(a.request.created_at).getTime();
+    });
     return Response.json(results);
 });
 
@@ -117,4 +130,20 @@ export const assignTagRoute = withAuth(async (req, _userId, state, params) => {
         await unassignTag(state.db, requestId, tagId);
     }
     return new Response(null, { status: 204 });
+});
+
+/**
+ * PATCH /api/requests/:requestId/state
+ */
+export const setRequestStateRoute = withAuth(async (req, userId, state, params) => {
+    const requestId = Number(params.requestId);
+    const { isClosed } = await req.json() as RequestStateUpdatePayload;
+    const row = await getPrintRequestById(state.db, requestId);
+    if (!row) return new Response('Not found', { status: 404 });
+    const perms = await getMemberRolePermissions(state.db, row.lab_id, userId);
+    if (row.user_id !== userId && (perms === null || !(perms & LabPermission.MANAGE_REQUESTS))) {
+        return new Response('Unauthorized', { status: 403 });
+    }
+    const updated = await setRequestClosed(state.db, requestId, isClosed);
+    return Response.json(updated);
 });

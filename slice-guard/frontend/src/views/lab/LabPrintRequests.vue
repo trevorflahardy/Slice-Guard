@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { authorizedFetch } from '../../services/auth'
 import type { PrintRequest, RequestTag } from '@shared/db/request'
 import type { User } from '@shared/db/user'
+import { useAuthStore } from '../../store/auth'
 
 interface RequestItem {
   request: PrintRequest
@@ -16,14 +17,17 @@ const labId = computed(() => Number(route.params.id))
 
 const requests = ref<RequestItem[]>([])
 const tags = ref<RequestTag[]>([])
+const auth = useAuthStore()
 
 const search = ref('')
 const tagFilter = ref<number | null>(null)
 const from = ref('')
 const to = ref('')
+const stateFilter = ref<'all' | 'open' | 'closed'>('all')
 
 async function fetchRequests() {
-  const res = await authorizedFetch(`/labs/${labId.value}/requests`)
+  const q = stateFilter.value === 'all' ? '' : `?state=${stateFilter.value}`
+  const res = await authorizedFetch(`/labs/${labId.value}/requests${q}`)
   if (res.ok) requests.value = await res.json()
 }
 
@@ -40,6 +44,7 @@ watch(labId, () => {
   fetchRequests()
   fetchTags()
 })
+watch(stateFilter, fetchRequests)
 
 const filtered = computed(() => {
   return requests.value
@@ -54,8 +59,27 @@ const filtered = computed(() => {
       if (to.value && new Date(r.request.created_at) > new Date(to.value)) return false
       return true
     })
-    .sort((a, b) => new Date(b.request.created_at).getTime() - new Date(a.request.created_at).getTime())
+    .filter(r => {
+      if (stateFilter.value === 'open') return !r.request.is_closed
+      if (stateFilter.value === 'closed') return r.request.is_closed
+      return true
+    })
+    .sort((a, b) => {
+      if (a.request.is_closed !== b.request.is_closed) return a.request.is_closed ? 1 : -1
+      return new Date(b.request.created_at).getTime() - new Date(a.request.created_at).getTime()
+    })
 })
+
+async function toggleState(item: RequestItem) {
+  const res = await authorizedFetch(`/requests/${item.request.id}/state`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isClosed: !item.request.is_closed })
+  })
+  if (res.ok) {
+    item.request.is_closed = !item.request.is_closed
+  }
+}
 </script>
 
 <template>
@@ -68,6 +92,11 @@ const filtered = computed(() => {
       </select>
       <input type="date" v-model="from" class="bg-surface-low px-2 py-1 rounded-md" />
       <input type="date" v-model="to" class="bg-surface-low px-2 py-1 rounded-md" />
+      <select v-model="stateFilter" class="bg-surface-low px-2 py-1 rounded-md">
+        <option value="all">All</option>
+        <option value="open">Open</option>
+        <option value="closed">Closed</option>
+      </select>
     </div>
     <div class="space-y-2">
       <div
@@ -78,6 +107,13 @@ const filtered = computed(() => {
         <div class="text-sm font-medium text-fg-primary">{{ item.user?.name || item.user?.email }}</div>
         <div class="text-xs text-fg-secondary">{{ item.request.description }}</div>
         <div class="text-xs text-fg-tertiary">{{ new Date(item.request.created_at).toLocaleString() }}</div>
+        <button
+          v-if="auth.user?.id === item.request.user_id"
+          @click.stop="toggleState(item)"
+          class="text-xs text-salem-800 underline"
+        >
+          {{ item.request.is_closed ? 'Reopen' : 'Close' }}
+        </button>
       </div>
     </div>
   </div>

@@ -15,7 +15,7 @@ export async function createPrintRequest(
     const rows: PrintRequestRow[] = await db`
         INSERT INTO lab.print_requests (lab_id, user_id, file_path, metadata, description)
              VALUES (${labId}, ${userId}, ${filePath}, ${JSON.stringify(metadata)}, ${description})
-        RETURNING id, lab_id, user_id, file_path, metadata, description, created_at
+        RETURNING id, lab_id, user_id, file_path, metadata, description, is_closed, created_at
     `;
     return rows[0];
 }
@@ -26,7 +26,7 @@ export async function getUserPrintRequests(
     userId: number
 ): Promise<PrintRequestRow[]> {
     const rows: PrintRequestRow[] = await db`
-        SELECT id, lab_id, user_id, file_path, metadata, description, created_at
+        SELECT id, lab_id, user_id, file_path, metadata, description, is_closed, created_at
           FROM lab.print_requests
          WHERE lab_id = ${labId} AND user_id = ${userId}
     `;
@@ -102,7 +102,7 @@ export async function getAllPrintRequests(
     labId: number,
 ): Promise<PrintRequestRow[]> {
     const rows: PrintRequestRow[] = await db`
-        SELECT id, lab_id, user_id, file_path, metadata, description, created_at
+        SELECT id, lab_id, user_id, file_path, metadata, description, is_closed, created_at
           FROM lab.print_requests
          WHERE lab_id = ${labId}
     `;
@@ -119,4 +119,30 @@ export async function listTags(
          WHERE lab_id = ${labId}
     `;
     return rows;
+}
+
+export async function getPrintRequestById(
+    db: SQL,
+    requestId: number,
+): Promise<PrintRequestRow | null> {
+    const rows: PrintRequestRow[] = await db`
+        SELECT id, lab_id, user_id, file_path, metadata, description, is_closed, created_at
+          FROM lab.print_requests
+         WHERE id = ${requestId}
+    `;
+    return rows[0] ?? null;
+}
+
+export async function setRequestClosed(
+    db: SQL,
+    requestId: number,
+    isClosed: boolean,
+): Promise<PrintRequestRow> {
+    const rows: PrintRequestRow[] = await db`
+        UPDATE lab.print_requests
+           SET is_closed = ${isClosed}
+         WHERE id = ${requestId}
+        RETURNING id, lab_id, user_id, file_path, metadata, description, is_closed, created_at
+    `;
+    return rows[0];
 }

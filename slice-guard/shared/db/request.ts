@@ -5,6 +5,7 @@ export interface PrintRequest {
     description?: string | null;
     file_path: string;
     metadata: unknown;
+    is_closed: boolean;
     created_at: Date;
 }
 

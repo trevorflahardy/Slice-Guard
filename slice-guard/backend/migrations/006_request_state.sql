@@ -1,0 +1,1 @@
+ALTER TABLE lab.print_requests ADD COLUMN is_closed BOOLEAN NOT NULL DEFAULT FALSE;

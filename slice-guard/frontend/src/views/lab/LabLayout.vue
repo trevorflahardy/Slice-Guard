@@ -4,8 +4,7 @@ import { useRoute } from 'vue-router'
 import Sidebar from './Sidebar.vue'
 import LabUserList from './LabUserList.vue'
 import { authorizedFetch } from '../../services/auth'
-import { ws } from '../../services/ws'
-import { Lab } from '@shared/db/lab';
+import { type Lab } from '@shared/db/lab';
 
 const route = useRoute()
 
@@ -33,14 +32,14 @@ watch(() => route.params.id, fetchLab)
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-background">
-    <!-- Sidebar has no background and takes on that of the main -->
-    <aside class="w-56 lg:w-64 xl:w-72 bg-background min-h-screen p-7 shrink-0">
+  <div class="flex min-h-screen bg-surface-lowest">
+    <aside
+      class="w-56 lg:w-64 xl:w-72 bg-surface-low min-h-screen p-7 shrink-0 rounded-r-4xl shadow-inner shadow-surface-high">
       <Sidebar :lab="lab" />
     </aside>
 
     <!-- Main content area -->
-    <div class="rounded-l-5xl bg-foreground w-full drop-shadow-lg flex gap-0">
+    <div class="bg-surface-lowest w-full flex gap-0">
       <div class="p-6 flex-1 w-full">
         <!-- Actual insert content-->
         <router-view :lab="lab" :error="error" :loading="loading" />
@@ -49,9 +48,9 @@ watch(() => route.params.id, fetchLab)
       <!--User list for lab layout-->
       <!--! TODO: This does not resize and rather the main content does - make this collapse later down the road when I'm not so lazy.
             -->
-      <div class="h-full bg-background p-4 min-w-52 max-w-60">
+      <div class="h-full bg-surface-lowest p-4 min-w-60 max-w-80 overflow-y-scroll no-scrollbar">
         <!-- User list for the lab layout -->
-        <LabUserList />
+        <LabUserList :lab="lab" />
       </div>
     </div>
   </div>

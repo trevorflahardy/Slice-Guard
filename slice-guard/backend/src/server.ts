@@ -48,9 +48,11 @@ export class Server {
                 },
                 '/api/labs/:labId/members': {
                     POST: req => withLogging(lab.addMemberRoute)(req, this.state, req.params),
+                    GET: req => withLogging(lab.listMembersRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/members/:userId': {
                     DELETE: req => withLogging(lab.removeMemberRoute)(req, this.state, req.params),
+                    GET: req => withLogging(lab.getMemberRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/requests': {
                     POST: req => withLogging(requestHandlers.create)(req, this.state, req.params),

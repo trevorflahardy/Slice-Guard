@@ -4,6 +4,11 @@ export interface Lab {
     name: string;
     description?: string | null;
     image_url?: string | null;
+    /**
+     * Identifier of the default role that all members receive when joining
+     * this lab.
+     */
+    default_role_id?: number | null;
     created_at: Date;
 }
 
@@ -18,7 +23,11 @@ export interface LabRole {
 export interface LabMember {
     lab_id: number;
     user_id: number;
-    role_id?: number | null;
+    /**
+     * Full list of roles this member has ordered from highest to lowest
+     * hierarchy. An empty array means the member has no explicit roles.
+     */
+    roles: LabRole[];
     joined_at: Date;
 }
 

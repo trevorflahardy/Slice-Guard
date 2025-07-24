@@ -4,6 +4,23 @@ import type { SQL } from "bun";
 export interface PrintRequestRow extends PrintRequest { }
 export interface RequestTagRow extends RequestTag { }
 
+function normalizeRequest(row: PrintRequestRow): PrintRequestRow {
+    return {
+        ...row,
+        id: Number(row.id),
+        lab_id: Number(row.lab_id),
+        user_id: Number(row.user_id),
+    };
+}
+
+function normalizeTag(row: RequestTagRow): RequestTagRow {
+    return {
+        ...row,
+        id: Number(row.id),
+        lab_id: Number(row.lab_id),
+    };
+}
+
 export async function createPrintRequest(
     db: SQL,
     labId: number,
@@ -17,7 +34,7 @@ export async function createPrintRequest(
              VALUES (${labId}, ${userId}, ${filePath}, ${JSON.stringify(metadata)}, ${description})
         RETURNING id, lab_id, user_id, file_path, metadata, description, is_closed, created_at
     `;
-    return rows[0];
+    return normalizeRequest(rows[0]);
 }
 
 export async function getUserPrintRequests(
@@ -30,7 +47,7 @@ export async function getUserPrintRequests(
           FROM lab.print_requests
          WHERE lab_id = ${labId} AND user_id = ${userId}
     `;
-    return rows;
+    return rows.map(normalizeRequest);
 }
 
 export async function createTag(
@@ -44,7 +61,7 @@ export async function createTag(
              VALUES (${labId}, ${name}, ${isDefault})
         RETURNING id, lab_id, name, is_default, created_at
     `;
-    return rows[0];
+    return normalizeTag(rows[0]);
 }
 
 export async function setTagDefault(
@@ -58,7 +75,7 @@ export async function setTagDefault(
          WHERE id = ${tagId}
         RETURNING id, lab_id, name, is_default, created_at
     `;
-    return rows[0];
+    return normalizeTag(rows[0]);
 }
 
 export async function assignTag(
@@ -94,7 +111,7 @@ export async function getTagsForRequest(
           JOIN lab.request_tags t ON a.tag_id = t.id
          WHERE a.request_id = ${requestId}
     `;
-    return rows;
+    return rows.map(normalizeTag);
 }
 
 export async function getAllPrintRequests(
@@ -106,7 +123,7 @@ export async function getAllPrintRequests(
           FROM lab.print_requests
          WHERE lab_id = ${labId}
     `;
-    return rows;
+    return rows.map(normalizeRequest);
 }
 
 export async function listTags(
@@ -118,7 +135,7 @@ export async function listTags(
           FROM lab.request_tags
          WHERE lab_id = ${labId}
     `;
-    return rows;
+    return rows.map(normalizeTag);
 }
 
 export async function getPrintRequestById(
@@ -130,7 +147,7 @@ export async function getPrintRequestById(
           FROM lab.print_requests
          WHERE id = ${requestId}
     `;
-    return rows[0] ?? null;
+    return rows[0] ? normalizeRequest(rows[0]) : null;
 }
 
 export async function setRequestClosed(
@@ -144,5 +161,5 @@ export async function setRequestClosed(
          WHERE id = ${requestId}
         RETURNING id, lab_id, user_id, file_path, metadata, description, is_closed, created_at
     `;
-    return rows[0];
+    return normalizeRequest(rows[0]);
 }

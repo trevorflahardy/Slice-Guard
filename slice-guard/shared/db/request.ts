@@ -3,7 +3,7 @@ export interface PrintRequest {
     lab_id: number;
     user_id: number;
     description?: string | null;
-    file_path: string;
+    file_data: Uint8Array;
     metadata: unknown;
     is_closed: boolean;
     created_at: Date;

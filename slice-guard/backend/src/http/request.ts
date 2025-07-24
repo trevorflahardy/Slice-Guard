@@ -12,7 +12,7 @@ import {
     listTags,
     getTagsForRequest,
 } from '../db/request';
-import { saveRequestFile } from '../utils/storage';
+import { compressRequestFile } from '../utils/storage';
 import { getMemberRolePermissions } from '../db/lab';
 import { findPublicUserById } from '../db/user';
 import { LabPermission } from '@shared/db/lab';
@@ -40,8 +40,8 @@ export const create = withAuth(async (req, userId, state, params) => {
     }
 
     const buffer = Buffer.from(file, 'base64');
-    const path = await saveRequestFile(labId, buffer);
-    const result = await createPrintRequest(state.db, labId, userId, path, metadata, description ?? null);
+    const compressed = compressRequestFile(buffer);
+    const result = await createPrintRequest(state.db, labId, userId, compressed, metadata, description ?? null);
     state.logger.debug({ id: result.id }, 'Created print request');
     return Response.json(result);
 });

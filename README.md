@@ -63,6 +63,13 @@ The backend will be available on `http://localhost:3000` and the frontend on
 `http://localhost:5173`. The frontend is configured to talk to the backend using
 those internal addresses so WebSocket connections work out of the box.
 
+## Database Schema
+
+Complete schema files are provided under `slice-guard/backend/schema`. These
+SQL files combine all migrations so a new database can be created without
+running each migration individually.
+
+
 # Developmental Preview Images
 
 ## Jul 24th Update

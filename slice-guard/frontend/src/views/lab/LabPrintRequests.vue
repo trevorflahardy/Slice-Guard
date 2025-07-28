@@ -80,19 +80,41 @@ async function toggleState(item: RequestItem) {
     item.request.is_closed = !item.request.is_closed
   }
 }
+
+const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
 </script>
 
 <template>
   <div class="space-y-4">
+    <div>
+      <h1 class="text-fg-primary text-2xl font-semibold">Print Requests</h1>
+      <p class="text-fg-secondary">Manage and track all print requests.</p>
+    </div>
+
+    <!-- The search bar. Spans the entire width of the element and allows you to easily search many things -->
+    <div class="w-full bg-surface-low rounded-lg px-3 py-2 flex items-center gap-2">
+      <svg class="h-5 w-5 text-fg-secondary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+
+      <input
+        v-model="search"
+        placeholder="Search requests, users, descriptions..."
+        class="flex-1 bg-transparent text-fg-primary placeholder-fg-secondary outline-none"
+      />
+    </div>
+
     <div class="flex flex-wrap gap-2 items-center">
-      <input v-model="search" placeholder="Search" class="bg-surface-low px-2 py-1 rounded-md" />
-      <select v-model.number="tagFilter" class="bg-surface-low px-2 py-1 rounded-md">
+
+      <select v-model.number="tagFilter" :class="selectClass">
         <option :value="null">All Tags</option>
         <option v-for="t in tags" :key="t.id" :value="t.id">{{ t.name }}</option>
       </select>
-      <input type="date" v-model="from" class="bg-surface-low px-2 py-1 rounded-md" />
-      <input type="date" v-model="to" class="bg-surface-low px-2 py-1 rounded-md" />
-      <select v-model="stateFilter" class="bg-surface-low px-2 py-1 rounded-md">
+
+      <input type="date" v-model="from" :class="selectClass" />
+      <input type="date" v-model="to" :class="selectClass" />
+
+      <select v-model="stateFilter" :class="selectClass">
         <option value="all">All</option>
         <option value="open">Open</option>
         <option value="closed">Closed</option>

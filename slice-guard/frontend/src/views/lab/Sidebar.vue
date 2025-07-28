@@ -18,7 +18,7 @@ const navIsActive = (name: string) => {
 }
 
 const isActiveClass = ref(
-    'shadow-md'
+    'shadow-md dark:shadow-surface dark:shadow-sm'
 )
 
 const props = defineProps<{

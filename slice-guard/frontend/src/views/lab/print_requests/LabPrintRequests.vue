@@ -124,8 +124,10 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
       />
     </div>
 
-    <div v-for="item in filtered" :key="item.request.id" class="space-y-2">
-      <PrintRequestListItem :entry="item" />
+    <div class="grid grid-cols-auto gap-5">
+      <div v-for="item in filtered" :key="item.request.id">
+        <PrintRequestListItem :entry="item" />
+      </div>
     </div>
   </div>
 </template>

@@ -33,7 +33,7 @@ const routes: RouteRecordRaw[] = [
           {
             path: 'print-requests',
             name: 'LabPrintRequests',
-            component: () => import('../views/lab/LabPrintRequests.vue'),
+            component: () => import('../views/lab/print_requests/LabPrintRequests.vue'),
           }
         ],
       },

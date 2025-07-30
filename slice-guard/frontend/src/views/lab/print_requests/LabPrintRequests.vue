@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { apiFetch } from '../../services/api'
+import { apiFetch } from '../../../services/api'
 import type { PrintRequest, RequestTag } from '@shared/db/request'
 import type { User } from '@shared/db/user'
-import { useAuthStore } from '../../store/auth'
+import Dropdown from "../../../components/Dropdown.vue"
+import PrintRequestListItem from './PrintRequestListItem.vue'
 
-interface RequestItem {
+export interface RequestItem {
   request: PrintRequest
   user: User | null
   tags: RequestTag[]
@@ -17,10 +18,9 @@ const labId = computed(() => Number(route.params.id))
 
 const requests = ref<RequestItem[]>([])
 const tags = ref<RequestTag[]>([])
-const auth = useAuthStore()
 
 const search = ref('')
-const tagFilter = ref<number | null>(null)
+const tagFilter = ref<(number | string)[]>([])
 const from = ref('')
 const to = ref('')
 const stateFilter = ref<'all' | 'open' | 'closed'>('all')
@@ -35,6 +35,10 @@ async function fetchTags() {
   const res = await apiFetch(`/labs/${labId.value}/tags`)
   if (res.ok) tags.value = await res.json()
 }
+
+const tagOptions = computed(() =>
+  tags.value.map(tag => ({ id: tag.id, name: tag.name }))
+)
 
 onMounted(() => {
   fetchRequests()
@@ -53,7 +57,10 @@ const filtered = computed(() => {
       r.request.description?.toLowerCase().includes(search.value.toLowerCase()) ||
       r.user?.name?.toLowerCase().includes(search.value.toLowerCase())
     )
-    .filter(r => !tagFilter.value || r.tags.some(t => t.id === tagFilter.value))
+    .filter(r => {
+      if (!tagFilter.value || tagFilter.value.length === 0) return true
+      return r.tags.some(t => tagFilter.value.includes(t.id))
+    })
     .filter(r => {
       if (from.value && new Date(r.request.created_at) < new Date(from.value)) return false
       if (to.value && new Date(r.request.created_at) > new Date(to.value)) return false
@@ -69,17 +76,6 @@ const filtered = computed(() => {
       return new Date(b.request.created_at).getTime() - new Date(a.request.created_at).getTime()
     })
 })
-
-async function toggleState(item: RequestItem) {
-  const res = await apiFetch(`/labs/${labId.value}/requests/${item.request.id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ isClosed: !item.request.is_closed })
-  })
-  if (res.ok) {
-    item.request.is_closed = !item.request.is_closed
-  }
-}
 
 const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
 </script>
@@ -106,37 +102,30 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
 
     <div class="flex flex-wrap gap-2 items-center">
 
-      <select v-model.number="tagFilter" :class="selectClass">
-        <option :value="null">All Tags</option>
-        <option v-for="t in tags" :key="t.id" :value="t.id">{{ t.name }}</option>
-      </select>
+      <Dropdown
+        v-model="tagFilter"
+        :options="tagOptions"
+        placeholder="All Tags"
+        :multiple="true"
+      />
 
       <input type="date" v-model="from" :class="selectClass" />
       <input type="date" v-model="to" :class="selectClass" />
 
-      <select v-model="stateFilter" :class="selectClass">
-        <option value="all">All</option>
-        <option value="open">Open</option>
-        <option value="closed">Closed</option>
-      </select>
+      <Dropdown
+        v-model="stateFilter"
+        :options="[
+          { id: 'all', name: 'All' },
+          { id: 'open', name: 'Open' },
+          { id: 'closed', name: 'Closed' }
+        ]"
+        placeholder="All States"
+        :multiple="false"
+      />
     </div>
-    <div class="space-y-2">
-      <div
-        v-for="item in filtered"
-        :key="item.request.id"
-        class="bg-surface shadow px-4 py-2 rounded-lg cursor-pointer hover:shadow-md"
-      >
-        <div class="text-sm font-medium text-fg-primary">{{ item.user?.name || item.user?.email }}</div>
-        <div class="text-xs text-fg-secondary">{{ item.request.description }}</div>
-        <div class="text-xs text-fg-tertiary">{{ new Date(item.request.created_at).toLocaleString() }}</div>
-        <button
-          v-if="auth.user?.id === item.request.user_id"
-          @click.stop="toggleState(item)"
-          class="text-xs text-salem-800 underline"
-        >
-          {{ item.request.is_closed ? 'Reopen' : 'Close' }}
-        </button>
-      </div>
+
+    <div v-for="item in filtered" :key="item.request.id" class="space-y-2">
+      <PrintRequestListItem :entry="item" />
     </div>
   </div>
 </template>

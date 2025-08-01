@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { type RequestItem } from './LabPrintRequests.vue';
-import { computed } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../../store/auth';
+import Dropdown from '../../../components/Dropdown.vue';
+import { apiFetch } from '../../../services/api';
+import type { RequestTag } from '@shared/db/request';
 
 interface Props {
   entry: RequestItem
@@ -14,6 +17,51 @@ const route = useRoute();
 const auth = useAuthStore();
 
 const labId = computed(() => Number(route.params.id));
+
+const statusOptions = [
+  { id: 'open', name: 'Open' },
+  { id: 'closed', name: 'Closed' }
+];
+
+const statusModel = ref(entry.request.is_closed ? 'closed' : 'open');
+
+const allTags = ref<RequestTag[]>([]);
+const tagIds = ref<(number | string)[]>(entry.tags.map(t => t.id));
+
+async function fetchTags() {
+  const res = await apiFetch(`/labs/${labId.value}/tags`);
+  if (res.ok) allTags.value = await res.json();
+}
+
+onMounted(fetchTags);
+
+watch(statusModel, async (val) => {
+  await apiFetch(`/labs/${labId.value}/requests/${entry.request.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isClosed: val === 'closed' })
+  });
+  entry.request.is_closed = val === 'closed';
+});
+
+watch(tagIds, async (val, old) => {
+  const added = (val as number[]).filter(id => !(old as number[]).includes(id));
+  const removed = (old as number[]).filter(id => !(val as number[]).includes(id));
+  for (const id of added) {
+    await apiFetch(`/labs/${labId.value}/requests/${entry.request.id}/tags/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ assign: true })
+    });
+  }
+  for (const id of removed) {
+    await apiFetch(`/labs/${labId.value}/requests/${entry.request.id}/tags/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ assign: false })
+    });
+  }
+  entry.tags = allTags.value.filter(t => (val as number[]).includes(t.id));
+});
+
+const tagOptions = computed(() => allTags.value.map(t => ({ id: t.id, name: t.name })));
 </script>
 
 <template>
@@ -22,7 +70,7 @@ const labId = computed(() => Number(route.params.id));
     <div class="flex flex-row items-center justify-between">
       <!-- Title -->
       <h3 class="text-fg-primary font-medium text-md truncate text-pretty line-clamp-2 max-w-[80%]">
-        This is an example title that should be truncated and is super duper long
+        {{ entry.request.title }}
       </h3>
 
       <!-- User avatar display. TODO: Actual user avatars -->
@@ -48,9 +96,13 @@ const labId = computed(() => Number(route.params.id));
           Date(entry.request.created_at).toLocaleTimeString() }}
       </div>
 
-      <!-- TODO: Tags of this request, each one being a pill and using the HEX code of the tag and its name -->
-      <div>
-
+      <div class="flex flex-wrap gap-1">
+        <span
+          v-for="tag in entry.tags"
+          :key="tag.id"
+          class="px-2 py-0.5 rounded-full text-xs text-white"
+          :style="{ backgroundColor: tag.color }"
+        >{{ tag.name }}</span>
       </div>
     </div>
 
@@ -60,13 +112,26 @@ const labId = computed(() => Number(route.params.id));
     </div>
 
     <!-- Action buttons -->
-    <div class="flex flex-row gap-2">
-      <!-- Dropdown to change the status of this ticket - closed, open, etc -->
-      <!-- TODO use custom dropdown component -->
+    <div class="flex flex-row gap-2 items-center">
+      <Dropdown
+        v-model="statusModel"
+        :options="statusOptions"
+        placeholder="Status"
+      />
 
-      <!-- Dropdown to assign tags to this request -->
-      <!-- TODO use custom dropdown component for tag edits, select and unselect tags.
-        Additionally, update the tags to have a custom HEX code that it used to help display colors easier. -->
+      <Dropdown
+        v-model="tagIds"
+        :options="tagOptions"
+        :multiple="true"
+      >
+        <template #activator>
+          <div class="w-6 h-6 rounded-full bg-surface-high flex items-center justify-center cursor-pointer">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+        </template>
+      </Dropdown>
     </div>
   </div>
 </template>

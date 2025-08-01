@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { type RequestItem } from './LabPrintRequests.vue';
-import { apiFetch } from '../../../services/api'
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../../store/auth';
 
 interface Props {
-    entry: RequestItem
+  entry: RequestItem
 }
 
 defineProps<Props>();
@@ -15,17 +14,6 @@ const route = useRoute();
 const auth = useAuthStore();
 
 const labId = computed(() => Number(route.params.id));
-
-async function toggleState(item: RequestItem) {
-  const res = await apiFetch(`/labs/${labId.value}/requests/${item.request.id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ isClosed: !item.request.is_closed })
-  })
-  if (res.ok) {
-    item.request.is_closed = !item.request.is_closed
-  }
-}
 </script>
 
 <template>
@@ -33,30 +21,31 @@ async function toggleState(item: RequestItem) {
     <!-- Title and user avatar -->
     <div class="flex flex-row items-center justify-between">
       <!-- Title -->
-      <div class="w-full">
-        <h3 class="text-fg-primary font-medium text-md truncate text-pretty line-clamp-2">This is an example title that should be truncated and is super duper long</h3>
-      </div>
+      <h3 class="text-fg-primary font-medium text-md truncate text-pretty line-clamp-2 max-w-[80%]">
+        This is an example title that should be truncated and is super duper long
+      </h3>
 
       <!-- User avatar display. TODO: Actual user avatars -->
-      <div>
-        <span class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs text-fg-secondary">
-          {{ entry.user?.name?.charAt(0) || '?' }}
-        </span>
+      <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs text-fg-secondary">
+        {{ entry.user?.name?.charAt(0) || '?' }}
       </div>
     </div>
 
     <!-- Ticket number, author name next to eachother in small gray-->
     <div class="space-y-1">
       <div class="text-xs text-fg-secondary">
-        <span class="underline decoration-dashed">#{{ entry.request.id }}</span> by {{ entry.user?.name || entry.user?.email || 'Unknown' }}
+        <span class="underline decoration-dashed">#{{ entry.request.id }}</span> by {{ entry.user?.name ||
+          entry.user?.email || 'Unknown' }}
       </div>
 
       <!-- Human readable date of when this ticket was created (with time)-->
       <div class="text-xs text-fg-secondary flex items-center gap-1">
         <svg class="h-3 w-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        {{ new Date(entry.request.created_at).toLocaleDateString() }} at {{ new Date(entry.request.created_at).toLocaleTimeString() }}
+        {{ new Date(entry.request.created_at).toLocaleDateString() }} at {{ new
+          Date(entry.request.created_at).toLocaleTimeString() }}
       </div>
 
       <!-- TODO: Tags of this request, each one being a pill and using the HEX code of the tag and its name -->
@@ -76,7 +65,7 @@ async function toggleState(item: RequestItem) {
       <!-- TODO use custom dropdown component -->
 
       <!-- Dropdown to assign tags to this request -->
-       <!-- TODO use custom dropdown component for tag edits, select and unselect tags.
+      <!-- TODO use custom dropdown component for tag edits, select and unselect tags.
         Additionally, update the tags to have a custom HEX code that it used to help display colors easier. -->
     </div>
   </div>

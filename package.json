@@ -9,13 +9,13 @@
         "install:backend": "bun install --cwd slice-guard/backend",
         "install:frontend": "bun install --cwd slice-guard/frontend",
         "install:all": "bun install",
-        "dev:backend": "bun run dev --cwd slice-guard/backend",
-        "dev:frontend": "bun run dev --cwd slice-guard/frontend",
+        "dev:backend": "bun run --cwd slice-guard/backend dev",
+        "dev:frontend": "bun run --cwd slice-guard/frontend dev",
         "build": "bun run build:backend && bun run build:frontend",
-        "build:backend": "bun run build --cwd slice-guard/backend",
-        "build:frontend": "bun run build --cwd slice-guard/frontend",
+        "build:backend": "bun run --cwd slice-guard/backend build",
+        "build:frontend": "bun run --cwd slice-guard/frontend build",
         "dev": "bun run dev:frontend",
-        "clean": "bun run clean --cwd slice-guard/backend && bun run clean --cwd slice-guard/frontend",
-        "test": "bun run test --cwd slice-guard/backend && bun run test --cwd slice-guard/frontend"
+        "clean": "bun run --cwd slice-guard/backend clean && bun run --cwd slice-guard/frontend clean",
+        "test": "bun run --cwd slice-guard/backend test && bun run --cwd slice-guard/frontend test"
     }
 }

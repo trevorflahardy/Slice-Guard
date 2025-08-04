@@ -90,44 +90,84 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
     <!-- The search bar. Spans the entire width of the element and allows you to easily search many things -->
     <div class="w-full bg-surface-low rounded-lg px-3 py-2 flex items-center gap-2">
       <svg class="h-5 w-5 text-fg-secondary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
       </svg>
 
-      <input
-        v-model="search"
-        placeholder="Search requests, users, descriptions..."
-        class="flex-1 bg-transparent text-fg-primary placeholder-fg-secondary outline-none"
-      />
+      <input v-model="search" placeholder="Search requests, users, descriptions..."
+        class="flex-1 bg-transparent text-fg-primary placeholder-fg-secondary outline-none" />
     </div>
 
     <div class="flex flex-wrap gap-2 items-center">
 
-      <Dropdown
-        v-model="tagFilter"
-        :options="tagOptions"
-        placeholder="All Tags"
-        :multiple="true"
-      />
+      <Dropdown v-model="tagFilter" :options="tagOptions" placeholder="All Tags" :multiple="true" />
 
       <input type="date" v-model="from" :class="selectClass" />
       <input type="date" v-model="to" :class="selectClass" />
 
-      <Dropdown
-        v-model="stateFilter"
-        :options="[
-          { id: 'all', name: 'All' },
-          { id: 'open', name: 'Open' },
-          { id: 'closed', name: 'Closed' }
-        ]"
-        placeholder="All States"
-        :multiple="false"
-      />
+      <Dropdown v-model="stateFilter" :options="[
+        { id: 'all', name: 'All' },
+        { id: 'open', name: 'Open' },
+        { id: 'closed', name: 'Closed' }
+      ]" placeholder="All States" :multiple="false" />
     </div>
 
-    <div class="grid grid-cols-auto gap-5">
-      <div v-for="item in filtered" :key="item.request.id">
-        <PrintRequestListItem :entry="item" />
-      </div>
-    </div>
+    <TransitionGroup ref="gridRef" name="grid" tag="div" :class="[
+      'grid gap-5 auto-rows-fr transition-all duration-300',
+      'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
+    ]">
+      <PrintRequestListItem v-for="(item, index) in filtered" :key="item.request.id" :entry="item" class="
+        grid-item transition-all duration-300" :style="{
+          transitionDelay: `${index * 70}ms`
+        }" />
+    </TransitionGroup>
   </div>
 </template>
+
+<style scoped>
+.grid-item {
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, opacity;
+  /* Add these to prevent stretching */
+  max-width: 100%;
+  min-height: 200px;
+  /* Set a reasonable minimum height */
+  height: fit-content;
+  box-sizing: border-box;
+}
+
+/* Smoother grid resizing */
+.grid-resizing .grid-item {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  max-width: 100% !important;
+}
+
+.grid-item.resizing {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Smoother animations */
+.grid-move {
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.grid-enter-active {
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.grid-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  z-index: -1;
+}
+
+/* More subtle enter/leave effects */
+.grid-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.grid-leave-to {
+  opacity: 0;
+}
+</style>

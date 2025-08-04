@@ -66,7 +66,7 @@ const tagOptions = computed(() => allTags.value.map(t => ({ id: t.id, name: t.na
 </script>
 
 <template>
-  <div class="bg-surface-low shadow-sm rounded-md max-w-72 p-3 space-y-2">
+  <div class="bg-surface-low shadow-xs shadow-surface-high rounded-xl w-full p-3 flex flex-col gap-2">
     <!-- Title and user avatar -->
     <div class="flex flex-row items-center justify-between">
       <!-- Title -->
@@ -109,7 +109,7 @@ const tagOptions = computed(() => allTags.value.map(t => ({ id: t.id, name: t.na
     </div>
 
     <!-- Action buttons -->
-    <div class="flex flex-row gap-2 items-center">
+    <div class="flex flex-row gap-2 items-center mt-auto">
       <Dropdown v-model="statusModel" :options="statusOptions" placeholder="Status" />
 
       <Dropdown v-model="tagIds" :options="tagOptions" :multiple="true">

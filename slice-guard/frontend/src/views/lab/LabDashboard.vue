@@ -2,6 +2,7 @@
 import ThemeToggle from '../../components/ThemeToggle.vue';
 import { ref } from 'vue'
 import { apiFetch } from '../../services/api'
+import Button from "../../components/Button.vue";
 
 interface Props {
     lab: any | null
@@ -33,7 +34,6 @@ async function createMockRequest() {
 }
 
 
-
 </script>
 
 <template>
@@ -55,10 +55,18 @@ async function createMockRequest() {
         <div class="flex gap-2 items-center">
             <input v-model="tagName" placeholder="Tag name"
                 class="bg-surface-low px-2 py-1 rounded-md text-fg-primary" />
-            <button @click="createTag" class="bg-salem-800 text-fg-primary px-2 py-1 rounded-md">Create Tag</button>
+            <button @click="createTag" class="bg-salem-800 text-white px-2 py-1 rounded-md">Create Tag</button>
         </div>
         <button @click="createMockRequest" class="bg-surface-low px-2 py-1 rounded-md text-fg-primary">Create Mock
             Request</button>
+    </div>
+
+    <!-- Testing for theme -->
+    <div class="flex flex-row gap-2 mt-6">
+        <Button v-for="entry in ['surface-lowest', 'surface-low', 'surface', 'surface-high', 'surface-highest']"
+            :key="entry" :class="`bg-${entry}`" class="drop-shadow-md">
+            <span class=" text-fg-primary"> Foo bar </span>
+        </Button>
     </div>
 
 </template>

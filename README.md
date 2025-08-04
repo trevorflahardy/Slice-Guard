@@ -72,6 +72,15 @@ running each migration individually.
 
 # Developmental Preview Images
 
+## Aug 4th Update
+
+Updated print requests page - added filters, filtering, and tags (with colors) on requests. Updated light theme to be better on the eyes in dark-lit environments. Will work on implementing blob storage for user avatars both for development environments via Docker and production environments.
+
+Coming next is actual an settings page. Following, websocket communication for channels with updates, updates for the client when an operation happens, and customizable channels.
+
+<img width="1496" height="762" alt="image" src="https://github.com/user-attachments/assets/3910d694-5968-4996-bb18-aa7c0ab0078b" />
+<img width="1480" height="751" alt="image" src="https://github.com/user-attachments/assets/a2a76d80-d596-4104-b77d-3ea763ef3b1b" />
+
 ## Jul 24th Update
 Created and updated system for creating mock requests to start buildout of the print requests page. Will refine the page filters, filtering, etc in the coming updates. Goals are the following, for now:
 

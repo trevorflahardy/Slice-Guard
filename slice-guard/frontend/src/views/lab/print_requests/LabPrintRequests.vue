@@ -117,7 +117,7 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
       'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
     ]">
       <PrintRequestListItem v-for="(item, index) in filtered" :key="item.request.id" :entry="item" class="
-        grid-item transition-all duration-300" :style="{
+        grid-item" :style="{
           transitionDelay: `${index * 70}ms`
         }" />
     </TransitionGroup>
@@ -126,29 +126,12 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
 
 <style scoped>
 .grid-item {
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform, opacity;
   /* Add these to prevent stretching */
   max-width: 100%;
   min-height: 200px;
   /* Set a reasonable minimum height */
   height: fit-content;
   box-sizing: border-box;
-}
-
-/* Smoother grid resizing */
-.grid-resizing .grid-item {
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  max-width: 100% !important;
-}
-
-.grid-item.resizing {
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-/* Smoother animations */
-.grid-move {
-  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .grid-enter-active {

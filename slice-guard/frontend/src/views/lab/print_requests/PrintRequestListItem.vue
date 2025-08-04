@@ -11,7 +11,8 @@ interface Props {
   entry: RequestItem
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+const entry = props.entry;
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -70,11 +71,11 @@ const tagOptions = computed(() => allTags.value.map(t => ({ id: t.id, name: t.na
     <div class="flex flex-row items-center justify-between">
       <!-- Title -->
       <h3 class="text-fg-primary font-medium text-md truncate text-pretty line-clamp-2 max-w-[80%]">
-        {{ entry.request.title }}
+        {{ entry.request.title || "[No title given]" }}
       </h3>
 
       <!-- User avatar display. TODO: Actual user avatars -->
-      <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs text-fg-secondary">
+      <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs text-salem-800">
         {{ entry.user?.name?.charAt(0) || '?' }}
       </div>
     </div>
@@ -97,12 +98,8 @@ const tagOptions = computed(() => allTags.value.map(t => ({ id: t.id, name: t.na
       </div>
 
       <div class="flex flex-wrap gap-1">
-        <span
-          v-for="tag in entry.tags"
-          :key="tag.id"
-          class="px-2 py-0.5 rounded-full text-xs text-white"
-          :style="{ backgroundColor: tag.color }"
-        >{{ tag.name }}</span>
+        <span v-for="tag in entry.tags" :key="tag.id" class="px-2 py-0.5 rounded-full text-xs text-white"
+          :style="{ backgroundColor: tag.color }">{{ tag.name }}</span>
       </div>
     </div>
 
@@ -113,17 +110,9 @@ const tagOptions = computed(() => allTags.value.map(t => ({ id: t.id, name: t.na
 
     <!-- Action buttons -->
     <div class="flex flex-row gap-2 items-center">
-      <Dropdown
-        v-model="statusModel"
-        :options="statusOptions"
-        placeholder="Status"
-      />
+      <Dropdown v-model="statusModel" :options="statusOptions" placeholder="Status" />
 
-      <Dropdown
-        v-model="tagIds"
-        :options="tagOptions"
-        :multiple="true"
-      >
+      <Dropdown v-model="tagIds" :options="tagOptions" :multiple="true">
         <template #activator>
           <div class="w-6 h-6 rounded-full bg-surface-high flex items-center justify-center cursor-pointer">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

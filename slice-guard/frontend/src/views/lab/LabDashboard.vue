@@ -53,10 +53,12 @@ async function createMockRequest() {
     <div class="mt-6 space-y-2">
         <h2 class="text-fg-primary font-semibold">Dev Tools</h2>
         <div class="flex gap-2 items-center">
-            <input v-model="tagName" placeholder="Tag name" class="bg-surface-low px-2 py-1 rounded-md" />
-            <button @click="createTag" class="bg-salem-800 text-white px-2 py-1 rounded-md">Create Tag</button>
+            <input v-model="tagName" placeholder="Tag name"
+                class="bg-surface-low px-2 py-1 rounded-md text-fg-primary" />
+            <button @click="createTag" class="bg-salem-800 text-fg-primary px-2 py-1 rounded-md">Create Tag</button>
         </div>
-        <button @click="createMockRequest" class="bg-surface-low px-2 py-1 rounded-md">Create Mock Request</button>
+        <button @click="createMockRequest" class="bg-surface-low px-2 py-1 rounded-md text-fg-primary">Create Mock
+            Request</button>
     </div>
 
 </template>

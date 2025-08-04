@@ -113,7 +113,7 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
     </div>
 
     <TransitionGroup ref="gridRef" name="grid" tag="div" :class="[
-      'grid gap-5 auto-rows-fr transition-all duration-300',
+      'grid gap-5 auto-rows-fr',
       'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
     ]">
       <PrintRequestListItem v-for="(item, index) in filtered" :key="item.request.id" :entry="item" class="
@@ -124,7 +124,6 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
   </div>
 </template>
 
-<!--TODO: Fix the resizing issue: content snaps when zooming in or out on a browser - the content does not resize nicely and has this weird transition where the text tries to smoothly expand bigger or contract smaller BUT does so to the wrong size causing it to snap back to its actual size after the transition is done. Fix so the adjustment is smooth between sizes-->
 <style scoped>
 .grid-item {
   /* Add these to prevent stretching */
@@ -142,7 +141,6 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
 .grid-leave-active {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: absolute;
-  z-index: -1;
 }
 
 /* More subtle enter/leave effects */
@@ -153,5 +151,10 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
 
 .grid-leave-to {
   opacity: 0;
+  transform: translateY(-20px);
+}
+
+.grid-move {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

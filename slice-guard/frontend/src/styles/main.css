@@ -44,11 +44,11 @@
   /*
   * Surface colors
   */
-  --color-surface-lowest: #fffdfc;
-  --color-surface-low: #FCFCFC;
-  --color-surface: #F2F0F0;
-  --color-surface-high: #e5e5ea;
-  --color-surface-highest: #d1d1d6;
+  --color-surface-lowest: #f5f5f5;
+  --color-surface-low: #e8e8e8;
+  --color-surface: #bcbcbc;
+  --color-surface-high: #909090;
+  --color-surface-highest: #4f4f4f;
 
   /**
   * Text colors
@@ -80,4 +80,9 @@
   --color-fg-quaternary: #ebebf52d;
   --color-fg-inverse: #000000e6;
   --color-fg-accent: #0a84ff;
+}
+
+html {
+  overflow-y: scroll; /* Force scrollbar to always be present */
+  scrollbar-gutter: stable;
 }

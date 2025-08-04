@@ -31,7 +31,7 @@ import type {
  */
 export const create = withAuth(async (req, userId, state, params) => {
     const labId = Number(params.labId);
-    const { file, metadata, description } = await req.json() as RequestCreatePayload;
+    const { file, metadata, title, description } = await req.json() as RequestCreatePayload;
 
     state.logger.debug({ labId, userId }, 'Creating print request');
     const perms = await getMemberRolePermissions(state.db, labId, userId);
@@ -41,7 +41,7 @@ export const create = withAuth(async (req, userId, state, params) => {
 
     const buffer = Buffer.from(file, 'base64');
     const compressed = compressRequestFile(buffer);
-    const result = await createPrintRequest(state.db, labId, userId, compressed, metadata, description ?? null);
+    const result = await createPrintRequest(state.db, labId, userId, compressed, metadata, title, description ?? null);
     state.logger.debug({ id: result.id }, 'Created print request');
     return Response.json(result);
 });
@@ -98,13 +98,13 @@ export const getRoute = withAuth(async (_req, userId, state, params) => {
  */
 export const createTagRoute = withAuth(async (req, userId, state, params) => {
     const labId = Number(params.labId);
-    const { name, isDefault } = await req.json() as TagCreatePayload;
+    const { name, color, isDefault } = await req.json() as TagCreatePayload;
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES))
         return new Response('Unauthorized', { status: 403 });
-    state.logger.debug({ labId, name }, 'Creating tag');
-    const tag = await createTag(state.db, labId, name, isDefault ?? false);
+    state.logger.debug({ labId, name, color }, 'Creating tag');
+    const tag = await createTag(state.db, labId, name, color, isDefault ?? false);
     state.logger.debug({ id: tag.id }, 'Created tag');
     return Response.json(tag);
 });

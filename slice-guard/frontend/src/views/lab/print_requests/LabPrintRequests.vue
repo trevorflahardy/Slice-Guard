@@ -124,6 +124,7 @@ const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
   </div>
 </template>
 
+<!--TODO: Fix the resizing issue: content snaps when zooming in or out on a browser - the content does not resize nicely and has this weird transition where the text tries to smoothly expand bigger or contract smaller BUT does so to the wrong size causing it to snap back to its actual size after the transition is done. Fix so the adjustment is smooth between sizes-->
 <style scoped>
 .grid-item {
   /* Add these to prevent stretching */

@@ -71,6 +71,7 @@ expects the following environment variables for S3-compatible storage:
 
 ```
 S3_ENDPOINT=http://minio:9000
+S3_PUBLIC_ENDPOINT=http://localhost:9000
 S3_BUCKET=slice-guard
 S3_REGION=us-east-1
 S3_ACCESS_KEY=<access>
@@ -90,6 +91,7 @@ any S3-compatible storage. Configure the following variables:
 
 ```
 S3_ENDPOINT=https://<account>.r2.cloudflarestorage.com
+S3_PUBLIC_ENDPOINT=https://<public-domain>
 S3_BUCKET=<bucket-name>
 S3_REGION=auto
 S3_ACCESS_KEY=<r2-access-key>

@@ -36,7 +36,8 @@ export const uploadAvatar = withAuth(async (req, userId, state, params) => {
             ContentType: file.type || "application/octet-stream",
         })
     );
-    const url = `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET}/${key}`;
+    const publicEndpoint = process.env.S3_PUBLIC_ENDPOINT || process.env.S3_ENDPOINT;
+    const url = `${publicEndpoint}/${process.env.S3_BUCKET}/${key}`;
     const user = await setAvatarUrl(state.db, id, url);
 
     return Response.json(user);

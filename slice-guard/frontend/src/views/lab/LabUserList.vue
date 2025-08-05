@@ -3,6 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import type { Lab, LabMember } from '@shared/db/lab'
 import type { User } from '@shared/db/user'
 import { apiFetch } from '../../services/api'
+import SearchBar from '../../components/SearchBar.vue'
 
 const props = defineProps<{
     lab: Lab | null
@@ -48,16 +49,7 @@ watch(() => props.lab?.id, fetchMembers)
 <template>
     <div class="flex flex-col gap-4">
         <!-- Search bar to filter users -->
-        <div class="w-full bg-surface-low rounded-lg px-3 py-2 flex items-center gap-2">
-            <svg class="h-5 w-5 text-fg-secondary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-                v-model="search"
-                placeholder="Search users..."
-                class="flex-1 bg-transparent text-fg-primary placeholder-fg-secondary outline-none"
-            />
-        </div>
+        <SearchBar v-model="search" placeholder="Search users..." />
         <!-- Display the list of users categorized by role -->
         <div v-for="(users, category) in filteredMembers" :key="category" class="flex flex-col gap-2">
             <!-- Category header -->
@@ -86,3 +78,4 @@ watch(() => props.lab?.id, fetchMembers)
         </div>
     </div>
 </template>
+

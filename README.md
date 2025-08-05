@@ -103,6 +103,13 @@ Ensure the bucket exists and the credentials have read/write access.
 
 # Developmental Preview Images
 
+## Aug 5th Update
+
+Added support for avatars throughout the application. Following will be a buildout of the websocket system, a base implementation of channels, and event listeners for live updates across the client.
+
+<img width="1410" height="758" alt="image" src="https://github.com/user-attachments/assets/8b9c1073-5f28-400d-b298-599d4927801a" />
+<img width="1431" height="760" alt="image" src="https://github.com/user-attachments/assets/d1093f35-84da-4157-bc41-4972cb672dbd" />
+
 ## Aug 4th Update
 
 Updated print requests page - added filters, filtering, and tags (with colors) on requests. Updated light theme to be better on the eyes in dark-lit environments. Will work on implementing blob storage for user avatars both for development environments via Docker and production environments.

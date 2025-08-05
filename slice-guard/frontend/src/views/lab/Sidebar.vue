@@ -4,16 +4,23 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
 import { type Lab } from '@shared/db/lab'
 import { Cog6ToothIcon } from '@heroicons/vue/16/solid'
+import UserSettings from '../../modals/user_settings/UserSettings.vue'
+import { useModal } from '../../composables/useModal'
 
+export interface LabSidebarProps {
+    lab: Lab | null
+}
 
-const auth = useAuthStore()
+const props = defineProps<LabSidebarProps>();
+const auth = useAuthStore();
+const route = useRoute();
 
-const route = useRoute()
-const labId = computed(() => route.params.id)
+const labId = computed(() => route.params.id);
+const userSettingsModal = useModal();
 
 const navClass = ref(
     'text-sm text-fg-primary hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md'
-)
+);
 
 const navIsActive = (name: string) => {
     return route.name === name
@@ -21,11 +28,7 @@ const navIsActive = (name: string) => {
 
 const isActiveClass = ref(
     'shadow-md dark:shadow-surface dark:shadow-sm'
-)
-
-const props = defineProps<{
-    lab: Lab | null
-}>();
+);
 
 const initials = computed(() => {
     const name = auth.user?.name || auth.user?.email || ''
@@ -119,11 +122,12 @@ const initials = computed(() => {
             </div>
 
             <!--Settings gear icon at the end of the flex -->
-            <Cog6ToothIcon
-                class="ml-auto size-5 text-fg-secondary transition-transform hover:motion-safe:rotate-90 duration-500 ease-in-out" />
+            <button @click="userSettingsModal.open()" class="ml-auto">
+                <Cog6ToothIcon
+                    class="size-5 text-fg-secondary transition-transform hover:motion-safe:rotate-90 duration-500 ease-in-out" />
+            </button>
+
+            <UserSettings v-if="userSettingsModal.isOpen.value" @close="userSettingsModal.close()" />
         </div>
     </div>
-
-
-
 </template>

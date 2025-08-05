@@ -29,6 +29,7 @@ export async function register(req: Request, state: State): Promise<Response> {
             id: user.id,
             email: user.email,
             name: user.name,
+            avatar_url: user.avatar_url,
             created_at: user.created_at,
         },
     });
@@ -61,6 +62,7 @@ export async function login(req: Request, state: State): Promise<Response> {
             id: user.id,
             email: user.email,
             name: user.name,
+            avatar_url: user.avatar_url,
             created_at: user.created_at,
         },
     });

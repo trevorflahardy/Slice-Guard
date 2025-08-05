@@ -3,15 +3,24 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
 import { type Lab } from '@shared/db/lab'
+import { Cog6ToothIcon } from '@heroicons/vue/16/solid'
+import UserSettings from '../../modals/user_settings/UserSettings.vue'
+import { useModal } from '../../composables/useModal'
 
-const auth = useAuthStore()
+export interface LabSidebarProps {
+    lab: Lab | null
+}
 
-const route = useRoute()
-const labId = computed(() => route.params.id)
+const props = defineProps<LabSidebarProps>();
+const auth = useAuthStore();
+const route = useRoute();
+
+const labId = computed(() => route.params.id);
+const userSettingsModal = useModal();
 
 const navClass = ref(
     'text-sm text-fg-primary hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md'
-)
+);
 
 const navIsActive = (name: string) => {
     return route.name === name
@@ -19,11 +28,12 @@ const navIsActive = (name: string) => {
 
 const isActiveClass = ref(
     'shadow-md dark:shadow-surface dark:shadow-sm'
-)
+);
 
-const props = defineProps<{
-    lab: Lab | null
-}>();
+const initials = computed(() => {
+    const name = auth.user?.name || auth.user?.email || ''
+    return name.charAt(0)
+})
 </script>
 
 <template>
@@ -31,7 +41,12 @@ const props = defineProps<{
     <div class="flex flex-col gap-5 h-full justify-items-start">
         <!--Currently active lab information (and way to change lab)-->
         <div class="text-left flex flex-col items-start gap-2">
-            <h1 class="text-lg/5 text-fg-primary font-semibold text-pretty">{{ props.lab?.name }}</h1>
+            <div class="flex justify-between w-full">
+                <h1 class="text-lg/5 text-fg-primary font-semibold text-pretty">{{ props.lab?.name }}</h1>
+
+                <Cog6ToothIcon class="ml-auto size-4 text-fg-secondary" />
+            </div>
+
             <p class="text-xs text-fg-secondary line-clamp-2">{{ props.lab?.description }}</p>
         </div>
 
@@ -95,8 +110,11 @@ const props = defineProps<{
         <hr class="border-fg-secondary mt-auto">
 
         <div class="flex flex-row gap-2 rounded-xl justify-start items-center">
-            <!-- Temporary avatar image that takes up the same height as the text it's to the left of -->
-            <div class="w-10 h-10 rounded-full bg-gray-500 drop-shadow-sm">
+            <img v-if="auth.user?.avatar_url" :src="auth.user.avatar_url"
+                class="w-10 h-10 rounded-full object-cover drop-shadow-sm" />
+            <div v-else
+                class="w-10 h-10 rounded-full bg-gray-500 text-white flex items-center justify-center drop-shadow-sm">
+                {{ initials }}
             </div>
 
             <div>
@@ -104,13 +122,12 @@ const props = defineProps<{
             </div>
 
             <!--Settings gear icon at the end of the flex -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-fg-secondary cursor-pointer ml-auto" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m-6 0l3-3V8" />
-            </svg>
+            <button @click="userSettingsModal.open()" class="ml-auto">
+                <Cog6ToothIcon
+                    class="size-5 text-fg-secondary transition-transform hover:motion-safe:rotate-90 duration-500 ease-in-out" />
+            </button>
+
+            <UserSettings v-if="userSettingsModal.isOpen.value" @close="userSettingsModal.close()" />
         </div>
     </div>
-
-
-
 </template>

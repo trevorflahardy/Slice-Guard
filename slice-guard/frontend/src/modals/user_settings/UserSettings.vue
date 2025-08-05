@@ -1,6 +1,6 @@
 <!-- UserSettings.vue - Now a proper MODAL -->
 <script setup lang="ts">
-import { onMounted, onUnmounted, defineEmits, defineAsyncComponent, type ShallowRef, shallowRef, ref, computed } from 'vue'
+import { onMounted, onUnmounted, defineAsyncComponent, type ShallowRef, shallowRef, ref, computed } from 'vue'
 import { XCircleIcon } from '@heroicons/vue/24/outline'
 import SearchBar from '../../components/SearchBar.vue'
 
@@ -108,4 +108,3 @@ onUnmounted(() => {
         </div>
     </Teleport>
 </template>
-

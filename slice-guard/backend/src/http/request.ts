@@ -11,7 +11,7 @@ import {
     unassignTag,
     listTags,
     getTagsForRequest,
-} from '../db/request';
+} from '../db/lab/request';
 import { compressRequestFile } from '../utils/storage';
 import { getMemberRolePermissions } from '../db/lab';
 import { findPublicUserById } from '../db/user';
@@ -19,7 +19,6 @@ import { LabPermission } from '@shared/db/lab';
 import { hasLabPermission } from '../utils/permissions';
 import type {
     RequestCreatePayload,
-    RequestListPayload,
     TagCreatePayload,
     TagSetDefaultPayload,
     RequestAssignTagPayload,

@@ -14,6 +14,7 @@ export const createRoleRoute = withAuth(async (req, userId, state, params) => {
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES))
         return new Response("Unauthorized", { status: 403 });
+
     const role = await createRole(state.db, labId, name, permissions);
 
     return Response.json(role);

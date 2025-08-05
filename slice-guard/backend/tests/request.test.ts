@@ -9,7 +9,7 @@ import {
   getTagsForRequest,
   type PrintRequestRow,
   type RequestTagRow,
-} from "../src/db/request";
+} from "../src/db/lab/request";
 
 function createMockSQL(result: any[] = []) {
   const fn: any = (strings: TemplateStringsArray, ...values: any[]) => {

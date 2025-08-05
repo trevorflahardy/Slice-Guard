@@ -17,6 +17,7 @@ import type { LabCreatePayload, LabUpdatePayload } from "@shared/payloads";
 export const create = withAuth(async (req, userId, state) => {
     const { name, description, imageUrl } =
         (await req.json()) as LabCreatePayload;
+
     const lab = await createLab(
         state.db,
         userId,
@@ -53,9 +54,11 @@ export const update = withAuth(async (req, userId, state, params) => {
     const id = Number(params.id);
     const { name, description, imageUrl } =
         (await req.json()) as LabUpdatePayload;
+
     const perms = await getMemberRolePermissions(state.db, id, userId);
     if (!hasLabPermission(perms, LabPermission.EDIT_LAB))
         return new Response("Unauthorized", { status: 403 });
+
     const lab = await updateLab(
         state.db,
         id,

@@ -33,13 +33,12 @@ watch(() => route.params.id, fetchLab)
 
 <template>
   <div class="flex min-h-screen bg-surface-lowest">
-    <aside
-      class="w-56 lg:w-64 xl:w-72 bg-surface-low min-h-screen p-7 shrink-0 rounded-r-4xl shadow-inner shadow-surface-high">
+    <aside class="w-56 lg:w-64 xl:w-72 bg-surface-low min-h-screen p-7 shrink-0 rounded-r-3xl border-r border-surface">
       <Sidebar :lab="lab" />
     </aside>
 
     <!-- Main content area -->
-    <div class="bg-surface-lowest w-full flex gap-0">
+    <div class="bg-surface-lowest w-full flex gap-0 overflow-y-scroll">
       <div class="p-6 flex-1 w-full">
         <!-- Actual insert content-->
         <router-view :lab="lab" :error="error" :loading="loading" />

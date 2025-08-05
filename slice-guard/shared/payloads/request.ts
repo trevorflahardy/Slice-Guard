@@ -4,6 +4,7 @@ export interface RequestCreatePayload {
   labId: number
   file: string
   metadata: any
+  title: string
   description?: string
 }
 
@@ -14,6 +15,7 @@ export interface RequestListPayload {
 export interface TagCreatePayload {
   labId: number
   name: string
+  color: string
   isDefault?: boolean
 }
 

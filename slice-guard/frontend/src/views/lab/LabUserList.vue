@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import type { Lab, LabMember } from '@shared/db/lab'
 import type { User } from '@shared/db/user'
 import { apiFetch } from '../../services/api'
@@ -14,6 +14,18 @@ interface MemberResponse {
 }
 
 const members = ref<Record<string, { id: number; name: string; avatar_url?: string | null }[]>>({})
+const search = ref('')
+
+const filteredMembers = computed(() => {
+    if (!search.value) return members.value
+    const lower = search.value.toLowerCase()
+    const result: Record<string, { id: number; name: string }[]> = {}
+    for (const [category, users] of Object.entries(members.value)) {
+        const filtered = users.filter(u => u.name.toLowerCase().includes(lower))
+        if (filtered.length > 0) result[category] = filtered
+    }
+    return result
+})
 
 async function fetchMembers() {
     if (!props.lab) return
@@ -35,17 +47,19 @@ watch(() => props.lab?.id, fetchMembers)
 
 <template>
     <div class="flex flex-col gap-4">
-        <!-- Placeholder for search bar of users -->
-        <div class="w-full bg-surface-low shadow-md rounded-lg py-2 px-4 flex items-center justify-end">
-            <!-- Magnifying glass SVG -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <!-- Search bar to filter users -->
+        <div class="w-full bg-surface-low rounded-lg px-3 py-2 flex items-center gap-2">
+            <svg class="h-5 w-5 text-fg-secondary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
+            <input
+                v-model="search"
+                placeholder="Search users..."
+                class="flex-1 bg-transparent text-fg-primary placeholder-fg-secondary outline-none"
+            />
         </div>
         <!-- Display the list of users categorized by role -->
-        <div v-for="(users, category) in members" :key="category" class="flex flex-col gap-2">
+        <div v-for="(users, category) in filteredMembers" :key="category" class="flex flex-col gap-2">
             <!-- Category header -->
             <h3 class="text-xs font-medium text-fg-primary uppercase tracking-wide px-2">
                 {{ category }}

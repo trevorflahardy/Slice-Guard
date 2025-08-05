@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, useSlots } from 'vue'
 
 interface DropdownOption {
   id: number | string
@@ -26,6 +26,7 @@ const emit = defineEmits<Emits>()
 
 const isOpen = ref(false)
 const dropdownRef = ref<HTMLElement>()
+const slots = useSlots()
 
 // Handle click outside to close dropdown
 function handleClickOutside(event: MouseEvent) {
@@ -103,7 +104,13 @@ const selectClass = "bg-surface-low px-3 py-1 rounded-full text-fg-primary shado
 
 <template>
   <div class="relative" ref="dropdownRef">
+    <template v-if="$slots.activator">
+      <div @click="isOpen = !isOpen">
+        <slot name="activator" />
+      </div>
+    </template>
     <button
+      v-else
       @click="isOpen = !isOpen"
       :class="selectClass"
       class="flex items-center justify-between gap-2 w-full"

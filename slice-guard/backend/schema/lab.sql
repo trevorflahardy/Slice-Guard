@@ -39,6 +39,7 @@ CREATE TABLE lab.print_requests (
     id SERIAL PRIMARY KEY,
     lab_id INTEGER NOT NULL REFERENCES lab.labs(id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    title TEXT,
     file_data BYTEA NOT NULL DEFAULT ''::bytea,
     metadata JSONB NOT NULL,
     description TEXT,
@@ -50,6 +51,7 @@ CREATE TABLE lab.request_tags (
     id SERIAL PRIMARY KEY,
     lab_id INTEGER NOT NULL REFERENCES lab.labs(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
+    color TEXT NOT NULL DEFAULT '#9ca3af',
     is_default BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW()
 );

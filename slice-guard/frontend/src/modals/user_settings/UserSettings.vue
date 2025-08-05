@@ -1,9 +1,10 @@
 <!-- UserSettings.vue - Now a proper MODAL -->
 <script setup lang="ts">
-import { onMounted, onUnmounted, defineEmits, defineAsyncComponent, type ShallowRef, shallowRef } from 'vue'
-import { XCircleIcon } from '@heroicons/vue/24/outline';
+import { onMounted, onUnmounted, defineEmits, defineAsyncComponent, type ShallowRef, shallowRef, ref, computed } from 'vue'
+import { XCircleIcon } from '@heroicons/vue/24/outline'
+import SearchBar from '../../components/SearchBar.vue'
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close'])
 
 // Constant for available pages on this modal (aka settings pages). Organized by category and then each
 // individual page
@@ -16,10 +17,21 @@ const activePage: ShallowRef<{ category: string, id: number, component: any }> =
     category: 'user settings',
     id: 1,
     component: pages['user settings'][0].component
-});
+})
+
+const search = ref('')
+const filteredPages = computed(() => {
+    const q = search.value.toLowerCase()
+    const result: Record<string, { name: string, component: any, id: number }[]> = {}
+    for (const [category, list] of Object.entries(pages)) {
+        const filtered = list.filter(p => p.name.toLowerCase().includes(q))
+        if (filtered.length) result[category] = filtered
+    }
+    return q ? result : pages
+})
 
 const isActivePage = (category: string, id: number) => {
-    return activePage.value.category === category && activePage.value.id === id;
+    return activePage.value.category === category && activePage.value.id === id
 }
 
 // Modal behavior - close on Escape key
@@ -52,17 +64,14 @@ onUnmounted(() => {
                 <div class="max-w-[25%] w-full h-full py-10 px-5">
                     <!-- The actual contents themselves are a fraction of the actual width-->
                     <div class="w-72 h-full ml-auto">
-                        <!-- Search bar for the settings the user can select from. TODO add this search functionality using a new component -->
-                        <div
-                            class="w-full bg-surface-low outline-1 outline-fg-secondary rounded-lg px-3 py-1 text-fg-secondary">
-                            Search...
-                        </div>
+                        <!-- Search bar for the settings the user can select from -->
+                        <SearchBar v-model="search" placeholder="Search..." />
 
                         <div class="mt-5">
                             <!-- List of settings pages -->
                             <hr class="border-surface-high my-3">
 
-                            <ul v-for="(pages, category) in pages" :key="category" class="flex flex-col gap-1">
+                            <ul v-for="(pages, category) in filteredPages" :key="category" class="flex flex-col gap-1">
                                 <h3 class="text-fg-secondary uppercase font-semibold text-sm ps-2 mb-1">
                                     {{ category }}
                                 </h3>
@@ -99,3 +108,4 @@ onUnmounted(() => {
         </div>
     </Teleport>
 </template>
+

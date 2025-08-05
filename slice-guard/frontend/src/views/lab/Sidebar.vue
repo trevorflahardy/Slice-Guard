@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
 import { type Lab } from '@shared/db/lab'
+import 'vue-octicon/components/Octicon.vue';
 
 const auth = useAuthStore()
 
@@ -100,8 +101,10 @@ const initials = computed(() => {
         <hr class="border-fg-secondary mt-auto">
 
         <div class="flex flex-row gap-2 rounded-xl justify-start items-center">
-            <img v-if="auth.user?.avatar_url" :src="auth.user.avatar_url" class="w-10 h-10 rounded-full object-cover drop-shadow-sm" />
-            <div v-else class="w-10 h-10 rounded-full bg-gray-500 text-white flex items-center justify-center drop-shadow-sm">
+            <img v-if="auth.user?.avatar_url" :src="auth.user.avatar_url"
+                class="w-10 h-10 rounded-full object-cover drop-shadow-sm" />
+            <div v-else
+                class="w-10 h-10 rounded-full bg-gray-500 text-white flex items-center justify-center drop-shadow-sm">
                 {{ initials }}
             </div>
 
@@ -110,6 +113,7 @@ const initials = computed(() => {
             </div>
 
             <!--Settings gear icon at the end of the flex -->
+            <octicon name="gear" />
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-fg-secondary cursor-pointer ml-auto" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m-6 0l3-3V8" />

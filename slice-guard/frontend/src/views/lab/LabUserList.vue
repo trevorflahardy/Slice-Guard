@@ -13,18 +13,18 @@ interface MemberResponse {
     user: User
 }
 
-const members = ref<Record<string, { id: number; name: string }[]>>({})
+const members = ref<Record<string, { id: number; name: string; avatar_url?: string | null }[]>>({})
 
 async function fetchMembers() {
     if (!props.lab) return
     const res = await apiFetch(`/labs/${props.lab.id}/members`)
     if (!res.ok) return
     const data = (await res.json()) as MemberResponse[]
-    const map: Record<string, { id: number; name: string }[]> = {}
+    const map: Record<string, { id: number; name: string; avatar_url?: string | null }[]> = {}
     for (const item of data) {
         const category = item.member.roles[0]?.name ?? 'Member'
         if (!map[category]) map[category] = []
-        map[category].push({ id: item.user.id, name: item.user.name ?? item.user.email })
+        map[category].push({ id: item.user.id, name: item.user.name ?? item.user.email, avatar_url: item.user.avatar_url })
     }
     members.value = map
 }
@@ -56,8 +56,8 @@ watch(() => props.lab?.id, fetchMembers)
                 <li v-for="user in users" :key="user.id">
                     <div
                         class="flex items-center justify-start gap-3 p-2 rounded-xl hover:shadow-md transition-all duration-200 hover:text-black text-fg-primary">
-                        <!-- Placeholder user avatar -->
-                        <div class="w-7 h-7 rounded-full bg-gray-700 flex-none"></div>
+                        <img v-if="user.avatar_url" :src="user.avatar_url" class="w-7 h-7 rounded-full object-cover flex-none" />
+                        <div v-else class="w-7 h-7 rounded-full bg-gray-700 flex-none"></div>
 
                         <span class="text-sm truncate">
                             {{ user.name }}

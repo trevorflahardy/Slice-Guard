@@ -4,6 +4,7 @@ import { SQL, type SQLOptions } from "bun";
 import * as auth from './http/auth';
 import * as lab from './http/lab';
 import * as requestHandlers from './http/request';
+import * as userRoutes from './http/user';
 
 import logger from "./utils/logger";
 import { withLogging } from "./http/middleware";
@@ -71,6 +72,10 @@ export class Server {
                 },
                 '/api/labs/:labId/tags/:tagId': {
                     PATCH: req => withLogging(requestHandlers.setTagDefaultRoute)(req, this.state, req.params),
+                },
+                '/api/users/:id/avatar': {
+                    POST: req => withLogging(userRoutes.uploadAvatar)(req, this.state, req.params),
+                    GET: req => withLogging(userRoutes.getAvatar)(req, this.state, req.params),
                 },
                 '/api/*': {
                     OPTIONS: _req => {

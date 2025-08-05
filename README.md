@@ -63,11 +63,40 @@ The backend will be available on `http://localhost:3000` and the frontend on
 `http://localhost:5173`. The frontend is configured to talk to the backend using
 those internal addresses so WebSocket connections work out of the box.
 
+### Object Storage
+
+The compose file also includes a MinIO service for local testing of avatar uploads.
+Set `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY` in your `.env` file. The backend
+expects the following environment variables for S3-compatible storage:
+
+```
+S3_ENDPOINT=http://minio:9000
+S3_BUCKET=slice-guard
+S3_REGION=us-east-1
+S3_ACCESS_KEY=<access>
+S3_SECRET_KEY=<secret>
+```
+
 ## Database Schema
 
 Complete schema files are provided under `slice-guard/backend/schema`. These
 SQL files combine all migrations so a new database can be created without
 running each migration individually.
+
+## Production Deployment with Cloudflare R2
+
+For production environments you can store uploaded avatars in Cloudflare R2 or
+any S3-compatible storage. Configure the following variables:
+
+```
+S3_ENDPOINT=https://<account>.r2.cloudflarestorage.com
+S3_BUCKET=<bucket-name>
+S3_REGION=auto
+S3_ACCESS_KEY=<r2-access-key>
+S3_SECRET_KEY=<r2-secret>
+```
+
+Ensure the bucket exists and the credentials have read/write access.
 
 
 # Developmental Preview Images

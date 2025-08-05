@@ -31,7 +31,7 @@ export interface RefreshTokenRow {
 /** Fetch a user by their e-mail address. */
 export async function findUserByEmail(db: SQL, email: string): Promise<UserWithPassword | null> {
     const rows: UserWithPassword[] = await db`
-        SELECT id, email, name, created_at, password_hash
+        SELECT id, email, name, avatar_url, created_at, password_hash
           FROM auth.users
          WHERE email = ${email}
     `;
@@ -42,7 +42,7 @@ export async function findUserByEmail(db: SQL, email: string): Promise<UserWithP
 /** Fetch a user by their database id. */
 export async function findUserById(db: SQL, id: number): Promise<UserWithPassword | null> {
     const rows: UserWithPassword[] = await db`
-        SELECT id, email, name, created_at, password_hash
+        SELECT id, email, name, avatar_url, created_at, password_hash
           FROM auth.users
          WHERE id = ${id}
     `;
@@ -53,7 +53,7 @@ export async function findUserById(db: SQL, id: number): Promise<UserWithPasswor
 /** Fetch a user by id returning only public fields. */
 export async function findPublicUserById(db: SQL, id: number): Promise<User | null> {
     const rows: User[] = await db`
-        SELECT id, email, name, created_at
+        SELECT id, email, name, avatar_url, created_at
           FROM auth.users
          WHERE id = ${id}
     `;
@@ -62,11 +62,17 @@ export async function findPublicUserById(db: SQL, id: number): Promise<User | nu
 }
 
 /** Create a new user in the database. */
-export async function createUser(db: SQL, email: string, passwordHash: string, name: string): Promise<UserWithPassword> {
+export async function createUser(
+    db: SQL,
+    email: string,
+    passwordHash: string,
+    name: string,
+    avatarUrl: string | null = null,
+): Promise<UserWithPassword> {
     const rows: UserWithPassword[] = await db`
-        INSERT INTO auth.users (email, password_hash, name)
-             VALUES (${email}, ${passwordHash}, ${name})
-        RETURNING id, email, name, created_at, password_hash
+        INSERT INTO auth.users (email, password_hash, name, avatar_url)
+             VALUES (${email}, ${passwordHash}, ${name}, ${avatarUrl})
+        RETURNING id, email, name, avatar_url, created_at, password_hash
     `;
     return rows[0];
 }
@@ -139,4 +145,15 @@ export async function getOrCreateApiKey(db: SQL, userId: number, key: string): P
     `;
     if (existing[0]) return existing[0];
     return insertApiKey(db, userId, key);
+}
+
+/** Update a user's avatar URL. */
+export async function setAvatarUrl(db: SQL, userId: number, url: string | null): Promise<User> {
+    const rows: User[] = await db`
+        UPDATE auth.users
+           SET avatar_url = ${url}
+         WHERE id = ${userId}
+        RETURNING id, email, name, avatar_url, created_at
+    `;
+    return rows[0];
 }

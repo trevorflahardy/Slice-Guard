@@ -52,7 +52,7 @@ test("findUserByEmail uses expected SQL", async () => {
   const db = createMockSQL([row]);
   const result = await findUserByEmail(db as any, "test@example.com");
   expect(normalize(db.lastQuery)).toBe(
-    "SELECT id, email, name, created_at, password_hash FROM auth.users WHERE email = $1"
+    "SELECT id, email, name, avatar_url, created_at, password_hash FROM auth.users WHERE email = $1"
   );
   expect(db.lastParams).toEqual(["test@example.com"]);
   expect(result).toEqual(row);
@@ -63,7 +63,7 @@ test("findUserById uses expected SQL", async () => {
   const db = createMockSQL([row]);
   const result = await findUserById(db as any, 1);
   expect(normalize(db.lastQuery)).toBe(
-    "SELECT id, email, name, created_at, password_hash FROM auth.users WHERE id = $1"
+    "SELECT id, email, name, avatar_url, created_at, password_hash FROM auth.users WHERE id = $1"
   );
   expect(db.lastParams).toEqual([1]);
   expect(result).toEqual(row);
@@ -74,9 +74,9 @@ test("createUser inserts with expected values", async () => {
   const db = createMockSQL([row]);
   const result = await createUser(db as any, row.email, row.password_hash, row.name!);
   expect(normalize(db.lastQuery)).toBe(
-    "INSERT INTO auth.users (email, password_hash, name) VALUES ($1, $2, $3) RETURNING id, email, name, created_at, password_hash"
+    "INSERT INTO auth.users (email, password_hash, name, avatar_url) VALUES ($1, $2, $3, $4) RETURNING id, email, name, avatar_url, created_at, password_hash"
   );
-  expect(db.lastParams).toEqual([row.email, row.password_hash, row.name]);
+  expect(db.lastParams).toEqual([row.email, row.password_hash, row.name, null]);
   expect(result).toEqual(row);
 });
 

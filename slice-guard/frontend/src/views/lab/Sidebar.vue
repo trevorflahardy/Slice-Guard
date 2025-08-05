@@ -24,6 +24,11 @@ const isActiveClass = ref(
 const props = defineProps<{
     lab: Lab | null
 }>();
+
+const initials = computed(() => {
+    const name = auth.user?.name || auth.user?.email || ''
+    return name.charAt(0)
+})
 </script>
 
 <template>
@@ -95,8 +100,9 @@ const props = defineProps<{
         <hr class="border-fg-secondary mt-auto">
 
         <div class="flex flex-row gap-2 rounded-xl justify-start items-center">
-            <!-- Temporary avatar image that takes up the same height as the text it's to the left of -->
-            <div class="w-10 h-10 rounded-full bg-gray-500 drop-shadow-sm">
+            <img v-if="auth.user?.avatar_url" :src="auth.user.avatar_url" class="w-10 h-10 rounded-full object-cover drop-shadow-sm" />
+            <div v-else class="w-10 h-10 rounded-full bg-gray-500 text-white flex items-center justify-center drop-shadow-sm">
+                {{ initials }}
             </div>
 
             <div>

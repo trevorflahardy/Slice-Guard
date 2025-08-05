@@ -25,8 +25,15 @@ const labId = computed(() => Number(route.params.id));
         This is an example title that should be truncated and is super duper long
       </h3>
 
-      <!-- User avatar display. TODO: Actual user avatars -->
-      <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs text-fg-secondary">
+      <img
+        v-if="entry.user?.avatar_url"
+        :src="entry.user.avatar_url"
+        class="w-8 h-8 rounded-full object-cover"
+      />
+      <div
+        v-else
+        class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs text-fg-secondary"
+      >
         {{ entry.user?.name?.charAt(0) || '?' }}
       </div>
     </div>

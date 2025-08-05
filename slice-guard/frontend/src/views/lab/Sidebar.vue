@@ -3,7 +3,8 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
 import { type Lab } from '@shared/db/lab'
-import 'vue-octicon/components/Octicon.vue';
+import { Cog6ToothIcon } from '@heroicons/vue/16/solid'
+
 
 const auth = useAuthStore()
 
@@ -37,7 +38,12 @@ const initials = computed(() => {
     <div class="flex flex-col gap-5 h-full justify-items-start">
         <!--Currently active lab information (and way to change lab)-->
         <div class="text-left flex flex-col items-start gap-2">
-            <h1 class="text-lg/5 text-fg-primary font-semibold text-pretty">{{ props.lab?.name }}</h1>
+            <div class="flex justify-between w-full">
+                <h1 class="text-lg/5 text-fg-primary font-semibold text-pretty">{{ props.lab?.name }}</h1>
+
+                <Cog6ToothIcon class="ml-auto size-4 text-fg-secondary" />
+            </div>
+
             <p class="text-xs text-fg-secondary line-clamp-2">{{ props.lab?.description }}</p>
         </div>
 
@@ -113,11 +119,7 @@ const initials = computed(() => {
             </div>
 
             <!--Settings gear icon at the end of the flex -->
-            <octicon name="gear" />
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-fg-secondary cursor-pointer ml-auto" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m-6 0l3-3V8" />
-            </svg>
+            <Cog6ToothIcon class="ml-auto size-5 text-fg-secondary" />
         </div>
     </div>
 

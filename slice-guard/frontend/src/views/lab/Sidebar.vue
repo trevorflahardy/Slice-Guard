@@ -119,7 +119,8 @@ const initials = computed(() => {
             </div>
 
             <!--Settings gear icon at the end of the flex -->
-            <Cog6ToothIcon class="ml-auto size-5 text-fg-secondary" />
+            <Cog6ToothIcon
+                class="ml-auto size-5 text-fg-secondary transition-transform hover:motion-safe:rotate-90 duration-500 ease-in-out" />
         </div>
     </div>
 

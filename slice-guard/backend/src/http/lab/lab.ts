@@ -14,7 +14,6 @@ import { getLabState } from "../../utils/lab_state";
 import type { LabCreatePayload, LabUpdatePayload } from "@shared/payloads";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import type { BunFile } from "bun";
-import { WsEvent } from "@shared/payloads/ws";
 
 /**
  * POST /api/labs

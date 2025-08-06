@@ -50,6 +50,9 @@ export class Server {
                 '/api/labs/:labId/roles': {
                     POST: req => withLogging(lab.createRoleRoute)(req, this.state, req.params),
                 },
+                '/api/labs/:labId/roles/:roleId': {
+                    PATCH: req => withLogging(lab.updateRoleRoute)(req, this.state, req.params),
+                },
                 '/api/labs/:labId/members': {
                     POST: req => withLogging(lab.addMemberRoute)(req, this.state, req.params),
                     GET: req => withLogging(lab.listMembersRoute)(req, this.state, req.params),

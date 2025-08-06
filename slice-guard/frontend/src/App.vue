@@ -10,7 +10,7 @@ const hideBar = computed(() => ['Login', 'Register'].includes(route.name as stri
   <div v-if="hideBar">
     <router-view />
   </div>
-  <div v-else class="flex">
+  <div v-else class="flex min-h-screen">
     <LabBar />
     <div class="flex-1">
       <router-view />
@@ -18,5 +18,4 @@ const hideBar = computed(() => ['Login', 'Register'].includes(route.name as stri
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

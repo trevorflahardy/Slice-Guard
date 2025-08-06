@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import ThemeToggle from '../../components/ThemeToggle.vue';
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { apiFetch } from '../../services/api'
 import Button from "../../components/Button.vue";
+import { useLabsStore } from '../../store/labs'
 
 interface Props {
     lab: any | null
@@ -11,8 +12,14 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const labs = useLabsStore()
 
 const tagName = ref('')
+
+const invites = computed(() => {
+    if (!props.lab) return []
+    return labs.getLab(props.lab.id)?.invites ?? []
+})
 
 async function createTag() {
     if (!props.lab) return
@@ -59,6 +66,29 @@ async function createMockRequest() {
         </div>
         <button @click="createMockRequest" class="bg-surface-low px-2 py-1 rounded-md text-fg-primary">Create Mock
             Request</button>
+    </div>
+
+    <!-- Debug invites -->
+    <div class="mt-6 space-y-2">
+        <h2 class="text-fg-primary font-semibold">Invites (debug)</h2>
+        <table class="w-full text-sm">
+            <thead class="text-fg-secondary">
+                <tr>
+                    <th class="text-left">Code</th>
+                    <th class="text-left">Uses</th>
+                    <th class="text-left">Max</th>
+                    <th class="text-left">Expires</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="i in invites" :key="i.id" class="text-fg-primary">
+                    <td>{{ i.code }}</td>
+                    <td>{{ i.uses }}</td>
+                    <td>{{ i.max_uses ?? '∞' }}</td>
+                    <td>{{ i.expires_at ? new Date(i.expires_at).toLocaleString() : 'never' }}</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <!-- Testing for theme -->

@@ -78,6 +78,17 @@ export class Server {
                     PATCH: req => withLogging(requestHandlers.setTagDefaultRoute)(req, this.state, req.params),
                     DELETE: req => withLogging(requestHandlers.deleteTagRoute)(req, this.state, req.params),
                 },
+                '/api/labs/:labId/invites': {
+                    POST: req => withLogging(lab.createInviteRoute)(req, this.state, req.params),
+                    GET: req => withLogging(lab.listInvitesRoute)(req, this.state, req.params),
+                },
+                '/api/labs/:labId/invites/:inviteId': {
+                    PATCH: req => withLogging(lab.updateInviteRoute)(req, this.state, req.params),
+                    DELETE: req => withLogging(lab.deleteInviteRoute)(req, this.state, req.params),
+                },
+                '/api/invites/:code': {
+                    POST: req => withLogging(lab.useInviteRoute)(req, this.state, req.params),
+                },
                 '/api/users/:id/avatar': {
                     POST: req => withLogging(userRoutes.uploadAvatar)(req, this.state, req.params),
                     GET: req => withLogging(userRoutes.getAvatar)(req, this.state, req.params),

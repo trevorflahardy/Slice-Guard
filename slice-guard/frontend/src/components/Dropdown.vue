@@ -4,6 +4,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 interface DropdownOption {
   id: number | string
   name: string
+  icon?: any
 }
 
 interface Props {
@@ -124,7 +125,10 @@ const selectClass = "bg-surface-low px-3 py-1 rounded-full text-fg-primary shado
       <button v-for="option in options" :key="option.id" @click="selectOption(option.id)"
         class="w-full text-left px-3 py-2 hover:bg-surface-high text-fg-primary transition-colors duration-150 flex items-center justify-between"
         :class="{ 'bg-surface-high': isSelected(option.id) }">
-        <span>{{ option.name }}</span>
+        <span class="flex items-center gap-2">
+          <component v-if="option.icon" :is="option.icon" class="h-4 w-4" />
+          <span>{{ option.name }}</span>
+        </span>
         <svg v-if="isSelected(option.id)" class="h-4 w-4 text-green-500" fill="none" stroke="currentColor"
           viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>

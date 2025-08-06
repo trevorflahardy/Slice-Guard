@@ -1,8 +1,8 @@
 import type { SQL } from "bun";
-import { listLabsForUser, listMembers, getMemberRoles } from "../db/lab";
+import { listLabsForUser, listMembers, getMemberRoles, listInvites } from "../db/lab";
 import { getAllPrintRequests, getTagsForRequest, listTags } from "../db/lab/request";
 import { findPublicUserById } from "../db/user";
-import type { LabRole, LabMember } from "@shared/db/lab";
+import type { LabRole, LabMember, LabInvite } from "@shared/db/lab";
 import type { LabState, MemberEvent, PrintRequestEvent } from "@shared/payloads/ws";
 import type { RequestTag } from "@shared/db/request";
 
@@ -36,6 +36,8 @@ export async function getUserLabStates(db: SQL, userId: number): Promise<LabStat
 
     // Load tags for the lab
     const tags: RequestTag[] = await listTags(db, lab.id);
+    // Load invites for the lab
+    const invites: LabInvite[] = await listInvites(db, lab.id);
 
     // Load requests with their tags and user info
     const requestRows = await getAllPrintRequests(db, lab.id);
@@ -46,7 +48,7 @@ export async function getUserLabStates(db: SQL, userId: number): Promise<LabStat
       requests.push({ request: r, user, tags: rTags });
     }
 
-    result.push({ lab, roles, members, tags, requests });
+    result.push({ lab, roles, members, tags, requests, invites });
   }
 
   return result;

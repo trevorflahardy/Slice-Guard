@@ -9,6 +9,7 @@ export interface LabRoleRow extends LabRole { }
 export * from "./member";
 export * from "./permissions";
 export * from "./role";
+export * from "./invite";
 
 /**
  * Creates a new lab.

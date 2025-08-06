@@ -3,7 +3,7 @@
 import type { ErrorCode } from '../ws/errors'
 import type { PrintRequest, RequestTag } from '../db/request'
 import type { User } from '../db/user'
-import type { Lab, LabRole, LabMember } from '../db/lab'
+import type { Lab, LabRole, LabMember, LabInvite } from '../db/lab'
 
 /**
  * All websocket opcodes supported by the application.
@@ -29,6 +29,12 @@ export enum WsEvent {
   MEMBER_JOINED = 8,
   /** Emitted when a member leaves a lab. */
   MEMBER_LEFT = 9,
+  /** Emitted when an invite is created. */
+  INVITE_CREATED = 10,
+  /** Emitted when an invite is updated. */
+  INVITE_UPDATED = 11,
+  /** Emitted when an invite is deleted. */
+  INVITE_DELETED = 12,
 }
 
 export type WsEventType = keyof typeof WsEvent
@@ -65,12 +71,22 @@ export interface MemberLeftEvent {
   userId: number
 }
 
+export interface InviteEvent {
+  invite: LabInvite
+}
+
+export interface InviteDeletedEvent {
+  labId: number
+  inviteId: number
+}
+
 export interface LabState {
   lab: Lab
   roles: LabRole[]
   members: MemberEvent[]
   tags: RequestTag[]
   requests: PrintRequestEvent[]
+  invites: LabInvite[]
 }
 
 export interface ErrorPayload {
@@ -88,6 +104,9 @@ export type WsPayloads = {
   [WsEvent.TAG_DELETED]: { op: WsEvent.TAG_DELETED; d: TagDeletedEvent }
   [WsEvent.MEMBER_JOINED]: { op: WsEvent.MEMBER_JOINED; d: MemberEvent }
   [WsEvent.MEMBER_LEFT]: { op: WsEvent.MEMBER_LEFT; d: MemberLeftEvent }
+  [WsEvent.INVITE_CREATED]: { op: WsEvent.INVITE_CREATED; d: InviteEvent }
+  [WsEvent.INVITE_UPDATED]: { op: WsEvent.INVITE_UPDATED; d: InviteEvent }
+  [WsEvent.INVITE_DELETED]: { op: WsEvent.INVITE_DELETED; d: InviteDeletedEvent }
   [WsEvent.ERROR]: { op: WsEvent.ERROR; d: ErrorPayload }
 }
 

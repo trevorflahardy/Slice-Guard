@@ -2,10 +2,14 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
-import { type Lab } from '@shared/db/lab'
-import { Cog6ToothIcon } from '@heroicons/vue/16/solid'
+import { useLabsStore } from '../../store/labs'
+import { type Lab, LabPermission } from '@shared/db/lab'
+import { Cog6ToothIcon, UserPlusIcon } from '@heroicons/vue/16/solid'
 import UserSettings from '../../modals/user_settings/UserSettings.vue'
+import CreateInviteModal from '../../modals/CreateInviteModal.vue'
 import { useModal } from '../../composables/useModal'
+import Dropdown from '../../components/Dropdown.vue'
+import { hasLabPermission, computeMemberPermissions } from '../../utils/permissions'
 
 export interface LabSidebarProps {
     lab: Lab | null
@@ -13,10 +17,12 @@ export interface LabSidebarProps {
 
 const props = defineProps<LabSidebarProps>();
 const auth = useAuthStore();
+const labsStore = useLabsStore();
 const route = useRoute();
 
 const labId = computed(() => route.params.id);
 const userSettingsModal = useModal();
+const inviteModal = useModal();
 
 const navClass = ref(
     'text-sm text-fg-primary hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md'
@@ -34,19 +40,42 @@ const initials = computed(() => {
     const name = auth.user?.name || auth.user?.email || ''
     return name.charAt(0)
 })
+
+const canCreateInvites = computed(() => {
+    const labState = labsStore.getLab(Number(labId.value))
+    const member = labState?.members.find(m => m.member.user_id === auth.user?.id)?.member ?? null
+    const perms = computeMemberPermissions(member)
+    return hasLabPermission(perms, LabPermission.CREATE_INVITES)
+})
+
+function handleDropdown(action: string | number | null) {
+    if (action === 'invite') inviteModal.open()
+}
 </script>
 
 <template>
     <!-- Holds the main sidebar content. For now, this is placeholder information. -->
     <div class="flex flex-col gap-5 h-full justify-items-start">
         <!--Currently active lab information (and way to change lab)-->
-        <div class="text-left flex flex-col items-start gap-2">
+        <Dropdown v-if="props.lab && canCreateInvites"
+            :options="[{ id: 'invite', name: 'Invite Users', icon: UserPlusIcon }]"
+            :model-value="null"
+            @update:modelValue="handleDropdown">
+            <template #activator>
+                <div class="text-left flex flex-col items-start gap-2 w-full cursor-pointer">
+                    <div class="flex justify-between w-full">
+                        <h1 class="text-lg/5 text-fg-primary font-semibold text-pretty">{{ props.lab?.name }}</h1>
+                        <Cog6ToothIcon class="ml-auto size-4 text-fg-secondary" />
+                    </div>
+                    <p class="text-xs text-fg-secondary line-clamp-2">{{ props.lab?.description }}</p>
+                </div>
+            </template>
+        </Dropdown>
+        <div v-else class="text-left flex flex-col items-start gap-2">
             <div class="flex justify-between w-full">
                 <h1 class="text-lg/5 text-fg-primary font-semibold text-pretty">{{ props.lab?.name }}</h1>
-
                 <Cog6ToothIcon class="ml-auto size-4 text-fg-secondary" />
             </div>
-
             <p class="text-xs text-fg-secondary line-clamp-2">{{ props.lab?.description }}</p>
         </div>
 
@@ -128,6 +157,7 @@ const initials = computed(() => {
             </button>
 
             <UserSettings v-if="userSettingsModal.isOpen.value" @close="userSettingsModal.close()" />
+            <CreateInviteModal v-if="inviteModal.isOpen.value" :lab-id="Number(labId)" @close="inviteModal.close()" />
         </div>
     </div>
 </template>

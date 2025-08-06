@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type { RequestTag } from '@shared/db/request'
 import type { LabState, PrintRequestEvent, MemberEvent } from '@shared/payloads/ws'
+import type { LabInvite } from '@shared/db/lab'
 
 const DEV = import.meta.env.DEV
 
@@ -84,6 +85,30 @@ export const useLabsStore = defineStore('labs', {
       if (!lab) return
       if (DEV) console.debug('[labs] removeMember', labId, userId)
       lab.members = lab.members.filter(m => m.member.user_id !== userId)
+    },
+    /** Add an invite to the lab. */
+    addInvite(labId: number, invite: LabInvite) {
+      const lab = this.getLab(labId)
+      if (!lab) return
+      if (DEV) console.debug('[labs] addInvite', labId, invite)
+      lab.invites.push(invite)
+    },
+    /** Update invite fields. */
+    updateInvite(labId: number, invite: LabInvite) {
+      const lab = this.getLab(labId)
+      if (!lab) return
+      const idx = lab.invites.findIndex(i => i.id === invite.id)
+      if (idx !== -1) {
+        if (DEV) console.debug('[labs] updateInvite', labId, invite)
+        lab.invites[idx] = invite
+      }
+    },
+    /** Remove invite by id. */
+    removeInvite(labId: number, inviteId: number) {
+      const lab = this.getLab(labId)
+      if (!lab) return
+      if (DEV) console.debug('[labs] removeInvite', labId, inviteId)
+      lab.invites = lab.invites.filter(i => i.id !== inviteId)
     },
   },
 })

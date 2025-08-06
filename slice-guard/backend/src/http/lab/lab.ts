@@ -81,7 +81,6 @@ export const update = withAuth(async (req, userId, state, params) => {
         description ?? null,
         iconUrl ?? null
     );
-
     state.broadcast({ op: WsEvent.LAB_UPDATED, d: { lab } });
     return Response.json(lab);
 });

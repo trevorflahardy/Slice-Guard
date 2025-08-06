@@ -103,6 +103,15 @@ Ensure the bucket exists and the credentials have read/write access.
 
 # Developmental Preview Images
 
+## Aug 6th Update
+
+Added lab avatars, websocket updates with multi-client support, lab invite codes w/ expiration dates and max uses, leaving and joining multiple labs, and a better sidebar. Will add custom channels and better role permissions managements soon. Of course, all the styling will be cleaned later down the road after core infastructure is set in place.
+
+<img width="1481" height="737" alt="image" src="https://github.com/user-attachments/assets/0a1fa8ac-90aa-46f6-acc3-f747194f58d3" />
+<img width="1475" height="732" alt="image" src="https://github.com/user-attachments/assets/288870d9-ac3c-4bda-ad38-58bc6d3c3ef8" />
+<img width="320" height="318" alt="image" src="https://github.com/user-attachments/assets/5b56195a-6867-4484-8171-21f736340150" />
+<img width="1457" height="740" alt="image" src="https://github.com/user-attachments/assets/635342a3-bf95-4f0b-b844-458571791205" />
+
 ## Aug 5th Update
 
 Added support for avatars throughout the application. Following will be a buildout of the websocket system, a base implementation of channels, and event listeners for live updates across the client.

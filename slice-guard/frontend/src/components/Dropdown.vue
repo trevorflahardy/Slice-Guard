@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, useSlots } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 interface DropdownOption {
   id: number | string
@@ -26,7 +26,6 @@ const emit = defineEmits<Emits>()
 
 const isOpen = ref(false)
 const dropdownRef = ref<HTMLElement>()
-const slots = useSlots()
 
 // Handle click outside to close dropdown
 function handleClickOutside(event: MouseEvent) {
@@ -109,45 +108,25 @@ const selectClass = "bg-surface-low px-3 py-1 rounded-full text-fg-primary shado
         <slot name="activator" />
       </div>
     </template>
-    <button
-      v-else
-      @click="isOpen = !isOpen"
-      :class="selectClass"
-      class="flex items-center justify-between gap-2 w-full"
-    >
+    <button v-else @click="isOpen = !isOpen" :class="selectClass"
+      class="flex items-center justify-between gap-2 w-full">
       <span class="truncate">{{ displayText }}</span>
-      <svg
-        class="h-4 w-4 transition-transform duration-200 flex-shrink-0"
-        :class="{ 'rotate-180': isOpen }"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg class="h-4 w-4 transition-transform duration-200 flex-shrink-0" :class="{ 'rotate-180': isOpen }" fill="none"
+        stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
       </svg>
     </button>
 
     <!-- Dropdown Menu -->
-    <div
-      v-show="isOpen"
-      class="absolute top-full left-0 mt-1 w-full min-w-[200px] bg-surface-low border border-surface-high rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
-    >
+    <div v-show="isOpen"
+      class="absolute top-full left-0 mt-1 w-full min-w-[200px] bg-surface-low border border-surface-high rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
       <!-- Regular options -->
-      <button
-        v-for="option in options"
-        :key="option.id"
-        @click="selectOption(option.id)"
+      <button v-for="option in options" :key="option.id" @click="selectOption(option.id)"
         class="w-full text-left px-3 py-2 hover:bg-surface-high text-fg-primary transition-colors duration-150 flex items-center justify-between"
-        :class="{ 'bg-surface-high': isSelected(option.id) }"
-      >
+        :class="{ 'bg-surface-high': isSelected(option.id) }">
         <span>{{ option.name }}</span>
-        <svg
-          v-if="isSelected(option.id)"
-          class="h-4 w-4 text-green-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg v-if="isSelected(option.id)" class="h-4 w-4 text-green-500" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
         </svg>
       </button>

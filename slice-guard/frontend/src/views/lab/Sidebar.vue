@@ -7,9 +7,12 @@ import { type Lab, LabPermission } from '@shared/db/lab'
 import { Cog6ToothIcon, UserPlusIcon } from '@heroicons/vue/16/solid'
 import UserSettings from '../../modals/user_settings/UserSettings.vue'
 import CreateInviteModal from '../../modals/CreateInviteModal.vue'
+import LabSettings from '../../modals/lab_settings/LabSettings.vue'
 import { useModal } from '../../composables/useModal'
 import Dropdown from '../../components/Dropdown.vue'
 import { hasLabPermission } from '../../utils/permissions'
+import { apiFetch } from '../../services/api'
+import { useRouter } from 'vue-router'
 
 export interface LabSidebarProps {
     lab: Lab
@@ -23,6 +26,8 @@ const route = useRoute();
 const labId = computed(() => route.params.id);
 const userSettingsModal = useModal();
 const inviteModal = useModal();
+const labSettingsModal = useModal();
+const router = useRouter();
 
 const navClass = ref(
     'text-sm text-fg-primary hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md'
@@ -44,15 +49,24 @@ const initials = computed(() => {
 const dropdownOptions = computed(() => {
     const labState = labsStore.getLab(Number(labId.value))
     const perms = labState?.permissions ?? null
-    const options: { id: string; name: string; icon: any }[] = []
+    const options: { id: string; name: string; icon?: any; variant?: 'danger' }[] = []
     if (hasLabPermission(perms, LabPermission.CREATE_INVITES)) {
         options.push({ id: 'invite', name: 'Invite Users', icon: UserPlusIcon })
     }
+    if (hasLabPermission(perms, LabPermission.EDIT_LAB)) {
+        options.push({ id: 'edit', name: 'Edit Lab', icon: Cog6ToothIcon })
+    }
+    options.push({ id: 'leave', name: 'Leave Lab', variant: 'danger' })
     return options
 })
 
-function handleDropdown(action: string | number | (string | number)[] | null) {
+async function handleDropdown(action: string | number | (string | number)[] | null) {
     if (action === 'invite') inviteModal.open()
+    else if (action === 'edit') labSettingsModal.open()
+    else if (action === 'leave') {
+        await apiFetch(`/labs/${labId.value}/members/@me`, { method: 'DELETE' })
+        router.push('/dms')
+    }
 }
 </script>
 
@@ -154,6 +168,7 @@ function handleDropdown(action: string | number | (string | number)[] | null) {
 
             <UserSettings v-if="userSettingsModal.isOpen.value" @close="userSettingsModal.close()" />
             <CreateInviteModal v-if="inviteModal.isOpen.value" :lab-id="Number(labId)" @close="inviteModal.close()" />
+            <LabSettings v-if="labSettingsModal.isOpen.value" @close="labSettingsModal.close()" />
         </div>
     </div>
 </template>

@@ -5,7 +5,7 @@ CREATE TABLE lab.labs (
     owner_id INTEGER NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT,
-    image_url TEXT,
+    icon_url TEXT,
     default_role_id INTEGER,
     created_at TIMESTAMP DEFAULT NOW(),
     CONSTRAINT labs_default_role_fkey FOREIGN KEY (default_role_id)

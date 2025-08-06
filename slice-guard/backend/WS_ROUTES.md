@@ -23,6 +23,12 @@ in real time.
 | 11      | `INVITE_UPDATED` | Server → Client | `{ invite }` broadcast when an invite is updated or used |
 | 12      | `INVITE_DELETED` | Server → Client | `{ labId, inviteId }` broadcast when an invite is deleted |
 | 13      | `USER_UPDATED`   | Server → Client | `{ user }` broadcast when a user updates their profile |
+| 14      | `ROLE_CREATED`   | Server → Client | `{ role }` broadcast when a role is created |
+| 15      | `ROLE_UPDATED`   | Server → Client | `{ role }` broadcast when a role is updated |
+| 16      | `ROLE_DELETED`   | Server → Client | `{ labId, roleId }` broadcast when a role is deleted |
+| 17      | `LAB_CREATED`    | Server → Client | `{ lab }` full lab state when a lab is created |
+| 18      | `LAB_UPDATED`    | Server → Client | `{ lab }` broadcast when lab details change |
+| 19      | `LAB_DELETED`    | Server → Client | `{ labId }` broadcast when a lab is deleted |
 
 Payload interfaces are defined in `slice-guard/shared/payloads/ws.ts` and reused
 by both the frontend and backend.

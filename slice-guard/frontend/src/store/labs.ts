@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import type { RequestTag } from '@shared/db/request'
 import type { LabState, PrintRequestEvent, MemberEvent } from '@shared/payloads/ws'
-import type { LabInvite, LabRole } from '@shared/db/lab'
+import type { LabInvite, LabRole, Lab } from '@shared/db/lab'
 import type { User } from '@shared/db/user'
 
 const DEV = import.meta.env.DEV
@@ -28,6 +28,18 @@ export const useLabsStore = defineStore('labs', {
     addLab(lab: LabState) {
       if (DEV) console.debug('[labs] addLab', lab)
       this.labs.push(lab)
+    },
+    /** Update basic lab info. */
+    updateLab(lab: Lab) {
+      const entry = this.getLab(lab.id)
+      if (!entry) return
+      if (DEV) console.debug('[labs] updateLab', lab)
+      entry.lab = lab
+    },
+    /** Remove a lab entirely. */
+    removeLab(labId: number) {
+      if (DEV) console.debug('[labs] removeLab', labId)
+      this.labs = this.labs.filter(l => l.lab.id !== labId)
     },
     /** Prepend a new request to the lab list. */
     addRequest(labId: number, entry: PrintRequestEvent) {
@@ -116,6 +128,13 @@ export const useLabsStore = defineStore('labs', {
       if (DEV) console.debug('[labs] removeInvite', labId, inviteId)
       lab.invites = lab.invites.filter(i => i.id !== inviteId)
     },
+    /** Add a role to the lab. */
+    addRole(labId: number, role: LabRole) {
+      const lab = this.getLab(labId)
+      if (!lab) return
+      if (DEV) console.debug('[labs] addRole', labId, role)
+      lab.roles.push(role)
+    },
     /** Update role fields. */
     updateRole(labId: number, role: LabRole) {
       const lab = this.getLab(labId)
@@ -125,6 +144,13 @@ export const useLabsStore = defineStore('labs', {
         if (DEV) console.debug('[labs] updateRole', labId, role)
         lab.roles[idx] = role
       }
+    },
+    /** Remove a role from the lab. */
+    removeRole(labId: number, roleId: number) {
+      const lab = this.getLab(labId)
+      if (!lab) return
+      if (DEV) console.debug('[labs] removeRole', labId, roleId)
+      lab.roles = lab.roles.filter(r => r.id !== roleId)
     },
     /** Update user info across members and requests. */
     updateUser(user: User) {

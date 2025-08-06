@@ -2,6 +2,7 @@ import { withAuth } from "../middleware";
 import { createRole, getMemberRolePermissions, updateRole } from "../../db/lab";
 import { LabPermission } from "@shared/db/lab";
 import { hasLabPermission } from "../../utils/permissions";
+import { WsEvent } from "@shared/payloads/ws";
 import type { RoleCreatePayload, RoleUpdatePayload } from "@shared/payloads";
 
 /**
@@ -16,7 +17,7 @@ export const createRoleRoute = withAuth(async (req, userId, state, params) => {
         return new Response("Unauthorized", { status: 403 });
 
     const role = await createRole(state.db, labId, name, permissions);
-
+    state.broadcast({ op: WsEvent.ROLE_CREATED, d: { role } });
     return Response.json(role);
 });
 
@@ -33,6 +34,6 @@ export const updateRoleRoute = withAuth(async (req, userId, state, params) => {
         return new Response("Unauthorized", { status: 403 });
 
     const role = await updateRole(state.db, labId, roleId, permissions);
-
+    state.broadcast({ op: WsEvent.ROLE_UPDATED, d: { role } });
     return Response.json(role);
 });

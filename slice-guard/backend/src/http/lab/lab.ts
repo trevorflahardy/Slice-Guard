@@ -9,6 +9,8 @@ import {
 } from "../../db/lab";
 import { LabPermission } from "@shared/db/lab";
 import { hasLabPermission } from "../../utils/permissions";
+import { WsEvent } from "@shared/payloads/ws";
+import { getLabState } from "../../utils/lab_state";
 import type { LabCreatePayload, LabUpdatePayload } from "@shared/payloads";
 
 /**
@@ -25,7 +27,8 @@ export const create = withAuth(async (req, userId, state) => {
         description ?? null,
         imageUrl ?? null
     );
-
+    const labState = await getLabState(state.db, lab.id, userId);
+    if (labState) state.broadcast({ op: WsEvent.LAB_CREATED, d: { lab: labState } });
     return Response.json(lab);
 });
 
@@ -66,7 +69,7 @@ export const update = withAuth(async (req, userId, state, params) => {
         description ?? null,
         imageUrl ?? null
     );
-
+    state.broadcast({ op: WsEvent.LAB_UPDATED, d: { lab } });
     return Response.json(lab);
 });
 
@@ -80,6 +83,6 @@ export const del = withAuth(async (req, userId, state, params) => {
     if (!hasLabPermission(perms, LabPermission.DELETE_LAB))
         return new Response("Unauthorized", { status: 403 });
     await deleteLab(state.db, id);
-
+    state.broadcast({ op: WsEvent.LAB_DELETED, d: { labId: id } });
     return new Response(null, { status: 204 });
 });

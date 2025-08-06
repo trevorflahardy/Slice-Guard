@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 import { apiFetch } from '../../services/api'
 import Button from "../../components/Button.vue";
 import { useLabsStore } from '../../store/labs'
+import { computeMemberPermissions } from "../../utils/permissions";
 
 interface Props {
     lab: any | null
@@ -19,6 +20,11 @@ const tagName = ref('')
 const invites = computed(() => {
     if (!props.lab) return []
     return labs.getLab(props.lab.id)?.invites ?? []
+})
+
+const members = computed(() => {
+    if (!props.lab) return []
+    return labs.getLab(props.lab.id)?.members ?? []
 })
 
 async function createTag() {
@@ -86,6 +92,25 @@ async function createMockRequest() {
                     <td>{{ i.uses }}</td>
                     <td>{{ i.max_uses ?? '∞' }}</td>
                     <td>{{ i.expires_at ? new Date(i.expires_at).toLocaleString() : 'never' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Debug member permissions -->
+    <div class="mt-6 space-y-2">
+        <h2 class="text-fg-primary font-semibold">Member Permissions (debug)</h2>
+        <table class="w-full text-sm">
+            <thead class="text-fg-secondary">
+                <tr>
+                    <th class="text-left">Member</th>
+                    <th class="text-left">Permissions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="m in members" :key="m.member.user_id" class="text-fg-primary">
+                    <td>{{ m.user?.name || m.user?.email || m.member.user_id }}</td>
+                    <td>{{ computeMemberPermissions(m.member) }}</td>
                 </tr>
             </tbody>
         </table>

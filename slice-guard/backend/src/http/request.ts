@@ -136,7 +136,7 @@ export const setTagDefaultRoute = withAuth(async (req, userId, state, params) =>
     const tag = await setTagDefault(state.db, tagId, isDefault);
     state.logger.debug({ tagId }, 'Updated tag');
     state.broadcast({ op: WsEvent.TAG_UPDATED, d: { tag } });
-    return Response.json(tag);
+    return Response.json({ tag });
 });
 
 /**

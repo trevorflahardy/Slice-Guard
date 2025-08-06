@@ -79,7 +79,7 @@ async function createTag() {
     await apiFetch(`/labs/${props.lab.id}/tags`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: tagName.value }),
+        body: JSON.stringify({ name: tagName.value, color: '#000000', isDefault: false }),
     })
     tagName.value = ''
 }
@@ -168,8 +168,7 @@ async function createMockRequest() {
         <h2 class="text-fg-primary font-semibold">Roles (debug)</h2>
         <div v-for="r in roles" :key="r.id" class="flex items-center gap-2 text-sm">
             <span class="text-fg-primary w-32">{{ r.name }}</span>
-            <select v-model="roleSelections[r.id]" multiple
-                class="bg-surface-low px-2 py-1 rounded-md text-fg-primary">
+            <select v-model="roleSelections[r.id]" multiple class="bg-surface-low px-2 py-1 rounded-md text-fg-primary">
                 <option v-for="opt in PERMISSION_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
             </select>
             <button @click="updateRolePermissions(r)"

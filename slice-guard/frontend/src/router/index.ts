@@ -8,9 +8,9 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/RootRedirect.vue'),
   },
   {
-    path: '/nolabs',
-    name: 'NoLabs',
-    component: () => import('../views/NoLabsView.vue'),
+    path: '/dms',
+    name: 'DmsHome',
+    component: () => import('../views/DmsHomeView.vue'),
   },
   {
     path: '/lab',

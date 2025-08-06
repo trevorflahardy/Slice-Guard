@@ -3,7 +3,7 @@ export interface Lab {
     owner_id: number;
     name: string;
     description?: string | null;
-    image_url?: string | null;
+    icon_url?: string | null;
     /**
      * Identifier of the default role that all members receive when joining
      * this lab.

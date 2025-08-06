@@ -3,14 +3,14 @@
 export interface LabCreatePayload {
   name: string
   description?: string | null
-  imageUrl?: string | null
+  iconUrl?: string | null
 }
 
 export interface LabUpdatePayload {
   labId: number
   name: string
   description?: string | null
-  imageUrl?: string | null
+  iconUrl?: string | null
 }
 
 export interface LabDeletePayload {

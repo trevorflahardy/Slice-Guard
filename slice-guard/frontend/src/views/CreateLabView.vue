@@ -6,7 +6,7 @@ import { apiFetch } from '../services/api'
 
 const name = ref('')
 const description = ref('')
-const imageUrl = ref('')
+const iconUrl = ref('')
 const error = ref('')
 const router = useRouter()
 
@@ -16,7 +16,7 @@ async function submit() {
     const res = await apiFetch('/labs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.value, description: description.value || undefined, imageUrl: imageUrl.value || undefined }),
+      body: JSON.stringify({ name: name.value, description: description.value || undefined, iconUrl: iconUrl.value || undefined }),
     })
     if (!res.ok) throw new Error()
     const lab = await res.json()
@@ -36,7 +36,7 @@ async function submit() {
         class="bg-surface-low shadow-md py-3 px-5 rounded-xl w-full focus:outline-salem-800 placeholder-fg-secondary" />
       <input v-model="description" type="text" placeholder="Description"
         class="bg-surface-low shadow-md py-3 px-5 rounded-xl w-full focus:outline-salem-800 placeholder-fg-secondary" />
-      <input v-model="imageUrl" type="url" placeholder="Image URL"
+      <input v-model="iconUrl" type="url" placeholder="Icon URL"
         class="bg-surface-low shadow-md py-3 px-5 rounded-xl w-full focus:outline-salem-800 placeholder-fg-secondary" />
       <p v-if="error" class="text-red-600 px-1">{{ error }}</p>
 

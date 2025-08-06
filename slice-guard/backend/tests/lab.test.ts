@@ -40,7 +40,7 @@ function sampleLab(): LabRow {
     owner_id: 2,
     name: "Test Lab",
     description: "Desc",
-    image_url: "img",
+    icon_url: "img",
     default_role_id: 1,
     created_at: new Date(),
   };
@@ -70,11 +70,11 @@ function sampleMember(): LabMemberRow {
 // test("createLab inserts expected values", async () => {
 //   const lab = sampleLab();
 //   const db = createMockSQL([lab]);
-//   const result = await createLab(db as any, lab.owner_id, lab.name, lab.description!, lab.image_url!);
+//   const result = await createLab(db as any, lab.owner_id, lab.name, lab.description!, lab.icon_url!);
 //   expect(normalize(db.lastQuery)).toBe(
-//     "INSERT INTO lab.labs (owner_id, name, description, image_url) VALUES ($1, $2, $3, $4) RETURNING id, owner_id, name, description, image_url, created_at"
+//     "INSERT INTO lab.labs (owner_id, name, description, icon_url) VALUES ($1, $2, $3, $4) RETURNING id, owner_id, name, description, icon_url, created_at"
 //   );
-//   expect(db.lastParams).toEqual([lab.owner_id, lab.name, lab.description, lab.image_url]);
+//   expect(db.lastParams).toEqual([lab.owner_id, lab.name, lab.description, lab.icon_url]);
 //   expect(result).toEqual(lab);
 // });
 
@@ -88,11 +88,11 @@ test("deleteLab deletes by id", async () => {
 test("updateLab updates fields", async () => {
   const lab = sampleLab();
   const db = createMockSQL([[lab]]);
-  const result = await updateLab(db as any, lab.id, lab.name, lab.description!, lab.image_url!);
+  const result = await updateLab(db as any, lab.id, lab.name, lab.description!, lab.icon_url!);
   expect(normalize(db.queries.at(-1))).toBe(
-    "UPDATE lab.labs SET name = $1, description = $2, image_url = $3 WHERE id = $4 RETURNING id, owner_id, name, description, image_url, created_at"
+    "UPDATE lab.labs SET name = $1, description = $2, icon_url = $3 WHERE id = $4 RETURNING id, owner_id, name, description, icon_url, created_at"
   );
-  expect(db.params.at(-1)).toEqual([lab.name, lab.description, lab.image_url, lab.id]);
+  expect(db.params.at(-1)).toEqual([lab.name, lab.description, lab.icon_url, lab.id]);
   expect(result).toEqual(lab);
 });
 

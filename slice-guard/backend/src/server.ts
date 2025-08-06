@@ -47,6 +47,9 @@ export class Server {
                     PATCH: req => withLogging(lab.update)(req, this.state, req.params),
                     DELETE: req => withLogging(lab.del)(req, this.state, req.params),
                 },
+                '/api/labs/:id/icon': {
+                    POST: req => withLogging(lab.uploadIcon)(req, this.state, req.params),
+                },
                 '/api/labs/:labId/roles': {
                     POST: req => withLogging(lab.createRoleRoute)(req, this.state, req.params),
                 },
@@ -60,6 +63,9 @@ export class Server {
                 '/api/labs/:labId/members/:userId': {
                     DELETE: req => withLogging(lab.removeMemberRoute)(req, this.state, req.params),
                     GET: req => withLogging(lab.getMemberRoute)(req, this.state, req.params),
+                },
+                '/api/labs/:labId/members/@me': {
+                    DELETE: req => withLogging(lab.leaveLabRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/requests': {
                     POST: req => withLogging(requestHandlers.create)(req, this.state, req.params),

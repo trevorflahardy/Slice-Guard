@@ -18,7 +18,7 @@ export * from "./invite";
  * @param ownerId The ID of the user creating the lab.
  * @param name The name of the lab.
  * @param description An optional description of the lab.
- * @param imageUrl An optional image URL for the lab.
+ * @param iconUrl An optional icon URL for the lab.
  * @returns The created lab.
  */
 export async function createLab(
@@ -26,12 +26,12 @@ export async function createLab(
     ownerId: number,
     name: string,
     description: string | null = null,
-    imageUrl: string | null = null
+    iconUrl: string | null = null
 ): Promise<LabRow> {
     const rows: LabRow[] = await db`
-        INSERT INTO lab.labs (owner_id, name, description, image_url)
-             VALUES (${ownerId}, ${name}, ${description}, ${imageUrl})
-        RETURNING id, owner_id, name, description, image_url, default_role_id, created_at
+        INSERT INTO lab.labs (owner_id, name, description, icon_url)
+             VALUES (${ownerId}, ${name}, ${description}, ${iconUrl})
+        RETURNING id, owner_id, name, description, icon_url, default_role_id, created_at
     `;
     const lab: LabRow = rows[0];
 
@@ -74,7 +74,7 @@ export async function deleteLab(db: SQL, labId: number): Promise<void> {
  * @param labId The ID of the lab to update.
  * @param name The new name of the lab.
  * @param description The new description of the lab.
- * @param imageUrl The new image URL of the lab.
+ * @param iconUrl The new icon URL of the lab.
  * @returns The updated lab.
  */
 export async function updateLab(
@@ -82,20 +82,20 @@ export async function updateLab(
     labId: number,
     name: string,
     description: string | null,
-    imageUrl: string | null
+    iconUrl: string | null
 ): Promise<LabRow> {
     const rows: LabRow[] = await db`
         UPDATE lab.labs
-           SET name = ${name}, description = ${description}, image_url = ${imageUrl}
+           SET name = ${name}, description = ${description}, icon_url = ${iconUrl}
          WHERE id = ${labId}
-        RETURNING id, owner_id, name, description, image_url, created_at
+        RETURNING id, owner_id, name, description, icon_url, created_at
     `;
     return rows[0];
 }
 
 export async function getLab(db: SQL, id: number): Promise<LabRow | null> {
     const rows: LabRow[] = await db`
-        SELECT id, owner_id, name, description, image_url, default_role_id, created_at
+        SELECT id, owner_id, name, description, icon_url, default_role_id, created_at
           FROM lab.labs
          WHERE id = ${id}
     `;
@@ -107,7 +107,7 @@ export async function listLabsForUser(
     userId: number
 ): Promise<LabRow[]> {
     const rows: LabRow[] = await db`
-        SELECT l.id, l.owner_id, l.name, l.description, l.image_url, l.default_role_id, l.created_at
+        SELECT l.id, l.owner_id, l.name, l.description, l.icon_url, l.default_role_id, l.created_at
           FROM lab.labs l
           JOIN lab.members m ON m.lab_id = l.id
          WHERE m.user_id = ${userId}

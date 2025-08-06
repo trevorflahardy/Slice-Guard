@@ -29,12 +29,14 @@ export enum WsEvent {
   MEMBER_JOINED = 8,
   /** Emitted when a member leaves a lab. */
   MEMBER_LEFT = 9,
+  /** Emitted when a lab is updated. */
+  LAB_UPDATED = 10,
   /** Emitted when an invite is created. */
-  INVITE_CREATED = 10,
+  INVITE_CREATED = 11,
   /** Emitted when an invite is updated. */
-  INVITE_UPDATED = 11,
+  INVITE_UPDATED = 12,
   /** Emitted when an invite is deleted. */
-  INVITE_DELETED = 12,
+  INVITE_DELETED = 13,
   /** Emitted when a user updates profile information. */
   USER_UPDATED = 13,
   /** Emitted when a role is created. */
@@ -149,6 +151,7 @@ export type WsPayloads = {
   [WsEvent.TAG_DELETED]: { op: WsEvent.TAG_DELETED; d: TagDeletedEvent }
   [WsEvent.MEMBER_JOINED]: { op: WsEvent.MEMBER_JOINED; d: MemberEvent }
   [WsEvent.MEMBER_LEFT]: { op: WsEvent.MEMBER_LEFT; d: MemberLeftEvent }
+  [WsEvent.LAB_UPDATED]: { op: WsEvent.LAB_UPDATED; d: { lab: Lab } }
   [WsEvent.INVITE_CREATED]: { op: WsEvent.INVITE_CREATED; d: InviteEvent }
   [WsEvent.INVITE_UPDATED]: { op: WsEvent.INVITE_UPDATED; d: InviteEvent }
   [WsEvent.INVITE_DELETED]: { op: WsEvent.INVITE_DELETED; d: InviteDeletedEvent }

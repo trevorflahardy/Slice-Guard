@@ -16,7 +16,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const entry = toRef(props, 'entry');
+const entry = toRef(props, "entry");
 
 const route = useRoute();
 
@@ -30,12 +30,14 @@ const statusOptions = [
 const labs = useLabsStore();
 const auth = useAuthStore();
 const allTags = computed<RequestTag[]>(() => labs.getLab(labId.value)?.tags ?? []);
+
 const perms = computed(() => labs.getLab(labId.value)?.permissions ?? null);
 const canManage = computed(() =>
   entry.value.request.user_id === auth.user?.id ||
   hasLabPermission(perms.value, LabPermission.MANAGE_REQUESTS)
 );
 
+// Local state
 const statusModel = ref(entry.value.request.is_closed ? "closed" : "open");
 const tagIds = ref<(number | string)[]>(entry.value.tags.map((t) => t.id));
 

@@ -5,6 +5,8 @@ import * as auth from './http/auth';
 import * as lab from './http/lab';
 import * as requestHandlers from './http/request';
 import * as userRoutes from './http/user';
+import { getApiKey } from './db/user';
+import { WsEvent } from '@shared/payloads/ws';
 
 import logger from "./utils/logger";
 import { withLogging } from "./http/middleware";
@@ -107,9 +109,19 @@ export class Server {
 
         // Only handle WebSocket upgrades, let everything else go to routes
         if (url.pathname === "/ws") {
+            const key = url.searchParams.get('key');
+            if (!key) return new Response("Unauthorized", { status: 401 });
+
+            const row = await getApiKey(this.state.db, key);
+            if (!row) return new Response("Unauthorized", { status: 401 });
+
             const now = Date.now();
             const upgraded = server.upgrade<WebSocketData>(req, {
-                data: { created_at: now, id: String(Bun.hash(`${now}-${Math.random()}`)) }
+                data: {
+                    created_at: now,
+                    id: String(Bun.hash(`${now}-${Math.random()}`)),
+                    userId: row.user_id,
+                }
             });
             if (!upgraded) return new Response("Upgrade failed", { status: 400 });
             return new Response(null);
@@ -131,15 +143,14 @@ export class Server {
     }
 
     private handleWebSocketOpen(ws: ServerWebSocket) {
-        // ! TODO: Handle a new connection
-        // ! For now, simply print out this connection request and upgrade
-        // ! the user
-        logger.debug("New connection: %o", ws);
+        this.state.sockets.add(ws);
+        ws.send(JSON.stringify({ op: WsEvent.HELLO, d: {} }));
+        logger.debug({ userId: ws.data.userId }, "WebSocket connected");
     }
 
     private handleWebSocketClose(ws: ServerWebSocket) {
-        // ! TODO: Handle closed connections
-        logger.debug("Connection closed: %o", ws);
+        this.state.sockets.delete(ws);
+        logger.debug({ userId: ws.data.userId }, "WebSocket disconnected");
     }
 
 };

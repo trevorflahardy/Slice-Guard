@@ -24,6 +24,7 @@ import type {
     RequestAssignTagPayload,
     RequestStateUpdatePayload,
 } from '@shared/payloads';
+import { WsEvent, type PrintRequestEvent } from '@shared/payloads/ws';
 
 /**
  * POST /api/labs/:labId/requests
@@ -42,6 +43,13 @@ export const create = withAuth(async (req, userId, state, params) => {
     const compressed = compressRequestFile(buffer);
     const result = await createPrintRequest(state.db, labId, userId, compressed, metadata, title, description ?? null);
     state.logger.debug({ id: result.id }, 'Created print request');
+
+    // Broadcast the new request to other connected clients
+    const user = await findPublicUserById(state.db, userId);
+    const tags = await getTagsForRequest(state.db, result.id);
+    const payload: PrintRequestEvent = { request: result, user, tags };
+    state.broadcast({ op: WsEvent.REQUEST_CREATED, d: payload }, userId);
+
     return Response.json(result);
 });
 

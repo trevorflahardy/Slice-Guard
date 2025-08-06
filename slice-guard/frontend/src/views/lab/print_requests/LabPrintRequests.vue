@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiFetch } from '../../../services/api'
-import type { PrintRequest, RequestTag } from '@shared/db/request'
-import type { User } from '@shared/db/user'
+import type { RequestTag } from '@shared/db/request'
+import { ws } from '../../../services/ws'
+import { WsEvent, type PrintRequestEvent } from '@shared/payloads/ws'
 import Dropdown from "../../../components/Dropdown.vue"
 import PrintRequestListItem from './PrintRequestListItem.vue'
 
-export interface RequestItem {
-  request: PrintRequest
-  user: User | null
-  tags: RequestTag[]
-}
+export interface RequestItem extends PrintRequestEvent {}
 
 const route = useRoute()
 const labId = computed(() => Number(route.params.id))
@@ -43,7 +40,9 @@ const tagOptions = computed(() =>
 onMounted(() => {
   fetchRequests()
   fetchTags()
+  ws.addListener(WsEvent.REQUEST_CREATED, onRequestCreated)
 })
+onUnmounted(() => ws.removeListener(WsEvent.REQUEST_CREATED, onRequestCreated))
 watch(labId, () => {
   fetchRequests()
   fetchTags()
@@ -78,6 +77,12 @@ const filtered = computed(() => {
 })
 
 const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
+
+function onRequestCreated(entry: PrintRequestEvent) {
+  if (entry.request.lab_id === labId.value) {
+    requests.value.unshift(entry)
+  }
+}
 </script>
 
 <template>

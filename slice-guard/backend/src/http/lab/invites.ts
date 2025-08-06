@@ -87,7 +87,7 @@ export const useInviteRoute = withAuth(async (_req, userId, state, params) => {
     const user = await findPublicUserById(state.db, userId);
     await addInviteUse(state.db, invite.id, userId);
     const updated: LabInvite = { ...invite, uses: invite.uses + 1 };
-    state.broadcast({ op: WsEvent.MEMBER_JOINED, d: { labId: invite.lab_id, member, user } }, userId);
+    state.broadcast({ op: WsEvent.MEMBER_JOINED, d: { labId: invite.lab_id, member, user } });
     // Notify everyone (including the joiner) about updated invite usage
     state.broadcast({ op: WsEvent.INVITE_UPDATED, d: { invite: updated } });
     const lab = await getLabState(state.db, invite.lab_id, userId);

@@ -23,10 +23,9 @@ export default class State {
     }
 
     /** Broadcast a message to all connected clients. */
-    broadcast(msg: WsPayloadUnion, excludeUserId?: number) {
+    broadcast(msg: WsPayloadUnion) {
         const raw = JSON.stringify(msg);
         for (const ws of this.sockets) {
-            if (excludeUserId && ws.data.userId === excludeUserId) continue;
             try {
                 ws.send(raw);
             } catch (err) {

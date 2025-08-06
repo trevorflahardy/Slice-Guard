@@ -28,7 +28,7 @@ export const addMemberRoute = withAuth(async (req, userId, state, params) => {
     const roles = await getMemberRoles(state.db, labId, addId);
     const member: LabMember = { ...memberRow, roles };
     const user = await findPublicUserById(state.db, addId);
-    state.broadcast({ op: WsEvent.MEMBER_JOINED, d: { labId, member, user } }, userId);
+    state.broadcast({ op: WsEvent.MEMBER_JOINED, d: { labId, member, user } });
     return Response.json(member);
 });
 
@@ -44,7 +44,7 @@ export const removeMemberRoute = withAuth(async (req, userId, state, params) => 
         return new Response("Unauthorized", { status: 403 });
 
     await removeMember(state.db, labId, removeId);
-    state.broadcast({ op: WsEvent.MEMBER_LEFT, d: { labId, userId: removeId } }, userId);
+    state.broadcast({ op: WsEvent.MEMBER_LEFT, d: { labId, userId: removeId } });
     return new Response(null, { status: 204 });
 });
 

@@ -50,7 +50,7 @@ export const create = withAuth(async (req, userId, state, params) => {
     const user = await findPublicUserById(state.db, userId);
     const tags = await getTagsForRequest(state.db, result.id);
     const payload: PrintRequestEvent = { request: result, user, tags };
-    state.broadcast({ op: WsEvent.REQUEST_CREATED, d: payload }, userId);
+    state.broadcast({ op: WsEvent.REQUEST_CREATED, d: payload });
 
     return Response.json(result);
 });
@@ -115,7 +115,7 @@ export const createTagRoute = withAuth(async (req, userId, state, params) => {
     state.logger.debug({ labId, name, color }, 'Creating tag');
     const tag = await createTag(state.db, labId, name, color, isDefault ?? false);
     state.logger.debug({ id: tag.id }, 'Created tag');
-    state.broadcast({ op: WsEvent.TAG_CREATED, d: { tag } }, userId);
+    state.broadcast({ op: WsEvent.TAG_CREATED, d: { tag } });
     return Response.json(tag);
 });
 
@@ -134,7 +134,7 @@ export const setTagDefaultRoute = withAuth(async (req, userId, state, params) =>
     state.logger.debug({ tagId, isDefault }, 'Setting tag default');
     const tag = await setTagDefault(state.db, tagId, isDefault);
     state.logger.debug({ tagId }, 'Updated tag');
-    state.broadcast({ op: WsEvent.TAG_UPDATED, d: { tag } }, userId);
+    state.broadcast({ op: WsEvent.TAG_UPDATED, d: { tag } });
     return Response.json(tag);
 });
 
@@ -176,7 +176,7 @@ export const assignTagRoute = withAuth(async (req, userId, state, params) => {
     if (updated) {
         const user = await findPublicUserById(state.db, updated.user_id);
         const tags = await getTagsForRequest(state.db, requestId);
-        state.broadcast({ op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } }, userId);
+        state.broadcast({ op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } });
     }
     return new Response(null, { status: 204 });
 });
@@ -197,7 +197,7 @@ export const setRequestStateRoute = withAuth(async (req, userId, state, params) 
     const updated = await setRequestClosed(state.db, requestId, isClosed);
     const user = await findPublicUserById(state.db, updated.user_id);
     const tags = await getTagsForRequest(state.db, requestId);
-    state.broadcast({ op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } }, userId);
+    state.broadcast({ op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } });
     return Response.json(updated);
 });
 
@@ -214,7 +214,7 @@ export const deleteRoute = withAuth(async (_req, userId, state, params) => {
         return new Response('Unauthorized', { status: 403 });
     }
     await deletePrintRequest(state.db, requestId);
-    state.broadcast({ op: WsEvent.REQUEST_DELETED, d: { labId, requestId } }, userId);
+    state.broadcast({ op: WsEvent.REQUEST_DELETED, d: { labId, requestId } });
     return new Response(null, { status: 204 });
 });
 
@@ -230,6 +230,6 @@ export const deleteTagRoute = withAuth(async (_req, userId, state, params) => {
         return new Response('Unauthorized', { status: 403 });
 
     await deleteTag(state.db, tagId);
-    state.broadcast({ op: WsEvent.TAG_DELETED, d: { labId, tagId } }, userId);
+    state.broadcast({ op: WsEvent.TAG_DELETED, d: { labId, tagId } });
     return new Response(null, { status: 204 });
 });

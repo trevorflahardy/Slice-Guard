@@ -9,10 +9,11 @@ import {
 } from "../../db/lab";
 import { LabPermission } from "@shared/db/lab";
 import { hasLabPermission } from "../../utils/permissions";
+import { WsEvent } from "@shared/payloads/ws";
+import { getLabState } from "../../utils/lab_state";
 import type { LabCreatePayload, LabUpdatePayload } from "@shared/payloads";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import type { BunFile } from "bun";
-import { WsEvent } from "@shared/payloads/ws";
 
 /**
  * POST /api/labs
@@ -38,7 +39,8 @@ export const create = withAuth(async (req, userId, state) => {
         description ?? null,
         iconUrl ?? null
     );
-
+    const labState = await getLabState(state.db, lab.id, userId);
+    if (labState) state.broadcast({ op: WsEvent.LAB_CREATED, d: { lab: labState } });
     return Response.json(lab);
 });
 
@@ -79,7 +81,6 @@ export const update = withAuth(async (req, userId, state, params) => {
         description ?? null,
         iconUrl ?? null
     );
-
     state.broadcast({ op: WsEvent.LAB_UPDATED, d: { lab } });
     return Response.json(lab);
 });
@@ -94,7 +95,7 @@ export const del = withAuth(async (req, userId, state, params) => {
     if (!hasLabPermission(perms, LabPermission.DELETE_LAB))
         return new Response("Unauthorized", { status: 403 });
     await deleteLab(state.db, id);
-
+    state.broadcast({ op: WsEvent.LAB_DELETED, d: { labId: id } });
     return new Response(null, { status: 204 });
 });
 

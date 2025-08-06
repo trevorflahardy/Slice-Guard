@@ -16,7 +16,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const entry = toRef(props, 'entry');
+const entry = toRef(props, "entry");
 
 const route = useRoute();
 
@@ -30,18 +30,30 @@ const statusOptions = [
 const labs = useLabsStore();
 const auth = useAuthStore();
 const allTags = computed<RequestTag[]>(() => labs.getLab(labId.value)?.tags ?? []);
+
 const perms = computed(() => labs.getLab(labId.value)?.permissions ?? null);
 const canManage = computed(() =>
   entry.value.request.user_id === auth.user?.id ||
   hasLabPermission(perms.value, LabPermission.MANAGE_REQUESTS)
 );
 
+// Local state
 const statusModel = ref(entry.value.request.is_closed ? "closed" : "open");
 const tagIds = ref<(number | string)[]>(entry.value.tags.map((t) => t.id));
 
-watch(entry, val => {
-  statusModel.value = val.request.is_closed ? 'closed' : 'open';
-  tagIds.value = val.tags.map(t => t.id);
+function arraysEqual(a: (number | string)[], b: (number | string)[]) {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+watch(entry, (val) => {
+  const newStatus = val.request.is_closed ? "closed" : "open";
+  if (statusModel.value !== newStatus) {
+    statusModel.value = newStatus;
+  }
+  const newTagIds = val.tags.map((t) => t.id);
+  if (!arraysEqual(tagIds.value, newTagIds)) {
+    tagIds.value = newTagIds;
+  }
 });
 
 watch(statusModel, async (val, old) => {
@@ -65,22 +77,25 @@ watch(tagIds, async (val, old) => {
     tagIds.value = old;
     return;
   }
-  const added = (val as number[]).filter(id => !(old as number[]).includes(id));
-  const removed = (old as number[]).filter(id => !(val as number[]).includes(id));
+  const valNums = val as number[];
+  const oldNums = old as number[];
+  const added = valNums.filter((id) => !oldNums.includes(id));
+  const removed = oldNums.filter((id) => !valNums.includes(id));
+  if (!added.length && !removed.length) return;
   try {
     for (const id of added) {
       await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({ assign: true }),
       });
     }
     for (const id of removed) {
       await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({ assign: false }),
       });
     }
-    entry.value.tags = allTags.value.filter(t => (val as number[]).includes(t.id));
+    entry.value.tags = allTags.value.filter((t) => valNums.includes(t.id));
   } catch {
     tagIds.value = old;
   }

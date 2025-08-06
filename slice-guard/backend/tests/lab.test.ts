@@ -4,6 +4,7 @@ import {
   deleteLab,
   updateLab,
   createRole,
+  updateRole,
   addMember,
   removeMember,
   listMembers,
@@ -103,6 +104,17 @@ test("createRole inserts expected values", async () => {
     "INSERT INTO lab.roles (lab_id, name, permissions) VALUES ($1, $2, $3) RETURNING id, lab_id, name, permissions, created_at"
   );
   expect(db.params.at(-1)).toEqual([role.lab_id, role.name, role.permissions]);
+  expect(result).toEqual(role);
+});
+
+test("updateRole updates permissions", async () => {
+  const role = sampleRole();
+  const db = createMockSQL([[role]]);
+  const result = await updateRole(db as any, role.lab_id, role.id, role.permissions as number);
+  expect(normalize(db.queries.at(-1))).toBe(
+    "UPDATE lab.roles SET permissions = $1 WHERE id = $2 AND lab_id = $3 RETURNING id, lab_id, name, permissions, created_at"
+  );
+  expect(db.params.at(-1)).toEqual([role.permissions, role.id, role.lab_id]);
   expect(result).toEqual(role);
 });
 

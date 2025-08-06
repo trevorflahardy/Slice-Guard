@@ -29,16 +29,26 @@ export enum WsEvent {
   MEMBER_JOINED = 8,
   /** Emitted when a member leaves a lab. */
   MEMBER_LEFT = 9,
-  /** Emitted when a lab is updated. */
-  LAB_UPDATED = 10,
   /** Emitted when an invite is created. */
-  INVITE_CREATED = 11,
+  INVITE_CREATED = 10,
   /** Emitted when an invite is updated. */
-  INVITE_UPDATED = 12,
+  INVITE_UPDATED = 11,
   /** Emitted when an invite is deleted. */
-  INVITE_DELETED = 13,
+  INVITE_DELETED = 12,
   /** Emitted when a user updates profile information. */
-  USER_UPDATED = 14,
+  USER_UPDATED = 13,
+  /** Emitted when a role is created. */
+  ROLE_CREATED = 14,
+  /** Emitted when a role is updated. */
+  ROLE_UPDATED = 15,
+  /** Emitted when a role is deleted. */
+  ROLE_DELETED = 16,
+  /** Emitted when a lab is created. */
+  LAB_CREATED = 17,
+  /** Emitted when a lab is updated. */
+  LAB_UPDATED = 18,
+  /** Emitted when a lab is deleted. */
+  LAB_DELETED = 19,
 }
 
 export type WsEventType = keyof typeof WsEvent
@@ -88,6 +98,27 @@ export interface UserEvent {
   user: User
 }
 
+export interface RoleEvent {
+  role: LabRole
+}
+
+export interface RoleDeletedEvent {
+  labId: number
+  roleId: number
+}
+
+export interface LabCreatedEvent {
+  lab: LabState
+}
+
+export interface LabUpdatedEvent {
+  lab: Lab
+}
+
+export interface LabDeletedEvent {
+  labId: number
+}
+
 export interface LabState {
   lab: Lab
   roles: LabRole[]
@@ -118,11 +149,16 @@ export type WsPayloads = {
   [WsEvent.TAG_DELETED]: { op: WsEvent.TAG_DELETED; d: TagDeletedEvent }
   [WsEvent.MEMBER_JOINED]: { op: WsEvent.MEMBER_JOINED; d: MemberEvent }
   [WsEvent.MEMBER_LEFT]: { op: WsEvent.MEMBER_LEFT; d: MemberLeftEvent }
-  [WsEvent.LAB_UPDATED]: { op: WsEvent.LAB_UPDATED; d: { lab: Lab } }
   [WsEvent.INVITE_CREATED]: { op: WsEvent.INVITE_CREATED; d: InviteEvent }
   [WsEvent.INVITE_UPDATED]: { op: WsEvent.INVITE_UPDATED; d: InviteEvent }
   [WsEvent.INVITE_DELETED]: { op: WsEvent.INVITE_DELETED; d: InviteDeletedEvent }
   [WsEvent.USER_UPDATED]: { op: WsEvent.USER_UPDATED; d: UserEvent }
+  [WsEvent.ROLE_CREATED]: { op: WsEvent.ROLE_CREATED; d: RoleEvent }
+  [WsEvent.ROLE_UPDATED]: { op: WsEvent.ROLE_UPDATED; d: RoleEvent }
+  [WsEvent.ROLE_DELETED]: { op: WsEvent.ROLE_DELETED; d: RoleDeletedEvent }
+  [WsEvent.LAB_CREATED]: { op: WsEvent.LAB_CREATED; d: LabCreatedEvent }
+  [WsEvent.LAB_UPDATED]: { op: WsEvent.LAB_UPDATED; d: LabUpdatedEvent }
+  [WsEvent.LAB_DELETED]: { op: WsEvent.LAB_DELETED; d: LabDeletedEvent }
   [WsEvent.ERROR]: { op: WsEvent.ERROR; d: ErrorPayload }
 }
 

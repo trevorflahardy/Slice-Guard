@@ -28,12 +28,10 @@ export async function addMember(
         SELECT default_role_id FROM lab.labs WHERE id = ${labId}
     `;
 
-    if (default_role_id !== null && default_role_id !== undefined) {
-        await db`
-            INSERT INTO lab.member_roles (lab_id, user_id, role_id)
-                 VALUES (${labId}, ${userId}, ${default_role_id})
-        `;
-    }
+    await db`
+        INSERT INTO lab.member_roles (lab_id, user_id, role_id)
+             VALUES (${labId}, ${userId}, ${default_role_id})
+    `;
 
     if (roleId !== null && roleId !== default_role_id) {
         await db`

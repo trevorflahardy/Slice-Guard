@@ -27,6 +27,12 @@ ws.addListener(WsEvent.LAB_UPDATED, d => labs.updateLab(d.lab))
 ws.addListener(WsEvent.INVITE_CREATED, d => labs.addInvite(d.invite.lab_id, d.invite))
 ws.addListener(WsEvent.INVITE_UPDATED, d => labs.updateInvite(d.invite.lab_id, d.invite))
 ws.addListener(WsEvent.INVITE_DELETED, d => labs.removeInvite(d.labId, d.inviteId))
+ws.addListener(WsEvent.ROLE_CREATED, ({ role }) => labs.addRole(role.lab_id, role))
+ws.addListener(WsEvent.ROLE_UPDATED, ({ role }) => labs.updateRole(role.lab_id, role))
+ws.addListener(WsEvent.ROLE_DELETED, d => labs.removeRole(d.labId, d.roleId))
+ws.addListener(WsEvent.LAB_CREATED, ({ lab }) => labs.addLab(lab))
+ws.addListener(WsEvent.LAB_UPDATED, ({ lab }) => labs.updateLab(lab))
+ws.addListener(WsEvent.LAB_DELETED, ({ labId }) => labs.removeLab(labId))
 ws.addListener(WsEvent.USER_UPDATED, ({ user }) => {
   labs.updateUser(user)
   if (auth.user && auth.user.id === user.id) {

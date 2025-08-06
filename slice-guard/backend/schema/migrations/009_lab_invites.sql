@@ -12,5 +12,5 @@ CREATE TABLE lab.invite_uses (
     invite_id INTEGER NOT NULL REFERENCES lab.invites(id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     used_at TIMESTAMP DEFAULT NOW(),
-    PRIMARY KEY (invite_id, user_id)
+    PRIMARY KEY (invite_id)
 );

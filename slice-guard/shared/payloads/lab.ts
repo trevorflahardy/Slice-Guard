@@ -23,6 +23,10 @@ export interface RoleCreatePayload {
   permissions: number
 }
 
+export interface RoleUpdatePayload {
+  permissions: number
+}
+
 export interface MemberAddPayload {
   labId: number
   userId: number

@@ -19,6 +19,7 @@ export class WebSocketClient {
     this.ws.addEventListener('message', (ev) => {
       try {
         const msg: WsPayloadUnion = JSON.parse(ev.data)
+        if (import.meta.env.DEV) console.debug('[ws] <=', msg)
         this.dispatch(msg)
       } catch {
         console.error('Invalid WS message', ev.data)
@@ -50,6 +51,10 @@ export class WebSocketClient {
 
   private dispatch(msg: WsPayloadUnion) {
     const set = this.listeners.get(msg.op)
+    if (import.meta.env.DEV) {
+      const count = set ? set.size : 0
+      console.debug('[ws] dispatch', msg.op, `to ${count} listener(s)`)
+    }
     if (!set) return
     for (const cb of Array.from(set)) {
       try {

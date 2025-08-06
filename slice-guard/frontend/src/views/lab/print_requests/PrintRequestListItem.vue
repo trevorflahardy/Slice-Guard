@@ -108,38 +108,22 @@ const tagOptions = computed(() =>
         {{ new Date(entry.request.created_at).toLocaleTimeString() }}
       </div>
 
-      <TransitionGroup
-        appear
-        name="tag-bubble"
-        tag="div"
-        class="flex flex-wrap gap-1 items-center justify-start"
-      >
-        <span
-          v-for="tag in entry.tags"
-          :key="tag.id"
-          class="px-2 h-5 rounded-full text-xs text-white flex items-center"
-          :style="{ backgroundColor: tag.color }"
-          >{{ tag.name }}
+      <TransitionGroup appear name="tag-bubble" tag="div" class="flex flex-wrap gap-1 items-center justify-start">
+        <span v-for="tag in entry.tags" :key="tag.id" class="px-2 h-5 rounded-full text-xs text-white flex items-center"
+          :style="{ backgroundColor: tag.color }">{{ tag.name }}
         </span>
 
         <!-- Add tag button -->
-        <Dropdown
-          :key="'add'"
-          v-model="tagIds"
-          :options="tagOptions"
-          :multiple="true"
-        >
+        <Dropdown :key="'add'" v-model="tagIds" :options="tagOptions" :multiple="true">
           <template #activator>
-            <PlusCircleIcon
-              class="h-5 w-5 text-surface-high drop-shadow-sm"
-            />
+            <PlusCircleIcon class="h-5 w-5 text-surface-high drop-shadow-sm" />
           </template>
         </Dropdown>
       </TransitionGroup>
     </div>
 
     <!-- Description of the ticket, max 3 lines, truncated -->
-  <div class="text-sm text-fg-secondary line-clamp-3 mt-auto text-pretty text-left">
+    <div class="text-sm text-fg-secondary line-clamp-3 mt-auto text-pretty text-left">
       {{ entry.request.description }}
     </div>
 
@@ -155,16 +139,23 @@ const tagOptions = computed(() =>
 .tag-bubble-leave-active {
   transition: all 0.2s ease;
 }
+
+.tag-bubble-leave-active {
+  position: absolute;
+}
+
 .tag-bubble-enter-from,
 .tag-bubble-leave-to {
   opacity: 0;
   transform: scale(0.8);
 }
+
 .tag-bubble-enter-to,
 .tag-bubble-leave-from {
   opacity: 1;
   transform: scale(1);
 }
+
 .tag-bubble-move {
   transition: transform 0.2s ease;
 }

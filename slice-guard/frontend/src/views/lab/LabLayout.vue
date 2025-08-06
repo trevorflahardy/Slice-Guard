@@ -1,34 +1,17 @@
 <script setup lang="ts">
-import { onMounted, watch, ref } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from './Sidebar.vue'
 import LabUserList from './LabUserList.vue'
-import { apiFetch } from '../../services/api'
-import { type Lab } from '@shared/db/lab';
+import { useLabsStore } from '../../store/labs'
 
 const route = useRoute()
 
-const lab = ref<Lab | null>(null)
-const loading = ref(true)
-const error = ref('')
-
-async function fetchLab() {
-  const labId = Number(route.params.id)
-  loading.value = true
-  error.value = ''
-  try {
-    const res = await apiFetch(`/labs/${labId}`)
-    if (!res.ok) throw new Error()
-    lab.value = await res.json()
-  } catch {
-    error.value = 'Failed to load lab'
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(fetchLab)
-watch(() => route.params.id, fetchLab)
+const labs = useLabsStore()
+const labId = computed(() => Number(route.params.id))
+const lab = computed(() => labs.getLab(labId.value)?.lab ?? null)
+const loading = computed(() => lab.value == null)
+const error = computed(() => (lab.value ? '' : 'Failed to load lab'))
 </script>
 
 <template>

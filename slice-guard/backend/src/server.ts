@@ -7,6 +7,7 @@ import * as requestHandlers from './http/request';
 import * as userRoutes from './http/user';
 import { getApiKey } from './db/user';
 import { WsEvent } from '@shared/payloads/ws';
+import { getUserLabStates } from "./utils/lab_state";
 
 import logger from "./utils/logger";
 import { withLogging } from "./http/middleware";
@@ -64,6 +65,7 @@ export class Server {
                 '/api/labs/:labId/requests/:requestId': {
                     GET: req => withLogging(requestHandlers.getRoute)(req, this.state, req.params),
                     PATCH: req => withLogging(requestHandlers.setRequestStateRoute)(req, this.state, req.params),
+                    DELETE: req => withLogging(requestHandlers.deleteRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/requests/:requestId/tags/:tagId': {
                     POST: req => withLogging(requestHandlers.assignTagRoute)(req, this.state, req.params),
@@ -74,6 +76,7 @@ export class Server {
                 },
                 '/api/labs/:labId/tags/:tagId': {
                     PATCH: req => withLogging(requestHandlers.setTagDefaultRoute)(req, this.state, req.params),
+                    DELETE: req => withLogging(requestHandlers.deleteTagRoute)(req, this.state, req.params),
                 },
                 '/api/users/:id/avatar': {
                     POST: req => withLogging(userRoutes.uploadAvatar)(req, this.state, req.params),
@@ -142,9 +145,10 @@ export class Server {
         await validateAndDispatchMessage(this, ws, message, this.state);
     }
 
-    private handleWebSocketOpen(ws: ServerWebSocket) {
+    private async handleWebSocketOpen(ws: ServerWebSocket) {
         this.state.sockets.add(ws);
-        ws.send(JSON.stringify({ op: WsEvent.HELLO, d: {} }));
+        const labs = await getUserLabStates(this.state.db, ws.data.userId);
+        ws.send(JSON.stringify({ op: WsEvent.HELLO, d: { labs } }));
         logger.debug({ userId: ws.data.userId }, "WebSocket connected");
     }
 

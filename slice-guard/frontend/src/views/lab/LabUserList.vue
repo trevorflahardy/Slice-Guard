@@ -1,49 +1,41 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
-import type { Lab, LabMember } from '@shared/db/lab'
-import type { User } from '@shared/db/user'
-import { apiFetch } from '../../services/api'
+import { ref, computed } from 'vue'
+import type { Lab } from '@shared/db/lab'
+import { useLabsStore } from '../../store/labs'
 import SearchBar from '../../components/SearchBar.vue'
 
 const props = defineProps<{
     lab: Lab | null
 }>()
 
-interface MemberResponse {
-    member: LabMember
-    user: User
-}
-
-const members = ref<Record<string, { id: number; name: string; avatar_url?: string | null }[]>>({})
+const labs = useLabsStore()
 const search = ref('')
 
+const members = computed(() => {
+    if (!props.lab) return []
+    return labs.getLab(props.lab.id)?.members ?? []
+})
+
+const categorized = computed(() => {
+    const map: Record<string, { id: number; name: string; avatar_url?: string | null }[]> = {}
+    for (const m of members.value) {
+        const category = m.member.roles[0]?.name ?? 'Member'
+        if (!map[category]) map[category] = []
+        map[category].push({ id: m.member.user_id, name: m.user?.name ?? '', avatar_url: m.user?.avatar_url })
+    }
+    return map
+})
+
 const filteredMembers = computed(() => {
-    if (!search.value) return members.value
+    if (!search.value) return categorized.value
     const lower = search.value.toLowerCase()
-    const result: Record<string, { id: number; name: string }[]> = {}
-    for (const [category, users] of Object.entries(members.value)) {
+    const result: Record<string, { id: number; name: string; avatar_url?: string | null }[]> = {}
+    for (const [category, users] of Object.entries(categorized.value)) {
         const filtered = users.filter(u => u.name.toLowerCase().includes(lower))
         if (filtered.length > 0) result[category] = filtered
     }
     return result
 })
-
-async function fetchMembers() {
-    if (!props.lab) return
-    const res = await apiFetch(`/labs/${props.lab.id}/members`)
-    if (!res.ok) return
-    const data = (await res.json()) as MemberResponse[]
-    const map: Record<string, { id: number; name: string; avatar_url?: string | null }[]> = {}
-    for (const item of data) {
-        const category = item.member.roles[0]?.name ?? 'Member'
-        if (!map[category]) map[category] = []
-        map[category].push({ id: item.user.id, name: item.user.name ?? item.user.email, avatar_url: item.user.avatar_url })
-    }
-    members.value = map
-}
-
-onMounted(fetchMembers)
-watch(() => props.lab?.id, fetchMembers)
 </script>
 
 <template>

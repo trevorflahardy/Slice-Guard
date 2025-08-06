@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { apiFetch } from '../../../services/api'
 import type { RequestTag } from '@shared/db/request'
-import { ws } from '../../../services/ws'
-import { WsEvent, type PrintRequestEvent } from '@shared/payloads/ws'
+import type { PrintRequestEvent } from '@shared/payloads/ws'
 import Dropdown from "../../../components/Dropdown.vue"
 import PrintRequestListItem from './PrintRequestListItem.vue'
+import { useLabsStore } from '../../../store/labs'
 
 export interface RequestItem extends PrintRequestEvent {}
 
 const route = useRoute()
+const labs = useLabsStore()
 const labId = computed(() => Number(route.params.id))
+const lab = computed(() => labs.getLab(labId.value))
 
-const requests = ref<RequestItem[]>([])
-const tags = ref<RequestTag[]>([])
+const requests = computed<RequestItem[]>(() => lab.value?.requests ?? [])
+const tags = computed<RequestTag[]>(() => lab.value?.tags ?? [])
 
 const search = ref('')
 const tagFilter = ref<(number | string)[]>([])
@@ -22,32 +23,10 @@ const from = ref('')
 const to = ref('')
 const stateFilter = ref<'all' | 'open' | 'closed'>('all')
 
-async function fetchRequests() {
-  const q = stateFilter.value === 'all' ? '' : `?state=${stateFilter.value}`
-  const res = await apiFetch(`/labs/${labId.value}/requests${q}`)
-  if (res.ok) requests.value = await res.json()
-}
-
-async function fetchTags() {
-  const res = await apiFetch(`/labs/${labId.value}/tags`)
-  if (res.ok) tags.value = await res.json()
-}
-
 const tagOptions = computed(() =>
   tags.value.map(tag => ({ id: tag.id, name: tag.name }))
 )
 
-onMounted(() => {
-  fetchRequests()
-  fetchTags()
-  ws.addListener(WsEvent.REQUEST_CREATED, onRequestCreated)
-})
-onUnmounted(() => ws.removeListener(WsEvent.REQUEST_CREATED, onRequestCreated))
-watch(labId, () => {
-  fetchRequests()
-  fetchTags()
-})
-watch(stateFilter, fetchRequests)
 
 const filtered = computed(() => {
   return requests.value
@@ -77,12 +56,6 @@ const filtered = computed(() => {
 })
 
 const selectClass = "bg-surface-low px-2 py-1 rounded-md text-fg-primary"
-
-function onRequestCreated(entry: PrintRequestEvent) {
-  if (entry.request.lab_id === labId.value) {
-    requests.value.unshift(entry)
-  }
-}
 </script>
 
 <template>

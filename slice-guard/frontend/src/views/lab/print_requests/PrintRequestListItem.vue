@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { type RequestItem } from "./LabPrintRequests.vue";
-import { computed, ref, onMounted, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import Dropdown from "../../../components/Dropdown.vue";
 import { apiFetch } from "../../../services/api";
 import type { RequestTag } from "@shared/db/request";
 import { PlusCircleIcon } from "@heroicons/vue/16/solid";
+import { useLabsStore } from "../../../store/labs";
 
 interface Props {
   entry: RequestItem;
@@ -25,18 +26,12 @@ const statusOptions = [
 
 const statusModel = ref(entry.request.is_closed ? "closed" : "open");
 
-const allTags = ref<RequestTag[]>([]);
+const labs = useLabsStore();
+const allTags = computed<RequestTag[]>(() => labs.getLab(labId.value)?.tags ?? []);
 const tagIds = ref<(number | string)[]>(entry.tags.map((t) => t.id));
 
-async function fetchTags() {
-  const res = await apiFetch(`/labs/${labId.value}/tags`);
-  if (res.ok) allTags.value = await res.json();
-}
-
-onMounted(fetchTags);
-
 watch(statusModel, async (val) => {
-  await apiFetch(`/labs/${labId.value}/requests/${entry.request.id}`, {
+    await apiFetch(`/labs/${labId.value}/requests/${entry.request.id}`, {
     method: "PATCH",
     body: JSON.stringify({ isClosed: val === "closed" }),
   });

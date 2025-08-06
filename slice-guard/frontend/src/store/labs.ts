@@ -105,13 +105,6 @@ export const useLabsStore = defineStore('labs', {
       if (DEV) console.debug('[labs] removeMember', labId, userId)
       lab.members = lab.members.filter(m => m.member.user_id !== userId)
     },
-    /** Update lab info. */
-    updateLab(lab: Lab) {
-      const state = this.getLab(lab.id)
-      if (!state) return
-      if (DEV) console.debug('[labs] updateLab', lab)
-      state.lab = lab
-    },
     /** Handle member leave events. */
     handleMemberLeft(labId: number, userId: number) {
       const auth = useAuthStore()

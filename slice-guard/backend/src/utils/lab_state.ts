@@ -1,5 +1,5 @@
 import type { SQL } from "bun";
-import { listLabsForUser, listMembers, getMemberRoles, listInvites, getMemberRolePermissions } from "../db/lab";
+import { listLabsForUser, listMembers, getMemberRoles, listInvites, getMemberRolePermissions, getLab } from "../db/lab";
 import { getAllPrintRequests, getTagsForRequest, listTags } from "../db/lab/request";
 import { findPublicUserById } from "../db/user";
 import type { LabRole, LabMember, LabInvite } from "@shared/db/lab";
@@ -54,4 +54,50 @@ export async function getUserLabStates(db: SQL, userId: number): Promise<LabStat
   }
 
   return result;
+}
+
+/**
+ * Load the full state for a single lab that the user is a member of.
+ */
+export async function getLabState(db: SQL, labId: number, userId: number): Promise<LabState | null> {
+  const lab = await getLab(db, labId);
+  if (!lab) return null;
+
+  // Load roles
+  const roles: LabRole[] = await db`
+    SELECT id, lab_id, name, permissions, created_at
+      FROM lab.roles WHERE lab_id = ${labId}` as any;
+
+  // Load members with their roles and public user info
+  const memberRows = await listMembers(db, labId);
+  const members: MemberEvent[] = [];
+  for (const row of memberRows) {
+    const user = await findPublicUserById(db, row.user_id);
+    const mRoles = await getMemberRoles(db, labId, row.user_id);
+    const member: LabMember = {
+      lab_id: row.lab_id,
+      user_id: row.user_id,
+      roles: mRoles,
+      joined_at: row.joined_at,
+    };
+    members.push({ labId, member, user });
+  }
+
+  // Load tags for the lab
+  const tags: RequestTag[] = await listTags(db, labId);
+  // Load invites for the lab
+  const invites: LabInvite[] = await listInvites(db, labId);
+  // Permissions for the connected user
+  const permissions = await getMemberRolePermissions(db, labId, userId);
+
+  // Load requests with their tags and user info
+  const requestRows = await getAllPrintRequests(db, labId);
+  const requests: PrintRequestEvent[] = [];
+  for (const r of requestRows) {
+    const user = await findPublicUserById(db, r.user_id);
+    const rTags = await getTagsForRequest(db, r.id);
+    requests.push({ request: r, user, tags: rTags });
+  }
+
+  return { lab, roles, members, tags, requests, invites, permissions };
 }

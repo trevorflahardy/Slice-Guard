@@ -6,6 +6,7 @@ import { getMemberRolePermissions } from "../../db/lab";
 import type { InviteCreatePayload, InviteUpdatePayload } from "@shared/payloads";
 import { WsEvent } from "@shared/payloads/ws";
 import { findPublicUserById } from "../../db/user";
+import { getLabState } from "../../utils/lab_state";
 
 /**
  * POST /api/labs/:labId/invites
@@ -89,5 +90,7 @@ export const useInviteRoute = withAuth(async (_req, userId, state, params) => {
     state.broadcast({ op: WsEvent.MEMBER_JOINED, d: { labId: invite.lab_id, member, user } }, userId);
     // Notify everyone (including the joiner) about updated invite usage
     state.broadcast({ op: WsEvent.INVITE_UPDATED, d: { invite: updated } });
-    return Response.json({ labId: invite.lab_id });
+    const lab = await getLabState(state.db, invite.lab_id, userId);
+    if (!lab) return new Response("Lab not found", { status: 500 });
+    return Response.json({ lab });
 });

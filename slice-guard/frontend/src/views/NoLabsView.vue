@@ -3,20 +3,24 @@ import Button from '../components/Button.vue'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import { apiFetch } from '../services/api'
+import { useLabsStore } from '../store/labs'
+import type { LabState } from '@shared/payloads/ws'
 
 const router = useRouter()
 const showJoin = ref(false)
 const code = ref('')
 const status = ref<'idle' | 'valid' | 'invalid'>('idle')
+const labs = useLabsStore()
 
 async function join() {
   status.value = 'idle'
   try {
     const res = await apiFetch(`/invites/${code.value}`, { method: 'POST' })
     if (!res.ok) throw new Error()
-    const { labId } = await res.json() as { labId: number }
+    const { lab } = await res.json() as { lab: LabState }
+    labs.addLab(lab)
     status.value = 'valid'
-    router.push(`/lab/${labId}`)
+    router.push(`/lab/${lab.lab.id}`)
   } catch {
     status.value = 'invalid'
   }

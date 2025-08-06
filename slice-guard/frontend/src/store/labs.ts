@@ -23,6 +23,11 @@ export const useLabsStore = defineStore('labs', {
     getLab(id: number) {
       return this.labs.find(l => l.lab.id === id) || null
     },
+    /** Add a new lab to the store. */
+    addLab(lab: LabState) {
+      if (DEV) console.debug('[labs] addLab', lab)
+      this.labs.push(lab)
+    },
     /** Prepend a new request to the lab list. */
     addRequest(labId: number, entry: PrintRequestEvent) {
       const lab = this.getLab(labId)

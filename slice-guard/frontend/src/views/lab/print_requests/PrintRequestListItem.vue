@@ -56,7 +56,7 @@ watch(entry, (val) => {
   }
 });
 
-watch(statusModel, async (val, old) => {
+watch(statusModel, async (val, _old) => {
   const current = entry.value.request.is_closed ? "closed" : "open";
   // Ignore updates coming from external changes
   if (val === current) return;

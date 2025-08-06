@@ -87,3 +87,18 @@ export async function setAvatarUrl(
     `;
     return rows[0];
 }
+
+/** Update a user's display name. */
+export async function setName(
+    db: SQL,
+    userId: number,
+    name: string
+): Promise<User> {
+    const rows: User[] = await db`
+        UPDATE auth.users
+           SET name = ${name}
+         WHERE id = ${userId}
+        RETURNING id, email, name, avatar_url, created_at
+    `;
+    return rows[0];
+}

@@ -26,6 +26,13 @@ ws.addListener(WsEvent.MEMBER_LEFT, d => labs.removeMember(d.labId, d.userId))
 ws.addListener(WsEvent.INVITE_CREATED, d => labs.addInvite(d.invite.lab_id, d.invite))
 ws.addListener(WsEvent.INVITE_UPDATED, d => labs.updateInvite(d.invite.lab_id, d.invite))
 ws.addListener(WsEvent.INVITE_DELETED, d => labs.removeInvite(d.labId, d.inviteId))
+ws.addListener(WsEvent.USER_UPDATED, ({ user }) => {
+  labs.updateUser(user)
+  if (auth.user && auth.user.id === user.id) {
+    auth.user = user
+    localStorage.setItem('user', JSON.stringify(user))
+  }
+})
 
 if (auth.apiKey) ws.connect(auth.apiKey)
 app.use(router).mount('#app')

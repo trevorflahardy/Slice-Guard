@@ -35,6 +35,8 @@ export enum WsEvent {
   INVITE_UPDATED = 11,
   /** Emitted when an invite is deleted. */
   INVITE_DELETED = 12,
+  /** Emitted when a user updates profile information. */
+  USER_UPDATED = 13,
 }
 
 export type WsEventType = keyof typeof WsEvent
@@ -80,6 +82,10 @@ export interface InviteDeletedEvent {
   inviteId: number
 }
 
+export interface UserEvent {
+  user: User
+}
+
 export interface LabState {
   lab: Lab
   roles: LabRole[]
@@ -113,6 +119,7 @@ export type WsPayloads = {
   [WsEvent.INVITE_CREATED]: { op: WsEvent.INVITE_CREATED; d: InviteEvent }
   [WsEvent.INVITE_UPDATED]: { op: WsEvent.INVITE_UPDATED; d: InviteEvent }
   [WsEvent.INVITE_DELETED]: { op: WsEvent.INVITE_DELETED; d: InviteDeletedEvent }
+  [WsEvent.USER_UPDATED]: { op: WsEvent.USER_UPDATED; d: UserEvent }
   [WsEvent.ERROR]: { op: WsEvent.ERROR; d: ErrorPayload }
 }
 

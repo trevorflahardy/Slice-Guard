@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { type RequestItem } from "./LabPrintRequests.vue";
-import { computed, ref, watch } from "vue";
+import { computed, ref, toRef, watch } from "vue";
 import { useRoute } from "vue-router";
 import Dropdown from "../../../components/Dropdown.vue";
 import { apiFetch } from "../../../services/api";
 import type { RequestTag } from "@shared/db/request";
 import { PlusCircleIcon } from "@heroicons/vue/16/solid";
 import { useLabsStore } from "../../../store/labs";
+import { useAuthStore } from "../../../store/auth";
+import { hasLabPermission } from "../../../utils/permissions";
+import { LabPermission } from "@shared/db/lab";
 
 interface Props {
   entry: RequestItem;
 }
 
 const props = defineProps<Props>();
-const entry = props.entry;
+const entry = toRef(props, 'entry');
 
 const route = useRoute();
 
@@ -24,46 +27,63 @@ const statusOptions = [
   { id: "closed", name: "Closed" },
 ];
 
-const statusModel = ref(entry.request.is_closed ? "closed" : "open");
-
 const labs = useLabsStore();
+const auth = useAuthStore();
 const allTags = computed<RequestTag[]>(() => labs.getLab(labId.value)?.tags ?? []);
-const tagIds = ref<(number | string)[]>(entry.tags.map((t) => t.id));
+const perms = computed(() => labs.getLab(labId.value)?.permissions ?? null);
+const canManage = computed(() =>
+  entry.value.request.user_id === auth.user?.id ||
+  hasLabPermission(perms.value, LabPermission.MANAGE_REQUESTS)
+);
 
-watch(statusModel, async (val) => {
-    await apiFetch(`/labs/${labId.value}/requests/${entry.request.id}`, {
-    method: "PATCH",
-    body: JSON.stringify({ isClosed: val === "closed" }),
+const statusModel = ref(entry.value.request.is_closed ? "closed" : "open");
+const tagIds = ref<(number | string)[]>(entry.value.tags.map((t) => t.id));
+
+watch(entry, val => {
+  statusModel.value = val.request.is_closed ? 'closed' : 'open';
+  tagIds.value = val.tags.map(t => t.id);
+});
+
+watch(statusModel, async (val, old) => {
+  if (!canManage.value) {
+    statusModel.value = old;
+    return;
+  }
+  const res = await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isClosed: val === 'closed' }),
   });
-  entry.request.is_closed = val === "closed";
+  if (res.ok) {
+    entry.value.request.is_closed = val === 'closed';
+  } else {
+    statusModel.value = old;
+  }
 });
 
 watch(tagIds, async (val, old) => {
-  const added = (val as number[]).filter(
-    (id) => !(old as number[]).includes(id)
-  );
-  const removed = (old as number[]).filter(
-    (id) => !(val as number[]).includes(id)
-  );
-  for (const id of added) {
-    await apiFetch(
-      `/labs/${labId.value}/requests/${entry.request.id}/tags/${id}`,
-      {
-        method: "POST",
+  if (!canManage.value) {
+    tagIds.value = old;
+    return;
+  }
+  const added = (val as number[]).filter(id => !(old as number[]).includes(id));
+  const removed = (old as number[]).filter(id => !(val as number[]).includes(id));
+  try {
+    for (const id of added) {
+      await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
+        method: 'POST',
         body: JSON.stringify({ assign: true }),
-      }
-    );
-  }
-  for (const id of removed) {
-    await apiFetch(
-      `/labs/${labId.value}/requests/${entry.request.id}/tags/${id}`,
-      {
-        method: "POST",
+      });
+    }
+    for (const id of removed) {
+      await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
+        method: 'POST',
         body: JSON.stringify({ assign: false }),
-      }
-    );
+      });
+    }
+    entry.value.tags = allTags.value.filter(t => (val as number[]).includes(t.id));
+  } catch {
+    tagIds.value = old;
   }
-  entry.tags = allTags.value.filter((t) => (val as number[]).includes(t.id));
 });
 
 const tagOptions = computed(() =>
@@ -77,20 +97,20 @@ const tagOptions = computed(() =>
     <div class="flex flex-row items-center justify-between">
       <!-- Title -->
       <h3 class="text-fg-primary font-medium text-md truncate text-pretty line-clamp-2 max-w-[80%]">
-        {{ entry.request.title || "[No title given]" }}
+        {{ entry.value.request.title || "[No title given]" }}
       </h3>
 
-      <img v-if="entry.user?.avatar_url" :src="entry.user.avatar_url" class="w-8 h-8 rounded-full object-cover" />
+      <img v-if="entry.value.user?.avatar_url" :src="entry.value.user.avatar_url" class="w-8 h-8 rounded-full object-cover" />
       <div v-else class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs text-fg-secondary">
-        {{ entry.user?.name?.charAt(0) || "?" }}
+        {{ entry.value.user?.name?.charAt(0) || "?" }}
       </div>
     </div>
 
     <!-- Ticket number, author name next to each other in small gray-->
     <div class="space-y-1">
       <div class="text-xs text-fg-secondary">
-        <span class="underline decoration-dashed">#{{ entry.request.id }}</span>
-        by {{ entry.user?.name || entry.user?.email || "Unknown" }}
+        <span class="underline decoration-dashed">#{{ entry.value.request.id }}</span>
+        by {{ entry.value.user?.name || entry.value.user?.email || "Unknown" }}
       </div>
 
       <!-- Human readable date of when this ticket was created (with time)-->
@@ -99,17 +119,16 @@ const tagOptions = computed(() =>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        {{ new Date(entry.request.created_at).toLocaleDateString() }} at
-        {{ new Date(entry.request.created_at).toLocaleTimeString() }}
+        {{ new Date(entry.value.request.created_at).toLocaleDateString() }} at
+        {{ new Date(entry.value.request.created_at).toLocaleTimeString() }}
       </div>
 
       <div class="flex flex-wrap gap-1 items-center justify-start">
-        <span v-for="tag in entry.tags" :key="tag.id" class="px-2 h-5 rounded-full text-xs text-white flex items-center"
+        <span v-for="tag in entry.value.tags" :key="tag.id" class="px-2 h-5 rounded-full text-xs text-white flex items-center"
           :style="{ backgroundColor: tag.color }">{{ tag.name }}
         </span>
-
         <!-- Add tag button -->
-        <Dropdown v-model="tagIds" :options="tagOptions" :multiple="true">
+        <Dropdown v-if="canManage" v-model="tagIds" :options="tagOptions" :multiple="true">
           <template #activator>
             <PlusCircleIcon class="h-5 w-5 text-surface-high drop-shadow-sm" />
           </template>
@@ -119,12 +138,13 @@ const tagOptions = computed(() =>
 
     <!-- Description of the ticket, max 3 lines, truncated -->
     <div class="text-sm text-fg-secondary line-clamp-3 mt-auto text-pretty text-left">
-      {{ entry.request.description }}
+      {{ entry.value.request.description }}
     </div>
 
     <!-- Action buttons -->
     <div class="flex flex-row gap-2 items-center">
-      <Dropdown v-model="statusModel" :options="statusOptions" placeholder="Status" />
+      <Dropdown v-if="canManage" v-model="statusModel" :options="statusOptions" placeholder="Status" />
+      <span v-else class="text-xs text-fg-secondary">{{ statusModel === 'open' ? 'Open' : 'Closed' }}</span>
     </div>
   </div>
 </template>

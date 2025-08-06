@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import type { RequestTag } from '@shared/db/request'
 import type { LabState, PrintRequestEvent, MemberEvent } from '@shared/payloads/ws'
 import type { LabInvite } from '@shared/db/lab'
+import type { User } from '@shared/db/user'
 
 const DEV = import.meta.env.DEV
 
@@ -114,6 +115,18 @@ export const useLabsStore = defineStore('labs', {
       if (!lab) return
       if (DEV) console.debug('[labs] removeInvite', labId, inviteId)
       lab.invites = lab.invites.filter(i => i.id !== inviteId)
+    },
+    /** Update user info across members and requests. */
+    updateUser(user: User) {
+      if (DEV) console.debug('[labs] updateUser', user)
+      for (const lab of this.labs) {
+        for (const m of lab.members) {
+          if (m.user?.id === user.id) m.user = user
+        }
+        for (const r of lab.requests) {
+          if (r.user?.id === user.id) r.user = user
+        }
+      }
     },
   },
 })

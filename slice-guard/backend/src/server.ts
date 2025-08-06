@@ -93,6 +93,9 @@ export class Server {
                     POST: req => withLogging(userRoutes.uploadAvatar)(req, this.state, req.params),
                     GET: req => withLogging(userRoutes.getAvatar)(req, this.state, req.params),
                 },
+                '/api/users/:id': {
+                    PATCH: req => withLogging(userRoutes.update)(req, this.state, req.params),
+                },
                 '/api/*': {
                     OPTIONS: _req => {
                         // Handle CORS preflight (in the future)

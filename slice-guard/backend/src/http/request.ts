@@ -94,7 +94,7 @@ export const getRoute = withAuth(async (_req, userId, state, params) => {
     const row = await getPrintRequestById(state.db, requestId);
     if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (row.user_id !== userId && !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS)) {
+    if (row.user_id !== userId && (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))) {
         return new Response('Unauthorized', { status: 403 });
     }
     const user = await findPublicUserById(state.db, row.user_id);
@@ -163,7 +163,7 @@ export const assignTagRoute = withAuth(async (req, userId, state, params) => {
     const row = await getPrintRequestById(state.db, requestId);
     if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (row.user_id !== userId && !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS)) {
+    if (row.user_id !== userId && (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))) {
         return new Response('Unauthorized', { status: 403 });
     }
 
@@ -191,7 +191,7 @@ export const setRequestStateRoute = withAuth(async (req, userId, state, params) 
     const row = await getPrintRequestById(state.db, requestId);
     if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (row.user_id !== userId && !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS)) {
+    if (row.user_id !== userId && (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))) {
         return new Response('Unauthorized', { status: 403 });
     }
     const updated = await setRequestClosed(state.db, requestId, isClosed);

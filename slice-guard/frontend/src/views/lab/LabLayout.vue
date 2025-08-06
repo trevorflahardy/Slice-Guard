@@ -17,7 +17,7 @@ const error = computed(() => (lab.value ? '' : 'Failed to load lab'))
 <template>
   <div class="flex min-h-screen bg-surface-lowest">
     <aside class="w-56 lg:w-64 xl:w-72 bg-surface-low min-h-screen p-7 shrink-0 rounded-r-3xl border-r border-surface">
-      <Sidebar :lab="lab" />
+      <Sidebar :lab="lab!" />
     </aside>
 
     <!-- Main content area -->

@@ -22,6 +22,7 @@ in real time.
 | 10      | `INVITE_CREATED` | Server → Client | `{ invite }` broadcast when an invite is created |
 | 11      | `INVITE_UPDATED` | Server → Client | `{ invite }` broadcast when an invite is updated or used |
 | 12      | `INVITE_DELETED` | Server → Client | `{ labId, inviteId }` broadcast when an invite is deleted |
+| 13      | `USER_UPDATED`   | Server → Client | `{ user }` broadcast when a user updates their profile |
 
 Payload interfaces are defined in `slice-guard/shared/payloads/ws.ts` and reused
 by both the frontend and backend.

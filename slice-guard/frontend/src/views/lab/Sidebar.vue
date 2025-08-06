@@ -12,7 +12,7 @@ import Dropdown from '../../components/Dropdown.vue'
 import { hasLabPermission } from '../../utils/permissions'
 
 export interface LabSidebarProps {
-    lab: Lab | null
+    lab: Lab
 }
 
 const props = defineProps<LabSidebarProps>();
@@ -51,7 +51,7 @@ const dropdownOptions = computed(() => {
     return options
 })
 
-function handleDropdown(action: string | number | null) {
+function handleDropdown(action: string | number | (string | number)[] | null) {
     if (action === 'invite') inviteModal.open()
 }
 </script>
@@ -60,27 +60,20 @@ function handleDropdown(action: string | number | null) {
     <!-- Holds the main sidebar content. For now, this is placeholder information. -->
     <div class="flex flex-col gap-5 h-full justify-items-start">
         <!--Currently active lab information (and way to change lab)-->
-        <Dropdown v-if="props.lab"
+        <Dropdown
             :options="dropdownOptions"
             :model-value="null"
             @update:modelValue="handleDropdown">
             <template #activator>
                 <div class="text-left flex flex-col items-start gap-2 w-full cursor-pointer">
                     <div class="flex justify-between w-full">
-                        <h1 class="text-lg/5 text-fg-primary font-semibold text-pretty">{{ props.lab?.name }}</h1>
+                        <h1 class="text-lg/5 text-fg-primary font-semibold text-pretty">{{ props.lab.name }}</h1>
                         <Cog6ToothIcon class="ml-auto size-4 text-fg-secondary" />
                     </div>
-                    <p class="text-xs text-fg-secondary line-clamp-2">{{ props.lab?.description }}</p>
+                    <p class="text-xs text-fg-secondary line-clamp-2">{{ props.lab.description }}</p>
                 </div>
             </template>
         </Dropdown>
-        <div v-else class="text-left flex flex-col items-start gap-2">
-            <div class="flex justify-between w-full">
-                <h1 class="text-lg/5 text-fg-primary font-semibold text-pretty">{{ props.lab?.name }}</h1>
-                <Cog6ToothIcon class="ml-auto size-4 text-fg-secondary" />
-            </div>
-            <p class="text-xs text-fg-secondary line-clamp-2">{{ props.lab?.description }}</p>
-        </div>
 
 
         <!-- Divider line -->

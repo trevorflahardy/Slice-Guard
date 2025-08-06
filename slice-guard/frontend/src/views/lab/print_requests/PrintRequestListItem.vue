@@ -123,12 +123,12 @@ const tagOptions = computed(() =>
     </div>
 
     <!-- Description of the ticket, max 3 lines, truncated -->
-    <div class="text-sm text-fg-secondary line-clamp-3">
+    <div class="text-sm text-fg-secondary line-clamp-3 mt-auto text-pretty text-left">
       {{ entry.request.description }}
     </div>
 
     <!-- Action buttons -->
-    <div class="flex flex-row gap-2 items-center mt-auto">
+    <div class="flex flex-row gap-2 items-center">
       <Dropdown v-model="statusModel" :options="statusOptions" placeholder="Status" />
     </div>
   </div>

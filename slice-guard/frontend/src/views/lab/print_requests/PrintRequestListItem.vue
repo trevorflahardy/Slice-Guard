@@ -57,31 +57,45 @@ watch(entry, (val) => {
 });
 
 watch(statusModel, async (val, old) => {
+  const current = entry.value.request.is_closed ? "closed" : "open";
+  // Ignore updates coming from external changes
+  if (val === current) return;
+
   if (!canManage.value) {
-    statusModel.value = old;
+    // Revert to actual state if user cannot manage requests
+    statusModel.value = current;
     return;
   }
+
   const res = await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ isClosed: val === 'closed' }),
+    method: "PATCH",
+    body: JSON.stringify({ isClosed: val === "closed" }),
   });
   if (res.ok) {
-    entry.value.request.is_closed = val === 'closed';
+    entry.value.request.is_closed = val === "closed";
   } else {
-    statusModel.value = old;
+    // Revert to server value on failure
+    statusModel.value = current;
   }
 });
 
 watch(tagIds, async (val, old) => {
+  const currentIds = entry.value.tags.map((t) => t.id);
+  // Ignore updates that mirror current tags (e.g. from websocket patches)
+  if (arraysEqual(val as (number | string)[], currentIds)) return;
+
   if (!canManage.value) {
-    tagIds.value = old;
+    // Revert to actual tags if user lacks permission
+    tagIds.value = currentIds;
     return;
   }
+
   const valNums = val as number[];
   const oldNums = old as number[];
   const added = valNums.filter((id) => !oldNums.includes(id));
   const removed = oldNums.filter((id) => !valNums.includes(id));
   if (!added.length && !removed.length) return;
+
   try {
     for (const id of added) {
       await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {

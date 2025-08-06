@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { apiFetch } from '../../../services/api'
-import type { PrintRequest, RequestTag } from '@shared/db/request'
-import type { User } from '@shared/db/user'
+import type { RequestTag } from '@shared/db/request'
+import type { PrintRequestEvent } from '@shared/payloads/ws'
 import Dropdown from "../../../components/Dropdown.vue"
 import PrintRequestListItem from './PrintRequestListItem.vue'
+import { useLabsStore } from '../../../store/labs'
 
-export interface RequestItem {
-  request: PrintRequest
-  user: User | null
-  tags: RequestTag[]
-}
+export interface RequestItem extends PrintRequestEvent {}
 
 const route = useRoute()
+const labs = useLabsStore()
 const labId = computed(() => Number(route.params.id))
+const lab = computed(() => labs.getLab(labId.value))
 
-const requests = ref<RequestItem[]>([])
-const tags = ref<RequestTag[]>([])
+const requests = computed<RequestItem[]>(() => lab.value?.requests ?? [])
+const tags = computed<RequestTag[]>(() => lab.value?.tags ?? [])
 
 const search = ref('')
 const tagFilter = ref<(number | string)[]>([])
@@ -25,30 +23,10 @@ const from = ref('')
 const to = ref('')
 const stateFilter = ref<'all' | 'open' | 'closed'>('all')
 
-async function fetchRequests() {
-  const q = stateFilter.value === 'all' ? '' : `?state=${stateFilter.value}`
-  const res = await apiFetch(`/labs/${labId.value}/requests${q}`)
-  if (res.ok) requests.value = await res.json()
-}
-
-async function fetchTags() {
-  const res = await apiFetch(`/labs/${labId.value}/tags`)
-  if (res.ok) tags.value = await res.json()
-}
-
 const tagOptions = computed(() =>
   tags.value.map(tag => ({ id: tag.id, name: tag.name }))
 )
 
-onMounted(() => {
-  fetchRequests()
-  fetchTags()
-})
-watch(labId, () => {
-  fetchRequests()
-  fetchTags()
-})
-watch(stateFilter, fetchRequests)
 
 const filtered = computed(() => {
   return requests.value

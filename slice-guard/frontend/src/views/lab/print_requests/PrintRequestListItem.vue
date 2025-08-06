@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import { type RequestItem } from "./LabPrintRequests.vue";
-import { computed, ref, onMounted, watch } from "vue";
+import { computed, ref, toRef, watch } from "vue";
 import { useRoute } from "vue-router";
 import Dropdown from "../../../components/Dropdown.vue";
 import { apiFetch } from "../../../services/api";
 import type { RequestTag } from "@shared/db/request";
 import { PlusCircleIcon } from "@heroicons/vue/16/solid";
+import { useLabsStore } from "../../../store/labs";
+import { useAuthStore } from "../../../store/auth";
+import { hasLabPermission } from "../../../utils/permissions";
+import { LabPermission } from "@shared/db/lab";
 
 interface Props {
   entry: RequestItem;
 }
 
 const props = defineProps<Props>();
-const entry = props.entry;
+const entry = toRef(props, 'entry');
 
 const route = useRoute();
 
@@ -23,52 +27,63 @@ const statusOptions = [
   { id: "closed", name: "Closed" },
 ];
 
-const statusModel = ref(entry.request.is_closed ? "closed" : "open");
+const labs = useLabsStore();
+const auth = useAuthStore();
+const allTags = computed<RequestTag[]>(() => labs.getLab(labId.value)?.tags ?? []);
+const perms = computed(() => labs.getLab(labId.value)?.permissions ?? null);
+const canManage = computed(() =>
+  entry.value.request.user_id === auth.user?.id ||
+  hasLabPermission(perms.value, LabPermission.MANAGE_REQUESTS)
+);
 
-const allTags = ref<RequestTag[]>([]);
-const tagIds = ref<(number | string)[]>(entry.tags.map((t) => t.id));
+const statusModel = ref(entry.value.request.is_closed ? "closed" : "open");
+const tagIds = ref<(number | string)[]>(entry.value.tags.map((t) => t.id));
 
-async function fetchTags() {
-  const res = await apiFetch(`/labs/${labId.value}/tags`);
-  if (res.ok) allTags.value = await res.json();
-}
+watch(entry, val => {
+  statusModel.value = val.request.is_closed ? 'closed' : 'open';
+  tagIds.value = val.tags.map(t => t.id);
+});
 
-onMounted(fetchTags);
-
-watch(statusModel, async (val) => {
-  await apiFetch(`/labs/${labId.value}/requests/${entry.request.id}`, {
-    method: "PATCH",
-    body: JSON.stringify({ isClosed: val === "closed" }),
+watch(statusModel, async (val, old) => {
+  if (!canManage.value) {
+    statusModel.value = old;
+    return;
+  }
+  const res = await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isClosed: val === 'closed' }),
   });
-  entry.request.is_closed = val === "closed";
+  if (res.ok) {
+    entry.value.request.is_closed = val === 'closed';
+  } else {
+    statusModel.value = old;
+  }
 });
 
 watch(tagIds, async (val, old) => {
-  const added = (val as number[]).filter(
-    (id) => !(old as number[]).includes(id)
-  );
-  const removed = (old as number[]).filter(
-    (id) => !(val as number[]).includes(id)
-  );
-  for (const id of added) {
-    await apiFetch(
-      `/labs/${labId.value}/requests/${entry.request.id}/tags/${id}`,
-      {
-        method: "POST",
+  if (!canManage.value) {
+    tagIds.value = old;
+    return;
+  }
+  const added = (val as number[]).filter(id => !(old as number[]).includes(id));
+  const removed = (old as number[]).filter(id => !(val as number[]).includes(id));
+  try {
+    for (const id of added) {
+      await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
+        method: 'POST',
         body: JSON.stringify({ assign: true }),
-      }
-    );
-  }
-  for (const id of removed) {
-    await apiFetch(
-      `/labs/${labId.value}/requests/${entry.request.id}/tags/${id}`,
-      {
-        method: "POST",
+      });
+    }
+    for (const id of removed) {
+      await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
+        method: 'POST',
         body: JSON.stringify({ assign: false }),
-      }
-    );
+      });
+    }
+    entry.value.tags = allTags.value.filter(t => (val as number[]).includes(t.id));
+  } catch {
+    tagIds.value = old;
   }
-  entry.tags = allTags.value.filter((t) => (val as number[]).includes(t.id));
 });
 
 const tagOptions = computed(() =>
@@ -110,11 +125,11 @@ const tagOptions = computed(() =>
 
       <TransitionGroup appear name="tag-bubble" tag="div" class="flex flex-wrap gap-1 items-center justify-start">
         <span v-for="tag in entry.tags" :key="tag.id" class="px-2 h-5 rounded-full text-xs text-white flex items-center"
-          :style="{ backgroundColor: tag.color }">{{ tag.name }}
+          :style="{ backgroundColor: tag.color }">{{
+            tag.name }}
         </span>
-
         <!-- Add tag button -->
-        <Dropdown :key="'add'" v-model="tagIds" :options="tagOptions" :multiple="true">
+        <Dropdown v-if="canManage" v-model="tagIds" :options="tagOptions" :multiple="true">
           <template #activator>
             <PlusCircleIcon class="h-5 w-5 text-surface-high drop-shadow-sm" />
           </template>
@@ -129,7 +144,8 @@ const tagOptions = computed(() =>
 
     <!-- Action buttons -->
     <div class="flex flex-row gap-2 items-center">
-      <Dropdown v-model="statusModel" :options="statusOptions" placeholder="Status" />
+      <Dropdown v-if="canManage" v-model="statusModel" :options="statusOptions" placeholder="Status" />
+      <span v-else class="text-xs text-fg-secondary">{{ statusModel === 'open' ? 'Open' : 'Closed' }}</span>
     </div>
   </div>
 </template>

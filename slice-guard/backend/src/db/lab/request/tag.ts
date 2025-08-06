@@ -86,3 +86,13 @@ export async function listTags(
     `;
     return rows.map(normalizeTag);
 }
+
+export async function deleteTag(
+    db: SQL,
+    tagId: number,
+): Promise<void> {
+    await db`
+        DELETE FROM lab.request_tags
+         WHERE id = ${tagId}
+    `;
+}

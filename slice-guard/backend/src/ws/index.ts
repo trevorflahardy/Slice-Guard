@@ -8,6 +8,7 @@ import { ErrorCode, toErrorCodeValue, type ErrorCodeValue } from '@slice-guard/s
 export type WebSocketData = {
     created_at: number;
     id: string;
+    userId: number;
 }
 
 export type ServerWebSocket = Bun.ServerWebSocket<WebSocketData>;

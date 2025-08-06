@@ -5,11 +5,13 @@ import {
     getAllPrintRequests,
     getPrintRequestById,
     setRequestClosed,
+    deletePrintRequest,
     createTag,
     setTagDefault,
     assignTag,
     unassignTag,
     listTags,
+    deleteTag,
     getTagsForRequest,
 } from '../db/lab/request';
 import { compressRequestFile } from '../utils/storage';
@@ -24,6 +26,7 @@ import type {
     RequestAssignTagPayload,
     RequestStateUpdatePayload,
 } from '@shared/payloads';
+import { WsEvent, type PrintRequestEvent } from '@shared/payloads/ws';
 
 /**
  * POST /api/labs/:labId/requests
@@ -42,6 +45,13 @@ export const create = withAuth(async (req, userId, state, params) => {
     const compressed = compressRequestFile(buffer);
     const result = await createPrintRequest(state.db, labId, userId, compressed, metadata, title, description ?? null);
     state.logger.debug({ id: result.id }, 'Created print request');
+
+    // Broadcast the new request to other connected clients
+    const user = await findPublicUserById(state.db, userId);
+    const tags = await getTagsForRequest(state.db, result.id);
+    const payload: PrintRequestEvent = { request: result, user, tags };
+    state.broadcast({ op: WsEvent.REQUEST_CREATED, d: payload });
+
     return Response.json(result);
 });
 
@@ -84,7 +94,7 @@ export const getRoute = withAuth(async (_req, userId, state, params) => {
     const row = await getPrintRequestById(state.db, requestId);
     if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (row.user_id !== userId && !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS)) {
+    if (row.user_id !== userId && (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))) {
         return new Response('Unauthorized', { status: 403 });
     }
     const user = await findPublicUserById(state.db, row.user_id);
@@ -105,6 +115,7 @@ export const createTagRoute = withAuth(async (req, userId, state, params) => {
     state.logger.debug({ labId, name, color }, 'Creating tag');
     const tag = await createTag(state.db, labId, name, color, isDefault ?? false);
     state.logger.debug({ id: tag.id }, 'Created tag');
+    state.broadcast({ op: WsEvent.TAG_CREATED, d: { tag } });
     return Response.json(tag);
 });
 
@@ -123,6 +134,7 @@ export const setTagDefaultRoute = withAuth(async (req, userId, state, params) =>
     state.logger.debug({ tagId, isDefault }, 'Setting tag default');
     const tag = await setTagDefault(state.db, tagId, isDefault);
     state.logger.debug({ tagId }, 'Updated tag');
+    state.broadcast({ op: WsEvent.TAG_UPDATED, d: { tag } });
     return Response.json(tag);
 });
 
@@ -151,7 +163,7 @@ export const assignTagRoute = withAuth(async (req, userId, state, params) => {
     const row = await getPrintRequestById(state.db, requestId);
     if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (row.user_id !== userId && !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS)) {
+    if (row.user_id !== userId && (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))) {
         return new Response('Unauthorized', { status: 403 });
     }
 
@@ -159,6 +171,12 @@ export const assignTagRoute = withAuth(async (req, userId, state, params) => {
         await assignTag(state.db, requestId, tagId);
     } else {
         await unassignTag(state.db, requestId, tagId);
+    }
+    const updated = await getPrintRequestById(state.db, requestId);
+    if (updated) {
+        const user = await findPublicUserById(state.db, updated.user_id);
+        const tags = await getTagsForRequest(state.db, requestId);
+        state.broadcast({ op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } });
     }
     return new Response(null, { status: 204 });
 });
@@ -173,9 +191,45 @@ export const setRequestStateRoute = withAuth(async (req, userId, state, params) 
     const row = await getPrintRequestById(state.db, requestId);
     if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (row.user_id !== userId && !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS)) {
+    if (row.user_id !== userId && (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))) {
         return new Response('Unauthorized', { status: 403 });
     }
     const updated = await setRequestClosed(state.db, requestId, isClosed);
+    const user = await findPublicUserById(state.db, updated.user_id);
+    const tags = await getTagsForRequest(state.db, requestId);
+    state.broadcast({ op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } });
     return Response.json(updated);
+});
+
+/**
+ * DELETE /api/labs/:labId/requests/:requestId
+ */
+export const deleteRoute = withAuth(async (_req, userId, state, params) => {
+    const labId = Number(params.labId);
+    const requestId = Number(params.requestId);
+    const row = await getPrintRequestById(state.db, requestId);
+    if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
+    const perms = await getMemberRolePermissions(state.db, labId, userId);
+    if (row.user_id !== userId && !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS)) {
+        return new Response('Unauthorized', { status: 403 });
+    }
+    await deletePrintRequest(state.db, requestId);
+    state.broadcast({ op: WsEvent.REQUEST_DELETED, d: { labId, requestId } });
+    return new Response(null, { status: 204 });
+});
+
+/**
+ * DELETE /api/labs/:labId/tags/:tagId
+ */
+export const deleteTagRoute = withAuth(async (_req, userId, state, params) => {
+    const labId = Number(params.labId);
+    const tagId = Number(params.tagId);
+
+    const perms = await getMemberRolePermissions(state.db, labId, userId);
+    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES))
+        return new Response('Unauthorized', { status: 403 });
+
+    await deleteTag(state.db, tagId);
+    state.broadcast({ op: WsEvent.TAG_DELETED, d: { labId, tagId } });
+    return new Response(null, { status: 204 });
 });

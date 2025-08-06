@@ -31,6 +31,16 @@ export interface LabMember {
     joined_at: Date;
 }
 
+export interface LabInvite {
+    id: number;
+    lab_id: number;
+    code: string;
+    max_uses: number | null;
+    uses: number;
+    expires_at: Date | null;
+    created_at: Date;
+}
+
 export enum LabPermission {
     EDIT_LAB = 1 << 0,
     MANAGE_ROLES = 1 << 1,
@@ -40,6 +50,8 @@ export enum LabPermission {
     MANAGE_REQUESTS = 1 << 5,
     READ = 1 << 6,
     WRITE = 1 << 7,
+    CREATE_INVITES = 1 << 8,
+    MANAGE_INVITES = 1 << 9,
     /**
      * Grants every permission regardless of explicit role entries.
      */

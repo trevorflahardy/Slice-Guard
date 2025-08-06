@@ -82,3 +82,13 @@ export async function setRequestClosed(
     `;
     return normalizeRequest(rows[0]);
 }
+
+export async function deletePrintRequest(
+    db: SQL,
+    requestId: number,
+): Promise<void> {
+    await db`
+        DELETE FROM lab.print_requests
+         WHERE id = ${requestId}
+    `;
+}

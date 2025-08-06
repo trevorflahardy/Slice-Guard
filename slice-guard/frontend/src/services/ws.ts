@@ -1,12 +1,12 @@
-import { WsEvent, type WsPayload } from '@shared/payloads/ws'
+import { WsEvent, type WsPayloadUnion, type WsPayloadMap } from '@shared/payloads/ws'
 
-export type Listener = (data: any) => void
+export type Listener<K extends WsEvent = WsEvent> = (data: WsPayloadMap[K]['d']) => void
 
 export class WebSocketClient {
   private ws: WebSocket | null = null
   private url: string
   private reconnectId: number | null = null
-  private listeners = new Map<WsEvent, Set<Listener>>()
+  private listeners = new Map<WsEvent, Set<Listener<any>>>()
 
   constructor(url: string) {
     this.url = url
@@ -18,7 +18,8 @@ export class WebSocketClient {
     this.ws = new WebSocket(url)
     this.ws.addEventListener('message', (ev) => {
       try {
-        const msg: WsPayload<WsEvent> = JSON.parse(ev.data)
+        const msg: WsPayloadUnion = JSON.parse(ev.data)
+        if (import.meta.env.DEV) console.debug('[ws] <=', msg)
         this.dispatch(msg)
       } catch {
         console.error('Invalid WS message', ev.data)
@@ -39,21 +40,25 @@ export class WebSocketClient {
     this.ws?.send(JSON.stringify({ op, d }))
   }
 
-  addListener(op: WsEvent, cb: Listener) {
+  addListener<K extends WsEvent>(op: K, cb: Listener<K>) {
     if (!this.listeners.has(op)) this.listeners.set(op, new Set())
-    this.listeners.get(op)!.add(cb)
+    this.listeners.get(op)!.add(cb as Listener<any>)
   }
 
-  removeListener(op: WsEvent, cb: Listener) {
-    this.listeners.get(op)?.delete(cb)
+  removeListener<K extends WsEvent>(op: K, cb: Listener<K>) {
+    this.listeners.get(op)?.delete(cb as Listener<any>)
   }
 
-  private dispatch(msg: WsPayload<WsEvent>) {
+  private dispatch(msg: WsPayloadUnion) {
     const set = this.listeners.get(msg.op)
+    if (import.meta.env.DEV) {
+      const count = set ? set.size : 0
+      console.debug('[ws] dispatch', msg.op, `to ${count} listener(s)`)
+    }
     if (!set) return
     for (const cb of Array.from(set)) {
       try {
-        cb(msg.d)
+        ;(cb as Listener<typeof msg.op>)(msg.d as any)
       } catch (err) {
         console.error(err)
       }

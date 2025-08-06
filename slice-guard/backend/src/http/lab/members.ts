@@ -11,6 +11,7 @@ import { findPublicUserById } from "../../db/user";
 import { LabPermission, type LabMember } from "@shared/db/lab";
 import { hasLabPermission } from "../../utils/permissions";
 import type { MemberAddPayload } from "@shared/payloads";
+import { WsEvent } from "@shared/payloads/ws";
 
 /**
  * POST /api/labs/:labId/members
@@ -23,7 +24,11 @@ export const addMemberRoute = withAuth(async (req, userId, state, params) => {
     if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES))
         return new Response("Unauthorized", { status: 403 });
 
-    const member = await addMember(state.db, labId, addId, roleId ?? null);
+    const memberRow = await addMember(state.db, labId, addId, roleId ?? null);
+    const roles = await getMemberRoles(state.db, labId, addId);
+    const member: LabMember = { ...memberRow, roles };
+    const user = await findPublicUserById(state.db, addId);
+    state.broadcast({ op: WsEvent.MEMBER_JOINED, d: { labId, member, user } });
     return Response.json(member);
 });
 
@@ -39,6 +44,7 @@ export const removeMemberRoute = withAuth(async (req, userId, state, params) => 
         return new Response("Unauthorized", { status: 403 });
 
     await removeMember(state.db, labId, removeId);
+    state.broadcast({ op: WsEvent.MEMBER_LEFT, d: { labId, userId: removeId } });
     return new Response(null, { status: 204 });
 });
 

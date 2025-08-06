@@ -5,6 +5,7 @@ interface DropdownOption {
   id: number | string
   name: string
   icon?: any
+  variant?: 'danger'
 }
 
 interface Props {
@@ -123,8 +124,8 @@ const selectClass = "bg-surface-low px-3 py-1 rounded-full text-fg-primary shado
       class="absolute top-full left-0 mt-1 w-full min-w-[200px] bg-surface-low border border-surface-high rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
       <!-- Regular options -->
       <button v-for="option in options" :key="option.id" @click="selectOption(option.id)"
-        class="w-full text-left px-3 py-2 hover:bg-surface-high text-fg-primary transition-colors duration-150 flex items-center justify-between"
-        :class="{ 'bg-surface-high': isSelected(option.id) }">
+        class="w-full text-left px-3 py-2 transition-colors duration-150 flex items-center justify-between"
+        :class="[ isSelected(option.id) ? 'bg-surface-high' : '', option.variant === 'danger' ? 'text-red-500 hover:bg-red-600/10' : 'text-fg-primary hover:bg-surface-high']">
         <span class="flex items-center gap-2">
           <component v-if="option.icon" :is="option.icon" class="h-4 w-4" />
           <span>{{ option.name }}</span>

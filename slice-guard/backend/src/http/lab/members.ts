@@ -49,6 +49,19 @@ export const removeMemberRoute = withAuth(async (req, userId, state, params) => 
 });
 
 /**
+ * DELETE /api/labs/:labId/members/@me
+ */
+export const leaveLabRoute = withAuth(async (_req, userId, state, params) => {
+    const labId = Number(params.labId);
+    const perms = await getMemberRolePermissions(state.db, labId, userId);
+    if (perms === null) return new Response("Unauthorized", { status: 403 });
+
+    await removeMember(state.db, labId, userId);
+    state.broadcast({ op: WsEvent.MEMBER_LEFT, d: { labId, userId } });
+    return new Response(null, { status: 204 });
+});
+
+/**
  * GET /api/labs/:labId/members/:userId
  */
 export const getMemberRoute = withAuth(async (_req, userId, state, params) => {

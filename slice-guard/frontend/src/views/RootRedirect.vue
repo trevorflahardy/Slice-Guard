@@ -23,7 +23,7 @@ onMounted(async () => {
     () => labsStore.labs,
     (labs) => {
       if (labs.length > 0) router.replace(`/lab/${labs[0].lab.id}`)
-      else router.replace('/nolabs')
+      else router.replace('/dms')
     },
     { immediate: true }
   )

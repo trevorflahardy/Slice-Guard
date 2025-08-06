@@ -97,20 +97,20 @@ const tagOptions = computed(() =>
     <div class="flex flex-row items-center justify-between">
       <!-- Title -->
       <h3 class="text-fg-primary font-medium text-md truncate text-pretty line-clamp-2 max-w-[80%]">
-        {{ entry.value.request.title || "[No title given]" }}
+        {{ entry.request.title || "[No title given]" }}
       </h3>
 
-      <img v-if="entry.value.user?.avatar_url" :src="entry.value.user.avatar_url" class="w-8 h-8 rounded-full object-cover" />
+      <img v-if="entry.user?.avatar_url" :src="entry.user.avatar_url" class="w-8 h-8 rounded-full object-cover" />
       <div v-else class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs text-fg-secondary">
-        {{ entry.value.user?.name?.charAt(0) || "?" }}
+        {{ entry.user?.name?.charAt(0) || "?" }}
       </div>
     </div>
 
     <!-- Ticket number, author name next to each other in small gray-->
     <div class="space-y-1">
       <div class="text-xs text-fg-secondary">
-        <span class="underline decoration-dashed">#{{ entry.value.request.id }}</span>
-        by {{ entry.value.user?.name || entry.value.user?.email || "Unknown" }}
+        <span class="underline decoration-dashed">#{{ entry.request.id }}</span>
+        by {{ entry.user?.name || entry.user?.email || "Unknown" }}
       </div>
 
       <!-- Human readable date of when this ticket was created (with time)-->
@@ -119,13 +119,14 @@ const tagOptions = computed(() =>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        {{ new Date(entry.value.request.created_at).toLocaleDateString() }} at
-        {{ new Date(entry.value.request.created_at).toLocaleTimeString() }}
+        {{ new Date(entry.request.created_at).toLocaleDateString() }} at
+        {{ new Date(entry.request.created_at).toLocaleTimeString() }}
       </div>
 
       <div class="flex flex-wrap gap-1 items-center justify-start">
-        <span v-for="tag in entry.value.tags" :key="tag.id" class="px-2 h-5 rounded-full text-xs text-white flex items-center"
-          :style="{ backgroundColor: tag.color }">{{ tag.name }}
+        <span v-for="tag in entry.tags" :key="tag.id" class="px-2 h-5 rounded-full text-xs text-white flex items-center"
+          :style="{ backgroundColor: tag.color }">{{
+            tag.name }}
         </span>
         <!-- Add tag button -->
         <Dropdown v-if="canManage" v-model="tagIds" :options="tagOptions" :multiple="true">
@@ -138,7 +139,7 @@ const tagOptions = computed(() =>
 
     <!-- Description of the ticket, max 3 lines, truncated -->
     <div class="text-sm text-fg-secondary line-clamp-3 mt-auto text-pretty text-left">
-      {{ entry.value.request.description }}
+      {{ entry.request.description }}
     </div>
 
     <!-- Action buttons -->

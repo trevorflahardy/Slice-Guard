@@ -87,6 +87,12 @@ export interface LabState {
   tags: RequestTag[]
   requests: PrintRequestEvent[]
   invites: LabInvite[]
+  /**
+   * Permissions that the connected user has within this lab. Provided during
+   * the initial handshake so the frontend can gate functionality without
+   * scanning the full member list.
+   */
+  permissions: number | null
 }
 
 export interface ErrorPayload {

@@ -10,7 +10,7 @@ in real time.
 | Op Code | Name             | Direction | Payload Description |
 |--------:|------------------|-----------|---------------------|
 | 0       | `ERROR`          | Server → Client | `{ code: string, message: number }` |
-| 1       | `HELLO`          | Server → Client | `{ labs }` complete lab state including roles, members, tags, requests and invites |
+| 1       | `HELLO`          | Server → Client | `{ labs }` complete lab state including roles, members, tags, requests, invites and your permissions |
 | 2       | `REQUEST_CREATED`| Server → Client | `{ request, user, tags }` broadcast when a print request is created |
 | 3       | `REQUEST_UPDATED`| Server → Client | `{ request, user, tags }` broadcast when a print request is updated |
 | 4       | `REQUEST_DELETED`| Server → Client | `{ labId, requestId }` broadcast when a print request is removed |

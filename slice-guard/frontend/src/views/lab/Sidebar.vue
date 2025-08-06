@@ -9,7 +9,7 @@ import UserSettings from '../../modals/user_settings/UserSettings.vue'
 import CreateInviteModal from '../../modals/CreateInviteModal.vue'
 import { useModal } from '../../composables/useModal'
 import Dropdown from '../../components/Dropdown.vue'
-import { hasLabPermission, computeMemberPermissions } from '../../utils/permissions'
+import { hasLabPermission } from '../../utils/permissions'
 
 export interface LabSidebarProps {
     lab: Lab | null
@@ -41,11 +41,14 @@ const initials = computed(() => {
     return name.charAt(0)
 })
 
-const canCreateInvites = computed(() => {
+const dropdownOptions = computed(() => {
     const labState = labsStore.getLab(Number(labId.value))
-    const member = labState?.members.find(m => m.member.user_id === auth.user?.id)?.member ?? null
-    const perms = computeMemberPermissions(member)
-    return hasLabPermission(perms, LabPermission.CREATE_INVITES)
+    const perms = labState?.permissions ?? null
+    const options: { id: string; name: string; icon: any }[] = []
+    if (hasLabPermission(perms, LabPermission.CREATE_INVITES)) {
+        options.push({ id: 'invite', name: 'Invite Users', icon: UserPlusIcon })
+    }
+    return options
 })
 
 function handleDropdown(action: string | number | null) {
@@ -57,8 +60,8 @@ function handleDropdown(action: string | number | null) {
     <!-- Holds the main sidebar content. For now, this is placeholder information. -->
     <div class="flex flex-col gap-5 h-full justify-items-start">
         <!--Currently active lab information (and way to change lab)-->
-        <Dropdown v-if="props.lab && canCreateInvites"
-            :options="[{ id: 'invite', name: 'Invite Users', icon: UserPlusIcon }]"
+        <Dropdown v-if="props.lab"
+            :options="dropdownOptions"
             :model-value="null"
             @update:modelValue="handleDropdown">
             <template #activator>

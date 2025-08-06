@@ -19,7 +19,8 @@ export const createInviteRoute = withAuth(async (req, userId, state, params) => 
     const code = Math.random().toString(36).slice(2, 8);
     const expiresAt = expiresIn ? new Date(Date.now() + expiresIn * 1000) : null;
     const invite = await createInvite(state.db, labId, code, maxUses ?? null, expiresAt);
-    state.broadcast({ op: WsEvent.INVITE_CREATED, d: { invite } }, userId);
+    // Notify all clients including the creator
+    state.broadcast({ op: WsEvent.INVITE_CREATED, d: { invite } });
     return Response.json(invite);
 });
 
@@ -46,7 +47,8 @@ export const updateInviteRoute = withAuth(async (req, userId, state, params) => 
         return new Response("Unauthorized", { status: 403 });
     const { maxUses, expiresAt } = await req.json() as InviteUpdatePayload;
     const invite = await updateInvite(state.db, inviteId, labId, maxUses ?? null, expiresAt ? new Date(expiresAt) : null);
-    state.broadcast({ op: WsEvent.INVITE_UPDATED, d: { invite } }, userId);
+    // Broadcast update to all clients including the actor
+    state.broadcast({ op: WsEvent.INVITE_UPDATED, d: { invite } });
     return Response.json(invite);
 });
 
@@ -60,7 +62,8 @@ export const deleteInviteRoute = withAuth(async (_req, userId, state, params) =>
     if (!hasLabPermission(perms, LabPermission.MANAGE_INVITES))
         return new Response("Unauthorized", { status: 403 });
     await deleteInvite(state.db, inviteId, labId);
-    state.broadcast({ op: WsEvent.INVITE_DELETED, d: { labId, inviteId } }, userId);
+    // Inform all clients that an invite was deleted
+    state.broadcast({ op: WsEvent.INVITE_DELETED, d: { labId, inviteId } });
     return new Response(null, { status: 204 });
 });
 
@@ -84,6 +87,7 @@ export const useInviteRoute = withAuth(async (_req, userId, state, params) => {
     await addInviteUse(state.db, invite.id, userId);
     const updated: LabInvite = { ...invite, uses: invite.uses + 1 };
     state.broadcast({ op: WsEvent.MEMBER_JOINED, d: { labId: invite.lab_id, member, user } }, userId);
-    state.broadcast({ op: WsEvent.INVITE_UPDATED, d: { invite: updated } }, userId);
+    // Notify everyone (including the joiner) about updated invite usage
+    state.broadcast({ op: WsEvent.INVITE_UPDATED, d: { invite: updated } });
     return Response.json({ labId: invite.lab_id });
 });

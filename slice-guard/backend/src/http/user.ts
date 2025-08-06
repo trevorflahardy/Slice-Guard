@@ -3,6 +3,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { setAvatarUrl, findPublicUserById, setName } from "../db/user";
 import type State from "../utils/state";
 import { WsEvent } from "@shared/payloads/ws";
+import type { BunFile } from "bun";
 
 const client = new S3Client({
     region: process.env.S3_REGION,
@@ -21,7 +22,7 @@ export const uploadAvatar = withAuth(async (req, userId, state, params) => {
     }
 
     const form = await req.formData();
-    const file = form.get("file") as File | null;
+    const file = form.get("file") as BunFile | null;
 
     if (!file) {
         return new Response("No file", { status: 400 });

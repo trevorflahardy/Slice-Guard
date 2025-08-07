@@ -40,7 +40,7 @@ const labSettingsModal = useModal();
 const router = useRouter();
 
 const navClass = ref(
-    'text-sm text-fg-primary hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md',
+    'text-sm text-fg-primary hover:text-pretty rounded-lg w-full transition-all duration-100 py-1 px-4 hover:shadow-md',
 );
 
 const navIsActive = (name: string) => {

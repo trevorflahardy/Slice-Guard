@@ -28,11 +28,7 @@ const error = computed(() => (lab.value ? '' : 'Failed to load lab'));
                 class="no-scrollbar max-h-screen w-full flex-1 overflow-y-scroll scroll-smooth p-6"
             >
                 <!-- Actual insert content-->
-                <router-view
-                    :lab="lab"
-                    :error="error"
-                    :loading="loading"
-                />
+                <router-view />
             </div>
 
             <!--User list for lab layout-->

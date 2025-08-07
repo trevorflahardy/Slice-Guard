@@ -6,6 +6,8 @@ import { apiFetch } from '../../../services/api';
 import type { Message } from '@shared/db/message';
 import type { MessageCreatePayload } from '@shared/payloads';
 
+import ChannelMessage from '../../../components/channels/ChannelMessage.vue';
+
 const route = useRoute();
 const labs = useLabsStore();
 const channelId = computed(() => Number(route.params.channelId));
@@ -143,6 +145,11 @@ onMounted(() => {
                 :key="m.id"
                 class="hover:bg-surface-low rounded p-2 transition-colors"
             >
+                <ChannelMessage
+                    :message="m"
+                    :author="null"
+                >
+                </ChannelMessage>
                 <div class="flex items-baseline gap-2">
                     <span class="text-fg-secondary text-xs font-medium">
                         User {{ m.user_id }}

@@ -24,8 +24,8 @@ onMounted(async () => {
     watch(
         () => labsStore.labs,
         (labs) => {
-            if (labs.length > 0) {
-                router.replace(`/lab/${labs[0].lab.id}`);
+            if (labs.size > 0) {
+                router.replace(`/lab/${labs.values().next().value!.id}`);
             } else {
                 router.replace('/dms');
             }

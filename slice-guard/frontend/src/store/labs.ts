@@ -9,352 +9,582 @@ import { useAuthStore } from './auth';
 
 const DEV = import.meta.env.DEV;
 
+type LabId = number;
+type ChannelId = number;
+type UserId = number;
+type RoleId = number;
+type InviteId = number;
+type TagId = number;
+type MemberId = number;
+type RequestId = number;
+type MessageId = number;
+
 /**
- * Central store holding all lab related state. The server sends the initial
- * state on WebSocket connection and all subsequent updates patch this store.
+ * Central store holding all lab related state with O(1) lookups.
+ * Uses Maps for efficient access patterns.
  */
 export const useLabsStore = defineStore('labs', {
     state: () => ({
-        labs: [] as LabState[],
+        // Core lab data
+        labs: new Map<LabId, Lab>(),
+
+        // Lab-scoped data indexed by labId
+        channels: new Map<LabId, Map<ChannelId, Channel>>(),
+        roles: new Map<LabId, Map<RoleId, LabRole>>(),
+        members: new Map<LabId, Map<UserId, MemberEvent>>(),
+        invites: new Map<LabId, Map<InviteId, LabInvite>>(),
+        tags: new Map<LabId, Map<TagId, RequestTag>>(),
+        requests: new Map<LabId, PrintRequestEvent[]>(),
+        messages: new Map<LabId, Map<ChannelId, Message[]>>(), // labId -> channelId -> messages[]
+        permissions: new Map<LabId, number>(), // labId -> permissions bitmask
+
+        // Global lookups for convenience
+        channelToLab: new Map<ChannelId, LabId>(), // channelId -> labId
     }),
+
+    getters: {
+        /** Get all labs as array */
+        allLabs: (state) => Array.from(state.labs.values()),
+
+        /** Get channels for a lab as array */
+        getLabChannels: (state) => (labId: LabId) => {
+            const channels = state.channels.get(labId);
+            return channels ? Array.from(channels.values()) : [];
+        },
+
+        /** Get roles for a lab as array */
+        getLabRoles: (state) => (labId: LabId) => {
+            const roles = state.roles.get(labId);
+            return roles ? Array.from(roles.values()) : [];
+        },
+
+        /** Get members for a lab as array */
+        getLabMembers: (state) => (labId: LabId) => {
+            const members = state.members.get(labId);
+            return members ? Array.from(members.values()) : [];
+        },
+
+        /** Get invites for a lab as array */
+        getLabInvites: (state) => (labId: LabId) => {
+            const invites = state.invites.get(labId);
+            return invites ? Array.from(invites.values()) : [];
+        },
+
+        /** Get tags for a lab as array */
+        getLabTags: (state) => (labId: LabId) => {
+            const tags = state.tags.get(labId);
+            return tags ? Array.from(tags.values()) : [];
+        },
+
+        /** Get requests for a lab */
+        getLabRequests: (state) => (labId: LabId) => {
+            return state.requests.get(labId) || [];
+        },
+
+        /** Get permissions for a lab */
+        getLabPermissions: (state) => (labId: LabId) => {
+            return state.permissions.get(labId) || 0;
+        },
+    },
+
     actions: {
-        /** Replace current state with initial labs. */
-        setInitial(labs: LabState[]) {
+        /** Initialize store with labs from server. */
+        setInitial(labStates: LabState[]) {
             if (DEV) {
-                console.debug('[labs] setInitial', labs);
+                console.debug('[labs] setInitial', labStates);
             }
-            this.labs = labs;
+
+            // Clear existing state
+            this.labs.clear();
+            this.channels.clear();
+            this.roles.clear();
+            this.members.clear();
+            this.invites.clear();
+            this.tags.clear();
+            this.requests.clear();
+            this.messages.clear();
+            this.permissions.clear();
+            this.channelToLab.clear();
+
+            // Populate from LabState array
+            for (const labState of labStates) {
+                this.addLab(labState);
+            }
         },
+
         /** Get a lab by id. */
-        getLab(id: number) {
-            return this.labs.find((l) => l.lab.id === id) || null;
+        getLab(id: number): Lab | null {
+            return this.labs.get(id) || null;
         },
+
         /** Find a channel by id across all labs. */
         getChannel(id: number): Channel | null {
-            for (const l of this.labs) {
-                const ch = l.channels.find((c) => c.id === id);
-                if (ch) {
-                    return ch;
-                }
+            const labId = this.channelToLab.get(id);
+            if (!labId) {
+                return null;
             }
-            return null;
+            const channels = this.channels.get(labId);
+            return channels?.get(id) || null;
         },
+
         /** Add a new lab to the store. */
-        addLab(lab: LabState) {
+        addLab(labState: LabState) {
             if (DEV) {
-                console.debug('[labs] addLab', lab);
+                console.debug('[labs] addLab', labState);
             }
-            this.labs.push(lab);
+
+            const labId = labState.lab.id;
+
+            // Store lab
+            this.labs.set(labId, labState.lab);
+
+            // Store channels
+            const channelsMap = new Map<ChannelId, Channel>();
+            for (const channel of labState.channels) {
+                channelsMap.set(channel.id, channel);
+                this.channelToLab.set(channel.id, labId);
+            }
+            this.channels.set(labId, channelsMap);
+
+            // Store roles
+            const rolesMap = new Map<RoleId, LabRole>();
+            for (const role of labState.roles) {
+                rolesMap.set(role.id, role);
+            }
+            this.roles.set(labId, rolesMap);
+
+            // Store members
+            const membersMap = new Map<MemberId, MemberEvent>();
+            for (const member of labState.members) {
+                membersMap.set(member.member.user_id, member);
+            }
+            this.members.set(labId, membersMap);
+
+            // Store invites
+            const invitesMap = new Map<InviteId, LabInvite>();
+            for (const invite of labState.invites) {
+                invitesMap.set(invite.id, invite);
+            }
+            this.invites.set(labId, invitesMap);
+
+            // Store tags
+            const tagsMap = new Map<TagId, RequestTag>();
+            for (const tag of labState.tags) {
+                tagsMap.set(tag.id, tag);
+            }
+            this.tags.set(labId, tagsMap);
+
+            // Store requests
+            this.requests.set(labId, labState.requests);
+
+            // Initialize messages map
+            const messagesMap = new Map<ChannelId, Message[]>();
+            for (const [channelId, messages] of Object.entries(labState.messages)) {
+                messagesMap.set(Number(channelId), messages);
+            }
+            this.messages.set(labId, messagesMap);
+
+            // Store permissions
+            this.permissions.set(labId, labState.permissions || 0);
         },
+
         /** Update basic lab info. */
         updateLab(lab: Lab) {
-            const entry = this.getLab(lab.id);
-            if (!entry) {
+            if (!this.labs.has(lab.id)) {
                 return;
             }
             if (DEV) {
                 console.debug('[labs] updateLab', lab);
             }
-            entry.lab = lab;
+            this.labs.set(lab.id, lab);
         },
+
         /** Remove a lab entirely. */
-        removeLab(labId: number) {
+        removeLab(labId: LabId) {
             if (DEV) {
                 console.debug('[labs] removeLab', labId);
             }
-            this.labs = this.labs.filter((l) => l.lab.id !== labId);
+
+            // Remove channels from global lookup
+            const channels = this.channels.get(labId);
+            if (channels) {
+                for (const channelId of channels.keys()) {
+                    this.channelToLab.delete(channelId);
+                }
+            }
+
+            // Remove all lab data
+            this.labs.delete(labId);
+            this.channels.delete(labId);
+            this.roles.delete(labId);
+            this.members.delete(labId);
+            this.invites.delete(labId);
+            this.tags.delete(labId);
+            this.requests.delete(labId);
+            this.messages.delete(labId);
+            this.permissions.delete(labId);
         },
         /** Add a channel to a lab. */
-        addChannel(labId: number, channel: Channel) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        addChannel(labId: LabId, channel: Channel) {
             if (DEV) {
                 console.debug('[labs] addChannel', labId, channel);
             }
-            lab.channels.push(channel);
+
+            const channels = this.channels.get(labId);
+            if (!channels) {
+                return;
+            }
+
+            channels.set(channel.id, channel);
+            this.channelToLab.set(channel.id, labId);
+
+            // Initialize empty messages map for this channel
+            let messages = this.messages.get(labId);
+            if (!messages) {
+                messages = new Map();
+                this.messages.set(labId, messages);
+            }
+            if (!messages.has(channel.id)) {
+                messages.set(channel.id, []);
+            }
         },
         /** Update an existing channel. */
-        updateChannel(labId: number, channel: Channel) {
-            const lab = this.getLab(labId);
-            if (!lab) {
+        updateChannel(labId: LabId, channel: Channel) {
+            if (DEV) {
+                console.debug('[labs] updateChannel', labId, channel);
+            }
+
+            const channels = this.channels.get(labId);
+            if (!channels || !channels.has(channel.id)) {
                 return;
             }
-            const idx = lab.channels.findIndex((c) => c.id === channel.id);
-            if (idx !== -1) {
-                if (DEV) {
-                    console.debug('[labs] updateChannel', labId, channel);
-                }
-                lab.channels[idx] = channel;
-            }
+
+            channels.set(channel.id, channel);
         },
         /** Remove a channel from a lab. */
-        removeChannel(labId: number, channelId: number) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        removeChannel(labId: LabId, channelId: ChannelId) {
             if (DEV) {
                 console.debug('[labs] removeChannel', labId, channelId);
             }
-            lab.channels = lab.channels.filter((c) => c.id !== channelId);
-            delete lab.messages[channelId];
+
+            const channels = this.channels.get(labId);
+            if (channels) {
+                channels.delete(channelId);
+            }
+
+            this.channelToLab.delete(channelId);
+
+            // Remove messages for this channel
+            const messages = this.messages.get(labId);
+            if (messages) {
+                messages.delete(channelId);
+            }
         },
         /** Prepend a new request to the lab list. */
-        addRequest(labId: number, entry: PrintRequestEvent) {
-            const lab = this.getLab(labId);
+        addRequest(labId: LabId, entry: PrintRequestEvent) {
             if (DEV) {
                 console.debug('[labs] addRequest', labId, entry);
             }
-            lab?.requests.unshift(entry);
+
+            const requests = this.requests.get(labId);
+            if (requests) {
+                requests.unshift(entry);
+            }
         },
         /** Update an existing request entry. */
-        updateRequest(labId: number, entry: PrintRequestEvent) {
-            const lab = this.getLab(labId);
-            if (!lab) {
+        updateRequest(labId: LabId, entry: PrintRequestEvent) {
+            if (DEV) {
+                console.debug('[labs] updateRequest', labId, entry);
+            }
+
+            const requests = this.requests.get(labId);
+            if (!requests) {
                 return;
             }
-            const idx = lab.requests.findIndex((r) => r.request.id === entry.request.id);
+
+            const idx = requests.findIndex((r) => r.request.id === entry.request.id);
             if (idx !== -1) {
-                if (DEV) {
-                    console.debug('[labs] updateRequest', labId, entry);
-                }
-                lab.requests[idx] = entry;
+                requests[idx] = entry;
             }
         },
         /** Remove a request by id. */
-        removeRequest(labId: number, requestId: number) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        removeRequest(labId: LabId, requestId: RequestId) {
             if (DEV) {
                 console.debug('[labs] removeRequest', labId, requestId);
             }
-            lab.requests = lab.requests.filter((r) => r.request.id !== requestId);
+
+            const requests = this.requests.get(labId);
+            if (requests) {
+                const filtered = requests.filter((r) => r.request.id !== requestId);
+                this.requests.set(labId, filtered);
+            }
         },
         /** Add a tag to the lab. */
-        addTag(labId: number, tag: RequestTag) {
-            const lab = this.getLab(labId);
+        addTag(labId: LabId, tag: RequestTag) {
             if (DEV) {
                 console.debug('[labs] addTag', labId, tag);
             }
-            lab?.tags.push(tag);
+
+            const tags = this.tags.get(labId);
+            if (tags) {
+                tags.set(tag.id, tag);
+            }
         },
         /** Update an existing tag. */
-        updateTag(labId: number, tag: RequestTag) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
+        updateTag(labId: LabId, tag: RequestTag) {
+            if (DEV) {
+                console.debug('[labs] updateTag', labId, tag);
             }
-            const idx = lab.tags.findIndex((t) => t.id === tag.id);
-            if (idx !== -1) {
-                if (DEV) {
-                    console.debug('[labs] updateTag', labId, tag);
-                }
-                lab.tags[idx] = tag;
+
+            const tags = this.tags.get(labId);
+            if (tags && tags.has(tag.id)) {
+                tags.set(tag.id, tag);
             }
         },
         /** Remove tag from lab and all requests. */
-        removeTag(labId: number, tagId: number) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        removeTag(labId: LabId, tagId: TagId) {
             if (DEV) {
                 console.debug('[labs] removeTag', labId, tagId);
             }
-            lab.tags = lab.tags.filter((t) => t.id !== tagId);
-            for (const req of lab.requests) {
-                req.tags = req.tags.filter((t) => t.id !== tagId);
+
+            const tags = this.tags.get(labId);
+            if (tags) {
+                tags.delete(tagId);
+            }
+
+            // Remove tag from all requests in this lab
+            const requests = this.requests.get(labId);
+            if (requests) {
+                for (const req of requests) {
+                    req.tags = req.tags.filter((t) => t.id !== tagId);
+                }
             }
         },
         /** Add a member to the lab. */
-        addMember(labId: number, event: MemberEvent) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        addMember(labId: LabId, event: MemberEvent) {
             if (DEV) {
                 console.debug('[labs] addMember', labId, event);
             }
-            lab.members.push(event);
+
+            const members = this.members.get(labId);
+            if (members) {
+                members.set(event.member.user_id, event);
+            }
         },
         /** Remove member by user id. */
-        removeMember(labId: number, userId: number) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        removeMember(labId: LabId, userId: UserId) {
             if (DEV) {
                 console.debug('[labs] removeMember', labId, userId);
             }
-            lab.members = lab.members.filter((m) => m.member.user_id !== userId);
+
+            const members = this.members.get(labId);
+            if (members) {
+                members.delete(userId);
+            }
         },
         /** Handle member leave events. */
-        handleMemberLeft(labId: number, userId: number) {
+        handleMemberLeft(labId: LabId, userId: UserId) {
             const auth = useAuthStore();
             this.removeMember(labId, userId);
             if (auth.user?.id === userId) {
                 if (DEV) {
                     console.debug('[labs] removeLab', labId);
                 }
-                this.labs = this.labs.filter((l) => l.lab.id !== labId);
+                this.removeLab(labId);
             }
         },
         /** Add an invite to the lab. */
-        addInvite(labId: number, invite: LabInvite) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        addInvite(labId: LabId, invite: LabInvite) {
             if (DEV) {
                 console.debug('[labs] addInvite', labId, invite);
             }
-            lab.invites.push(invite);
+
+            const invites = this.invites.get(labId);
+            if (invites) {
+                invites.set(invite.id, invite);
+            }
         },
         /** Update invite fields. */
-        updateInvite(labId: number, invite: LabInvite) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
+        updateInvite(labId: LabId, invite: LabInvite) {
+            if (DEV) {
+                console.debug('[labs] updateInvite', labId, invite);
             }
-            const idx = lab.invites.findIndex((i) => i.id === invite.id);
-            if (idx !== -1) {
-                if (DEV) {
-                    console.debug('[labs] updateInvite', labId, invite);
-                }
-                lab.invites[idx] = invite;
+
+            const invites = this.invites.get(labId);
+            if (invites && invites.has(invite.id)) {
+                invites.set(invite.id, invite);
             }
         },
         /** Remove invite by id. */
-        removeInvite(labId: number, inviteId: number) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        removeInvite(labId: LabId, inviteId: InviteId) {
             if (DEV) {
                 console.debug('[labs] removeInvite', labId, inviteId);
             }
-            lab.invites = lab.invites.filter((i) => i.id !== inviteId);
+
+            const invites = this.invites.get(labId);
+            if (invites) {
+                invites.delete(inviteId);
+            }
         },
         /** Add a role to the lab. */
-        addRole(labId: number, role: LabRole) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        addRole(labId: LabId, role: LabRole) {
             if (DEV) {
                 console.debug('[labs] addRole', labId, role);
             }
-            lab.roles.push(role);
+
+            const roles = this.roles.get(labId);
+            if (roles) {
+                roles.set(role.id, role);
+            }
         },
         /** Update role fields. */
-        updateRole(labId: number, role: LabRole) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
+        updateRole(labId: LabId, role: LabRole) {
+            if (DEV) {
+                console.debug('[labs] updateRole', labId, role);
             }
-            const idx = lab.roles.findIndex((r) => r.id === role.id);
-            if (idx !== -1) {
-                if (DEV) {
-                    console.debug('[labs] updateRole', labId, role);
-                }
-                lab.roles[idx] = role;
+
+            const roles = this.roles.get(labId);
+            if (roles && roles.has(role.id)) {
+                roles.set(role.id, role);
             }
         },
         /** Remove a role from the lab. */
-        removeRole(labId: number, roleId: number) {
-            const lab = this.getLab(labId);
-            if (!lab) {
-                return;
-            }
+        removeRole(labId: LabId, roleId: RoleId) {
             if (DEV) {
                 console.debug('[labs] removeRole', labId, roleId);
             }
-            lab.roles = lab.roles.filter((r) => r.id !== roleId);
+
+            const roles = this.roles.get(labId);
+            if (roles) {
+                roles.delete(roleId);
+            }
         },
         /** Update user info across members and requests. */
         updateUser(user: User) {
             if (DEV) {
                 console.debug('[labs] updateUser', user);
             }
-            for (const lab of this.labs) {
-                for (const m of lab.members) {
-                    if (m.user?.id === user.id) {
-                        m.user = user;
+
+            // Update user info in all members across all labs
+            for (const members of this.members.values()) {
+                for (const memberEvent of members.values()) {
+                    if (memberEvent.user?.id === user.id) {
+                        memberEvent.user = user;
                     }
                 }
-                for (const r of lab.requests) {
-                    if (r.user?.id === user.id) {
-                        r.user = user;
+            }
+
+            // Update user info in all requests across all labs
+            for (const requests of this.requests.values()) {
+                for (const request of requests) {
+                    if (request.user?.id === user.id) {
+                        request.user = user;
                     }
                 }
             }
         },
         /** Set initial messages for a channel. */
-        setMessages(channelId: number, msgs: Message[]) {
-            const lab = this.labs.find((l) => l.channels.some((c) => c.id === channelId));
-            if (!lab) {
+        setMessages(channelId: ChannelId, msgs: Message[]) {
+            const labId = this.channelToLab.get(channelId);
+            if (!labId) {
                 return;
             }
+
             if (DEV) {
                 console.debug('[labs] setMessages', channelId, msgs);
             }
-            lab.messages[channelId] = msgs;
+
+            let messages = this.messages.get(labId);
+            if (!messages) {
+                messages = new Map();
+                this.messages.set(labId, messages);
+            }
+            messages.set(channelId, msgs);
         },
         /** Append a new message to a channel. */
-        addMessage(channelId: number, msg: Message) {
-            const lab = this.labs.find((l) => l.channels.some((c) => c.id === channelId));
-            if (!lab) {
+        addMessage(channelId: ChannelId, msg: Message) {
+            const labId = this.channelToLab.get(channelId);
+            if (!labId) {
                 return;
             }
-            if (!lab.messages[channelId]) {
-                lab.messages[channelId] = [];
+
+            let messages = this.messages.get(labId);
+            if (!messages) {
+                messages = new Map();
+                this.messages.set(labId, messages);
             }
+
+            let channelMessages = messages.get(channelId);
+            if (!channelMessages) {
+                channelMessages = [];
+                messages.set(channelId, channelMessages);
+            }
+
             if (DEV) {
                 console.debug('[labs] addMessage', channelId, msg);
             }
-            lab.messages[channelId].push(msg);
+            channelMessages.push(msg);
         },
         /** Update message content. */
-        updateMessage(channelId: number, msg: Message) {
-            const lab = this.labs.find((l) => l.channels.some((c) => c.id === channelId));
-            if (!lab || !lab.messages[channelId]) {
+        updateMessage(channelId: ChannelId, msg: Message) {
+            const labId = this.channelToLab.get(channelId);
+            if (!labId) {
                 return;
             }
-            const idx = lab.messages[channelId].findIndex((m) => m.id === msg.id);
+
+            const messages = this.messages.get(labId);
+            const channelMessages = messages?.get(channelId);
+            if (!channelMessages) {
+                return;
+            }
+
+            const idx = channelMessages.findIndex((m) => m.id === msg.id);
             if (idx !== -1) {
                 if (DEV) {
                     console.debug('[labs] updateMessage', channelId, msg);
                 }
-                lab.messages[channelId][idx] = msg;
+                channelMessages[idx] = msg;
             }
         },
         /** Remove a message from a channel. */
-        removeMessage(channelId: number, messageId: number) {
-            const lab = this.labs.find((l) => l.channels.some((c) => c.id === channelId));
-            if (!lab || !lab.messages[channelId]) {
+        removeMessage(channelId: ChannelId, messageId: MessageId) {
+            const labId = this.channelToLab.get(channelId);
+            if (!labId) {
                 return;
             }
+
+            const messages = this.messages.get(labId);
+            const channelMessages = messages?.get(channelId);
+            if (!channelMessages) {
+                return;
+            }
+
             if (DEV) {
                 console.debug('[labs] removeMessage', channelId, messageId);
             }
-            lab.messages[channelId] = lab.messages[channelId].filter((m) => m.id !== messageId);
+
+            const filtered = channelMessages.filter((m) => m.id !== messageId);
+            messages!.set(channelId, filtered);
         },
         /** Check if messages have been loaded for a channel. */
-        hasMessages(channelId: number) {
-            const lab = this.labs.find((l) => l.channels.some((c) => c.id === channelId));
-            if (!lab) {
+        hasMessages(channelId: ChannelId) {
+            const labId = this.channelToLab.get(channelId);
+            if (!labId) {
                 return false;
             }
-            return Array.isArray(lab.messages[channelId]);
+
+            const messages = this.messages.get(labId);
+            return Array.isArray(messages?.get(channelId));
         },
         /** Retrieve messages for a channel. */
-        getMessages(channelId: number): Message[] {
-            const lab = this.labs.find((l) => l.channels.some((c) => c.id === channelId));
-            return lab?.messages[channelId] ?? [];
+        getMessages(channelId: ChannelId): Message[] {
+            const labId = this.channelToLab.get(channelId);
+            if (!labId) {
+                return [];
+            }
+
+            const messages = this.messages.get(labId);
+            return messages?.get(channelId) ?? [];
         },
     },
 });

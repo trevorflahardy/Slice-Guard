@@ -12,10 +12,9 @@ export interface RequestItem extends PrintRequestEvent {}
 const route = useRoute();
 const labs = useLabsStore();
 const labId = computed(() => Number(route.params.id));
-const lab = computed(() => labs.getLab(labId.value));
 
-const requests = computed<RequestItem[]>(() => lab.value?.requests ?? []);
-const tags = computed<RequestTag[]>(() => lab.value?.tags ?? []);
+const requests = computed<RequestItem[]>(() => labs.getLabRequests(labId.value) ?? []);
+const tags = computed<RequestTag[]>(() => labs.getLabTags(labId.value) ?? []);
 
 const search = ref('');
 const tagFilter = ref<(number | string)[]>([]);

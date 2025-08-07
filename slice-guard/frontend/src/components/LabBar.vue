@@ -6,7 +6,7 @@ import { ref } from 'vue';
 import JoinLabModal from '../modals/JoinLabModal.vue';
 import Button from './Button.vue';
 
-const labs = useLabsStore();
+const labStore = useLabsStore();
 const router = useRouter();
 const showJoin = ref(false);
 
@@ -49,24 +49,24 @@ function openDms() {
 
         <div class="mt-2 flex w-full flex-1 flex-col items-center gap-3 overflow-y-auto">
             <Button
-                v-for="l in labs.labs"
-                :key="l.lab.id"
+                v-for="l in labStore.labs.values()"
+                :key="l.id"
                 class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden p-0! text-white"
                 :bubble="true"
                 variant="tertiary"
-                @click="openLab(l.lab.id)"
+                @click="openLab(l.id)"
             >
                 <img
-                    v-if="l.lab.icon_url"
-                    :src="l.lab.icon_url"
+                    v-if="l.icon_url"
+                    :src="l.icon_url"
                     class="h-full w-full object-cover"
                 />
 
                 <span
                     v-else
-                    :style="{ backgroundColor: colorFor(l.lab.id) }"
+                    :style="{ backgroundColor: colorFor(l.id) }"
                     class="flex h-full w-full items-center justify-center uppercase"
-                    >{{ l.lab.name.charAt(0) }}</span
+                    >{{ l.name.charAt(0) }}</span
                 >
             </Button>
         </div>

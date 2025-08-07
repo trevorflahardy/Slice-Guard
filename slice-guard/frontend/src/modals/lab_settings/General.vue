@@ -7,8 +7,9 @@ import Button from '../../components/Button.vue';
 
 const labs = useLabsStore();
 const route = useRoute();
+
 const labId = Number(route.params.id);
-const lab = labs.getLab(labId)?.lab;
+const lab = labs.getLab(labId);
 const name = ref(lab?.name || '');
 const description = ref(lab?.description || '');
 const iconUrl = ref(lab?.icon_url || '');

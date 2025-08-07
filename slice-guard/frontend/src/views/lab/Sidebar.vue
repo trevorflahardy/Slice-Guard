@@ -54,24 +54,26 @@ const initials = computed(() => {
 });
 
 const dropdownOptions = computed(() => {
-    const labState = labsStore.getLab(Number(labId.value));
-    const perms = labState?.permissions ?? null;
+    const perms = labsStore.getLabPermissions(Number(labId.value));
+
     const options: { id: string; name: string; icon?: Component; variant?: 'danger' }[] = [];
+
     if (hasLabPermission(perms, LabPermission.CREATE_INVITES)) {
         options.push({ id: 'invite', name: 'Invite Users', icon: UserPlusIcon });
     }
     if (hasLabPermission(perms, LabPermission.EDIT_LAB)) {
         options.push({ id: 'edit', name: 'Edit Lab', icon: Cog6ToothIcon });
     }
+
     options.push({ id: 'leave', name: 'Leave Lab', variant: 'danger' });
     return options;
 });
 
 const channelTree = computed<ChannelNode[]>(() => {
-    const labState = labsStore.getLab(Number(labId.value));
     const nodes = new Map<number, ChannelNode>();
     const roots: ChannelNode[] = [];
-    for (const ch of labState?.channels ?? []) {
+
+    for (const ch of labsStore.getLabChannels(Number(labId.value)) ?? []) {
         nodes.set(ch.id, { channel: ch, children: [] });
     }
     for (const node of nodes.values()) {
@@ -141,7 +143,7 @@ async function createChannel(type: ChannelType) {
     if (!lab) {
         return;
     }
-    const position = lab.channels.length;
+    const position = labsStore.getLabChannels(labIdNum).length;
     await apiFetch(`/labs/${labIdNum}/channels`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

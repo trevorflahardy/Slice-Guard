@@ -15,7 +15,8 @@ const members = computed(() => {
     if (!props.lab) {
         return [];
     }
-    return labs.getLab(props.lab.id)?.members ?? [];
+
+    return labs.getLabMembers(props.lab.id) || [];
 });
 
 const categorized = computed(() => {

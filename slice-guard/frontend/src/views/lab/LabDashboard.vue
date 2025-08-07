@@ -5,55 +5,50 @@ import { apiFetch } from '../../services/api';
 import Button from '../../components/Button.vue';
 import { useLabsStore } from '../../store/labs';
 import { computeMemberPermissions } from '../../utils/permissions';
-import { LabPermission, type LabRole, type Lab } from '@shared/db/lab';
+import { LabPermission, type LabRole } from '@shared/db/lab';
+import { useRoute } from 'vue-router';
 
-interface Props {
-    lab: Lab | null;
-    error: string;
-    loading: boolean;
-}
+const labStore = useLabsStore();
+const route = useRoute();
+const routeLabId = computed(() => Number(route.params.id));
 
-const props = defineProps<Props>();
-const labs = useLabsStore();
+const lab = computed(() => labStore.getLab(routeLabId.value));
 
 const tagName = ref('');
 
 const invites = computed(() => {
-    if (!props.lab) {
+    if (!lab.value) {
         return [];
     }
-    return labs.getLab(props.lab.id)?.invites ?? [];
+
+    return labStore.getLabInvites(lab.value.id) || [];
 });
 
 const members = computed(() => {
-    if (!props.lab) {
+    if (!lab.value) {
         return [];
     }
-    return labs.getLab(props.lab.id)?.members ?? [];
+    return labStore.getLabMembers(lab.value.id) || [];
 });
 
 const roles = computed(() => {
-    if (!props.lab) {
+    if (!lab.value) {
         return [];
     }
-    return labs.getLab(props.lab.id)?.roles ?? [];
+    return labStore.getLabRoles(lab.value.id) || [];
 });
 
 const channels = computed(() => {
-    if (!props.lab) {
+    if (!lab.value) {
         return [];
     }
-    return labs.getLab(props.lab.id)?.channels ?? [];
+    return labStore.getLabChannels(lab.value.id) || [];
 });
 
 const cacheStats = computed(() => {
-    const labState = props.lab ? labs.getLab(props.lab.id) : null;
-    const totalLabs = labs.labs.length;
-    const totalChannels = labs.labs.reduce((acc, l) => acc + l.channels.length, 0);
-    const cachedMessages = Object.values(labState?.messages ?? {}).reduce(
-        (acc, msgs) => acc + msgs.length,
-        0,
-    );
+    const totalLabs = labStore.labs.size;
+    const totalChannels = labStore.channels.size;
+    const cachedMessages = labStore.messages.size;
     return { totalLabs, totalChannels, cachedMessages };
 });
 
@@ -91,24 +86,25 @@ watch(
 );
 
 async function updateRolePermissions(role: LabRole) {
-    if (!props.lab) {
+    if (!lab.value) {
         return;
     }
     const perms = arrayToBits(roleSelections.value[role.id] || []);
-    const res = await apiFetch(`/labs/${props.lab.id}/roles/${role.id}`, {
+    const res = await apiFetch(`/labs/${lab.value.id}/roles/${role.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ permissions: perms }),
     });
     const updated = await res.json();
-    labs.updateRole(props.lab.id, updated);
+
+    labStore.updateRole(lab.value.id, updated);
 }
 
 async function createTag() {
-    if (!props.lab) {
+    if (!lab.value) {
         return;
     }
-    await apiFetch(`/labs/${props.lab.id}/tags`, {
+    await apiFetch(`/labs/${lab.value.id}/tags`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: tagName.value, color: '#000000', isDefault: false }),
@@ -117,10 +113,10 @@ async function createTag() {
 }
 
 async function createMockRequest() {
-    if (!props.lab) {
+    if (!lab.value) {
         return;
     }
-    await apiFetch(`/labs/${props.lab.id}/requests`, {
+    await apiFetch(`/labs/${lab.value.id}/requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file: btoa('mock'), metadata: {}, description: 'Mock request' }),
@@ -129,30 +125,6 @@ async function createMockRequest() {
 </script>
 
 <template>
-    <div class="space-y-4">
-        <div
-            v-if="error"
-            class="text-red-600"
-        >
-            {{ error }}
-        </div>
-        <div v-if="lab">
-            <h1 class="text-fg-primary text-2xl font-semibold">{{ lab.name }}</h1>
-            <p
-                v-if="lab.description"
-                class="text-fg-secondary"
-            >
-                {{ lab.description }}
-            </p>
-        </div>
-        <div
-            v-else-if="loading"
-            class="text-fg-secondary"
-        >
-            Loading...
-        </div>
-    </div>
-
     <!-- Theme Toggle Button -->
     <ThemeToggle
         class="mt-4"

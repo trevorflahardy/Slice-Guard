@@ -29,9 +29,9 @@ const statusOptions = [
 
 const labs = useLabsStore();
 const auth = useAuthStore();
-const allTags = computed<RequestTag[]>(() => labs.getLab(labId.value)?.tags ?? []);
+const allTags = computed<RequestTag[]>(() => labs.getLabTags(labId.value) ?? []);
 
-const perms = computed(() => labs.getLab(labId.value)?.permissions ?? null);
+const perms = computed(() => labs.getLabPermissions(labId.value));
 const canManage = computed(
     () =>
         entry.value.request.user_id === auth.user?.id ||

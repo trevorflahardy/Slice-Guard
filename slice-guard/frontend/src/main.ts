@@ -34,22 +34,34 @@ ws.addListener(WsEvent.LAB_CREATED, ({ lab }) => labs.addLab(lab));
 ws.addListener(WsEvent.LAB_UPDATED, ({ lab }) => labs.updateLab(lab));
 ws.addListener(WsEvent.LAB_DELETED, ({ labId }) => labs.removeLab(labId));
 ws.addListener(WsEvent.USER_UPDATED, ({ user }) => {
-  labs.updateUser(user)
-  if (auth.user && auth.user.id === user.id) {
-    auth.user = user
-    localStorage.setItem('user', JSON.stringify(user))
-  }
-})
+    labs.updateUser(user);
+    if (auth.user && auth.user.id === user.id) {
+        auth.user = user;
+        localStorage.setItem('user', JSON.stringify(user));
+    }
+});
 ws.addListener(WsEvent.CHANNEL_CREATED, ({ channel }) => {
-  if (channel.lab_id != null) labs.addChannel(channel.lab_id, channel)
-})
+    if (channel.lab_id != null) {
+        labs.addChannel(channel.lab_id, channel);
+    }
+});
 ws.addListener(WsEvent.CHANNEL_UPDATED, ({ channel }) => {
-  if (channel.lab_id != null) labs.updateChannel(channel.lab_id, channel)
-})
-ws.addListener(WsEvent.CHANNEL_DELETED, ({ labId, channelId }) => labs.removeChannel(labId, channelId))
-ws.addListener(WsEvent.MESSAGE_CREATED, ({ message }) => labs.addMessage(message.channel_id, message))
-ws.addListener(WsEvent.MESSAGE_UPDATED, ({ message }) => labs.updateMessage(message.channel_id, message))
-ws.addListener(WsEvent.MESSAGE_DELETED, ({ channelId, messageId }) => labs.removeMessage(channelId, messageId))
+    if (channel.lab_id != null) {
+        labs.updateChannel(channel.lab_id, channel);
+    }
+});
+ws.addListener(WsEvent.CHANNEL_DELETED, ({ labId, channelId }) =>
+    labs.removeChannel(labId, channelId),
+);
+ws.addListener(WsEvent.MESSAGE_CREATED, ({ message }) =>
+    labs.addMessage(message.channel_id, message),
+);
+ws.addListener(WsEvent.MESSAGE_UPDATED, ({ message }) =>
+    labs.updateMessage(message.channel_id, message),
+);
+ws.addListener(WsEvent.MESSAGE_DELETED, ({ channelId, messageId }) =>
+    labs.removeMessage(channelId, messageId),
+);
 
 if (auth.apiKey) {
     ws.connect(auth.apiKey);

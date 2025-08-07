@@ -17,7 +17,9 @@ const content = ref('');
 const loadingMore = ref(false);
 
 async function ensureHistory() {
-    if (labs.hasMessages(channelId.value)) return;
+    if (labs.hasMessages(channelId.value)) {
+        return;
+    }
     const res = await apiFetch(`/channels/${channelId.value}/messages?limit=50`);
     if (res.ok) {
         const data: Message[] = await res.json();
@@ -27,7 +29,9 @@ async function ensureHistory() {
 }
 
 async function loadMore() {
-    if (loadingMore.value) return;
+    if (loadingMore.value) {
+        return;
+    }
     loadingMore.value = true;
     const first = messages.value[0];
     const before = first ? `&before=${first.id}` : '';
@@ -40,7 +44,9 @@ async function loadMore() {
 }
 
 async function send() {
-    if (!content.value.trim()) return;
+    if (!content.value.trim()) {
+        return;
+    }
     const payload: MessageCreatePayload = { content: content.value };
     content.value = '';
     await apiFetch(`/channels/${channelId.value}/messages`, {

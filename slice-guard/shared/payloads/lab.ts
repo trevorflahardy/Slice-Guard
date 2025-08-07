@@ -21,10 +21,14 @@ export interface RoleCreatePayload {
     labId: number;
     name: string;
     permissions: number;
+    /** Optional role rank (default 0). */
+    rank?: number;
 }
 
 export interface RoleUpdatePayload {
     permissions: number;
+    /** Optional new rank for the role. */
+    rank?: number;
 }
 
 export interface MemberAddPayload {

@@ -22,10 +22,13 @@ export async function getMemberRolePermissions(
           FROM lab.member_roles mr
           JOIN lab.roles r ON mr.role_id = r.id
          WHERE mr.lab_id = ${labId} AND mr.user_id = ${userId}
+         ORDER BY r.rank DESC, r.id ASC
+         LIMIT 1
     `;
     if (rows.length === 0) {
         return null;
     }
 
-    return rows.reduce((acc, r) => acc | Number(r.permissions), 0);
+    // Role-by-role precedence: only the highest-ranked role applies
+    return Number(rows[0].permissions);
 }

@@ -38,7 +38,13 @@ export async function createLab(
     const lab: LabRow = rows[0];
 
     // Create a default role for every member, @everyone
-    const role = await createRole(db, lab.id, 'everyone', LabPermission.READ | LabPermission.WRITE);
+    const role = await createRole(
+        db,
+        lab.id,
+        'everyone',
+        LabPermission.READ | LabPermission.WRITE,
+        0,
+    );
     await db`
         UPDATE lab.labs
            SET default_role_id = ${role.id}

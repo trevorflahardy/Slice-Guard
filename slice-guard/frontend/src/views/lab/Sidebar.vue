@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, type Component } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../store/auth';
 import { useLabsStore } from '../../store/labs';
@@ -13,6 +13,15 @@ import Dropdown from '../../components/Dropdown.vue';
 import { hasLabPermission } from '../../utils/permissions';
 import { apiFetch } from '../../services/api';
 import { useRouter } from 'vue-router';
+import type { Channel } from '@shared/db/channel';
+import { ChannelType } from '@shared/db/channel';
+import ChannelItem from './ChannelItem.vue';
+import ContextMenu, { type ContextMenuItem } from '../../components/ContextMenu.vue';
+
+interface ChannelNode {
+    channel: Channel;
+    children: ChannelNode[];
+}
 
 export interface LabSidebarProps {
     lab: Lab;
@@ -47,7 +56,7 @@ const initials = computed(() => {
 const dropdownOptions = computed(() => {
     const labState = labsStore.getLab(Number(labId.value));
     const perms = labState?.permissions ?? null;
-    const options: { id: string; name: string; icon?: any; variant?: 'danger' }[] = [];
+    const options: { id: string; name: string; icon?: Component; variant?: 'danger' }[] = [];
     if (hasLabPermission(perms, LabPermission.CREATE_INVITES)) {
         options.push({ id: 'invite', name: 'Invite Users', icon: UserPlusIcon });
     }
@@ -57,6 +66,52 @@ const dropdownOptions = computed(() => {
     options.push({ id: 'leave', name: 'Leave Lab', variant: 'danger' });
     return options;
 });
+
+const channelTree = computed<ChannelNode[]>(() => {
+    const labState = labsStore.getLab(Number(labId.value));
+    const nodes = new Map<number, ChannelNode>();
+    const roots: ChannelNode[] = [];
+    for (const ch of labState?.channels ?? []) {
+        nodes.set(ch.id, { channel: ch, children: [] });
+    }
+    for (const node of nodes.values()) {
+        if (node.channel.category_id && nodes.has(node.channel.category_id)) {
+            nodes.get(node.channel.category_id)!.children.push(node);
+        } else {
+            roots.push(node);
+        }
+    }
+    const sortNodes = (arr: ChannelNode[]) => {
+        arr.sort((a, b) => a.channel.position - b.channel.position);
+        for (const c of arr) {
+            sortNodes(c.children);
+        }
+    };
+    sortNodes(roots);
+    return roots;
+});
+
+let dragging: Channel | null = null;
+function dragStart(ch: Channel) {
+    dragging = ch;
+}
+async function dropOn(target: Channel) {
+    if (!dragging || dragging.id === target.id) {
+        return;
+    }
+    const labIdNum = Number(labId.value);
+    const lab = labsStore.getLab(labIdNum);
+    if (!lab) {
+        return;
+    }
+    const newPos = target.position + 1;
+    await apiFetch(`/labs/${labIdNum}/channels/${dragging.id}/position`, {
+        method: 'PATCH',
+        body: JSON.stringify({ position: newPos }),
+        headers: { 'Content-Type': 'application/json' },
+    });
+    dragging = null;
+}
 
 async function handleDropdown(action: string | number | (string | number)[] | null) {
     if (action === 'invite') {
@@ -68,11 +123,44 @@ async function handleDropdown(action: string | number | (string | number)[] | nu
         router.push('/dms');
     }
 }
+
+const sidebarMenu = ref({ show: false, x: 0, y: 0 });
+function openSidebarMenu(e: MouseEvent) {
+    sidebarMenu.value = { show: true, x: e.clientX, y: e.clientY };
+}
+
+async function createChannel(type: ChannelType) {
+    const name = window.prompt(
+        `Enter ${type === ChannelType.CATEGORY ? 'category' : 'channel'} name`,
+    );
+    if (!name) {
+        return;
+    }
+    const labIdNum = Number(labId.value);
+    const lab = labsStore.getLab(labIdNum);
+    if (!lab) {
+        return;
+    }
+    const position = lab.channels.length;
+    await apiFetch(`/labs/${labIdNum}/channels`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, name, position }),
+    });
+}
+
+const sidebarMenuItems: ContextMenuItem[] = [
+    { label: 'Create Channel', action: () => createChannel(ChannelType.TEXT) },
+    { label: 'Create Category', action: () => createChannel(ChannelType.CATEGORY) },
+];
 </script>
 
 <template>
     <!-- Holds the main sidebar content. For now, this is placeholder information. -->
-    <div class="flex h-full flex-col justify-items-start gap-5">
+    <div
+        class="flex h-full flex-col justify-items-start gap-5"
+        @contextmenu.prevent="openSidebarMenu"
+    >
         <!--Currently active lab information (and way to change lab)-->
         <Dropdown
             :options="dropdownOptions"
@@ -140,40 +228,20 @@ async function handleDropdown(action: string | number | (string | number)[] | nu
 
         <!-- Navigation for Lab text channels - very similar to the above should be made into a dynamic system soon -->
         <div>
-            <!-- Similar to Discord style, has stats information and channels, each separated by a divider -->
             <div class="flex flex-row items-center justify-between">
                 <h2 class="text-fg-primary mb-2 text-sm font-medium uppercase">Channels</h2>
-
-                <!-- Dropdown arrow to collapse category -->
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 cursor-pointer text-gray-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 9l-7 7-7-7"
-                    />
-                </svg>
             </div>
-
-            <!-- Navigation links (need gear icon at the right side of each later on) -->
             <nav class="flex flex-col space-y-1">
-                <a
-                    href="#"
-                    :class="navClass"
-                    >general</a
+                <template
+                    v-for="node in channelTree"
+                    :key="node.channel.id"
                 >
-
-                <a
-                    href="#"
-                    :class="navClass"
-                    >some-private-channel</a
-                >
+                    <ChannelItem
+                        :node="node"
+                        :drag-start="dragStart"
+                        :drop-on="dropOn"
+                    />
+                </template>
             </nav>
         </div>
 
@@ -225,5 +293,12 @@ async function handleDropdown(action: string | number | (string | number)[] | nu
                 @close="labSettingsModal.close()"
             />
         </div>
+        <ContextMenu
+            v-if="sidebarMenu.show"
+            :items="sidebarMenuItems"
+            :x="sidebarMenu.x"
+            :y="sidebarMenu.y"
+            @close="sidebarMenu.show = false"
+        />
     </div>
 </template>

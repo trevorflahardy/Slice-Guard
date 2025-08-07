@@ -15,7 +15,7 @@ import { apiFetch } from '../../services/api';
 import { useRouter } from 'vue-router';
 import type { Channel } from '@shared/db/channel';
 import { ChannelType } from '@shared/db/channel';
-import ChannelItem from './ChannelItem.vue';
+import ChannelItem from './channels/ChannelItem.vue';
 import ContextMenu, { type ContextMenuItem } from '../../components/ContextMenu.vue';
 
 interface ChannelNode {

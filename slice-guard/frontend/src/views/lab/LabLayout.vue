@@ -23,8 +23,10 @@ const error = computed(() => (lab.value ? '' : 'Failed to load lab'));
         </aside>
 
         <!-- Main content area -->
-        <div class="bg-surface-lowest flex w-full gap-0 overflow-y-scroll">
-            <div class="w-full flex-1 p-6">
+        <div class="bg-surface-lowest flex w-full gap-0">
+            <div
+                class="no-scrollbar max-h-screen w-full flex-1 overflow-y-scroll scroll-smooth p-6"
+            >
                 <!-- Actual insert content-->
                 <router-view
                     :lab="lab"
@@ -37,7 +39,7 @@ const error = computed(() => (lab.value ? '' : 'Failed to load lab'));
             <!--! TODO: This does not resize and rather the main content does - make this collapse later down the road when I'm not so lazy.
             -->
             <div
-                class="bg-surface-lowest no-scrollbar h-full max-w-80 min-w-60 overflow-y-scroll p-4"
+                class="bg-surface-lowest no-scrollbar h-full max-w-80 min-w-60 overflow-y-scroll scroll-smooth p-4"
             >
                 <!-- User list for the lab layout -->
                 <LabUserList :lab="lab" />

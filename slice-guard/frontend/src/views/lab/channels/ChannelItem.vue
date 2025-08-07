@@ -2,8 +2,8 @@
 import { RouterLink } from 'vue-router';
 import { ref } from 'vue';
 import type { Channel } from '@shared/db/channel';
-import { apiFetch } from '../../services/api';
-import ContextMenu, { type ContextMenuItem } from '../../components/ContextMenu.vue';
+import { apiFetch } from '../../../services/api';
+import ContextMenu, { type ContextMenuItem } from '../../../components/ContextMenu.vue';
 
 interface ChannelNode {
     channel: Channel;

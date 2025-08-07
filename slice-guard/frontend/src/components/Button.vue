@@ -21,7 +21,7 @@ const outlineClass = ref(
     <button
         v-if="variant === 'primary' || variant === 'secondary'"
         :class="[
-            'shadow transition-colors',
+            'cursor-pointer shadow transition-colors duration-200 ease-out',
             variant === 'primary'
                 ? 'bg-salem-800 hover:bg-salem-800/90 font-medium text-white'
                 : 'bg-surface-low text-salem-800 hover:bg-gray2 ring-salem-800 dark:shadow-fg-secondary ring dark:ring-0 dark:inset-shadow-2xs',
@@ -33,7 +33,7 @@ const outlineClass = ref(
     </button>
     <button
         v-else
-        class="text-fg-primary shadow-none transition-all duration-250 ease-out hover:shadow-md"
+        class="text-fg-primary cursor-pointer shadow-none transition-all duration-250 ease-out hover:shadow-md"
         :class="[bubbleClass, outlineClass]"
     >
         <slot />

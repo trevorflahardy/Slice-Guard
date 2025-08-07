@@ -51,7 +51,7 @@ function openDms() {
             <Button
                 v-for="l in labs.labs"
                 :key="l.lab.id"
-                class="flex h-10 w-10 items-center justify-center overflow-hidden p-0! text-white"
+                class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden p-0! text-white"
                 :bubble="true"
                 variant="tertiary"
                 @click="openLab(l.lab.id)"

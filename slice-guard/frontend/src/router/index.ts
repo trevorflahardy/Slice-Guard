@@ -38,7 +38,7 @@ const routes: RouteRecordRaw[] = [
                     {
                         path: 'channels/:channelId',
                         name: 'LabChannel',
-                        component: () => import('../views/lab/ChannelView.vue'),
+                        component: () => import('../views/lab/channels/ChannelView.vue'),
                     },
                 ],
             },

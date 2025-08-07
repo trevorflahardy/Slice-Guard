@@ -131,25 +131,24 @@ const selectClass = 'bg-surface-low px-2 py-1 rounded-md text-fg-primary';
             />
         </div>
 
-        <TransitionGroup
-            ref="gridRef"
-            name="grid"
-            tag="div"
-            :class="[
-                'grid auto-rows-fr gap-5 transition-all duration-300',
-                'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3',
-            ]"
-        >
-            <PrintRequestListItem
-                v-for="(item, index) in filtered"
-                :key="item.request.id"
-                :entry="item"
-                class="grid-item"
-                :style="{
-                    transitionDelay: `${index * 70}ms`,
-                }"
-            />
-        </TransitionGroup>
+        <div class="h-screen">
+            <TransitionGroup
+                ref="gridRef"
+                name="grid"
+                tag="div"
+                class="grid auto-rows-fr grid-cols-1 gap-5 transition-all duration-300 lg:grid-cols-2 xl:grid-cols-3"
+            >
+                <PrintRequestListItem
+                    v-for="(item, index) in filtered"
+                    :key="item.request.id"
+                    :entry="item"
+                    class="grid-item"
+                    :style="{
+                        transitionDelay: `${index * 70}ms`,
+                    }"
+                />
+            </TransitionGroup>
+        </div>
     </div>
 </template>
 

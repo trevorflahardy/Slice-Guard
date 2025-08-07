@@ -15,31 +15,33 @@ const error = computed(() => (lab.value ? '' : 'Failed to load lab'));
 </script>
 
 <template>
-  <div class="bg-surface-lowest flex min-h-screen">
-    <aside
-      class="bg-surface-low border-surface min-h-screen w-56 shrink-0 rounded-r-3xl border-r p-7 lg:w-64 xl:w-72"
-    >
-      <Sidebar :lab="lab!" />
-    </aside>
+    <div class="bg-surface-lowest flex min-h-screen">
+        <aside
+            class="bg-surface-low border-surface min-h-screen w-56 shrink-0 rounded-r-3xl border-r p-7 lg:w-64 xl:w-72"
+        >
+            <Sidebar :lab="lab!" />
+        </aside>
 
-    <!-- Main content area -->
-    <div class="bg-surface-lowest flex w-full gap-0 overflow-y-scroll">
-      <div class="w-full flex-1 p-6">
-        <!-- Actual insert content-->
-        <router-view
-          :lab="lab"
-          :error="error"
-          :loading="loading"
-        />
-      </div>
+        <!-- Main content area -->
+        <div class="bg-surface-lowest flex w-full gap-0 overflow-y-scroll">
+            <div class="w-full flex-1 p-6">
+                <!-- Actual insert content-->
+                <router-view
+                    :lab="lab"
+                    :error="error"
+                    :loading="loading"
+                />
+            </div>
 
-      <!--User list for lab layout-->
-      <!--! TODO: This does not resize and rather the main content does - make this collapse later down the road when I'm not so lazy.
+            <!--User list for lab layout-->
+            <!--! TODO: This does not resize and rather the main content does - make this collapse later down the road when I'm not so lazy.
             -->
-      <div class="bg-surface-lowest no-scrollbar h-full max-w-80 min-w-60 overflow-y-scroll p-4">
-        <!-- User list for the lab layout -->
-        <LabUserList :lab="lab" />
-      </div>
+            <div
+                class="bg-surface-lowest no-scrollbar h-full max-w-80 min-w-60 overflow-y-scroll p-4"
+            >
+                <!-- User list for the lab layout -->
+                <LabUserList :lab="lab" />
+            </div>
+        </div>
     </div>
-  </div>
 </template>

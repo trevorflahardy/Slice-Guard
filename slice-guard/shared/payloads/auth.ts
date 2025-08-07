@@ -2,37 +2,37 @@
 import type { User } from '../db/user';
 
 export interface AuthLoginPayload {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 
 export interface AuthRegisterPayload {
-  email: string;
-  password: string;
-  name: string;
+    email: string;
+    password: string;
+    name: string;
 }
 
 export type AuthRequestPayload = AuthLoginPayload | AuthRegisterPayload;
 
 export interface AuthSuccessPayload {
-  accessToken: string;
-  refreshToken: string;
-  user: User;
+    accessToken: string;
+    refreshToken: string;
+    user: User;
 }
 
 export interface AuthFailurePayload {
-  reason: string;
+    reason: string;
 }
 
 export interface AuthRefreshPayload {
-  refreshToken: string;
+    refreshToken: string;
 }
 
 export interface AuthRefreshSuccessPayload {
-  accessToken: string;
-  refreshToken: string;
+    accessToken: string;
+    refreshToken: string;
 }
 
 export interface AuthLogoutPayload {
-  refreshToken: string;
+    refreshToken: string;
 }

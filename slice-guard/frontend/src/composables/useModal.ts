@@ -1,32 +1,32 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
 export function useModal() {
-  const isOpen = ref(false);
+    const isOpen = ref(false);
 
-  function open() {
-    isOpen.value = true;
-    document.body.style.overflow = 'hidden';
-  }
-
-  function close() {
-    isOpen.value = false;
-    document.body.style.overflow = '';
-  }
-
-  function handleEscape(event: KeyboardEvent) {
-    if (event.key === 'Escape' && isOpen.value) {
-      close();
+    function open() {
+        isOpen.value = true;
+        document.body.style.overflow = 'hidden';
     }
-  }
 
-  onMounted(() => {
-    document.addEventListener('keydown', handleEscape);
-  });
+    function close() {
+        isOpen.value = false;
+        document.body.style.overflow = '';
+    }
 
-  onUnmounted(() => {
-    document.removeEventListener('keydown', handleEscape);
-    document.body.style.overflow = '';
-  });
+    function handleEscape(event: KeyboardEvent) {
+        if (event.key === 'Escape' && isOpen.value) {
+            close();
+        }
+    }
 
-  return { isOpen, open, close };
+    onMounted(() => {
+        document.addEventListener('keydown', handleEscape);
+    });
+
+    onUnmounted(() => {
+        document.removeEventListener('keydown', handleEscape);
+        document.body.style.overflow = '';
+    });
+
+    return { isOpen, open, close };
 }

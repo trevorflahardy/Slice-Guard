@@ -16,9 +16,9 @@ Welcome to Slice Guard, a tool to help University 3D-print labs manage requests 
 - Student submission history, total filament usage, and similar statistics.
 - A simple way to track the status of 3D print requests.
 - Detects invalid or improper requested 3D prints with:
-  - A simple 3MF file parser that extracts all the needed information for you and informs you of any errors.
-  - A simple GCode parser that extracts all the needed information for you and informs you of any errors.
-  - A modern, clean GUI for staff to approve or deny requests, with notifications for students when their requests are approved or denied.
+    - A simple 3MF file parser that extracts all the needed information for you and informs you of any errors.
+    - A simple GCode parser that extracts all the needed information for you and informs you of any errors.
+    - A modern, clean GUI for staff to approve or deny requests, with notifications for students when their requests are approved or denied.
 - Concurrent file management between multiple users.
 
 ### Planned Technologies
@@ -26,10 +26,10 @@ Welcome to Slice Guard, a tool to help University 3D-print labs manage requests 
 - Docker for easy deployment and management.
 - Bun for the backend + frontend.
 - Vite as the build tool for the frontend.
-  - Vue.js for the frontend.
-  - Tailwind CSS for styling with a custom theme.
-  - Pinia for state management (?)
-  - Vue Router for routing.
+    - Vue.js for the frontend.
+    - Tailwind CSS for styling with a custom theme.
+    - Pinia for state management (?)
+    - Vue Router for routing.
 - PostgreSQL for the database.
 - Redis for caching and session management (?)
 

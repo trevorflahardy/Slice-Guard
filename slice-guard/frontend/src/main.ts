@@ -34,14 +34,14 @@ ws.addListener(WsEvent.LAB_CREATED, ({ lab }) => labs.addLab(lab));
 ws.addListener(WsEvent.LAB_UPDATED, ({ lab }) => labs.updateLab(lab));
 ws.addListener(WsEvent.LAB_DELETED, ({ labId }) => labs.removeLab(labId));
 ws.addListener(WsEvent.USER_UPDATED, ({ user }) => {
-  labs.updateUser(user);
-  if (auth.user && auth.user.id === user.id) {
-    auth.user = user;
-    localStorage.setItem('user', JSON.stringify(user));
-  }
+    labs.updateUser(user);
+    if (auth.user && auth.user.id === user.id) {
+        auth.user = user;
+        localStorage.setItem('user', JSON.stringify(user));
+    }
 });
 
 if (auth.apiKey) {
-  ws.connect(auth.apiKey);
+    ws.connect(auth.apiKey);
 }
 app.use(router).mount('#app');

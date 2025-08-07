@@ -6,36 +6,36 @@ const isDark = ref(false);
 
 // Initialize theme from localStorage or system preference
 onMounted(() => {
-  const savedTheme = localStorage.getItem('theme');
-  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  isDark.value = savedTheme ? savedTheme === 'dark' : systemPrefersDark;
-  applyTheme();
+    isDark.value = savedTheme ? savedTheme === 'dark' : systemPrefersDark;
+    applyTheme();
 });
 
 function toggleTheme() {
-  isDark.value = !isDark.value;
-  applyTheme();
+    isDark.value = !isDark.value;
+    applyTheme();
 }
 
 function applyTheme() {
-  if (isDark.value) {
-    document.documentElement.classList.add('dark');
-    document.documentElement.classList.remove('light');
-    localStorage.setItem('theme', 'dark');
-  } else {
-    document.documentElement.classList.add('light');
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
-  }
+    if (isDark.value) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    }
 }
 </script>
 
 <template>
-  <Button
-    variant="secondary"
-    @click="toggleTheme"
-  >
-    {{ isDark ? '☀️' : '🌙' }}
-  </Button>
+    <Button
+        variant="secondary"
+        @click="toggleTheme"
+    >
+        {{ isDark ? '☀️' : '🌙' }}
+    </Button>
 </template>

@@ -1,46 +1,46 @@
 {
-  "name": "slice-guard",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite --host",
-    "build": "bunx vite build",
-    "preview": "vite preview --host 0.0.0.0 --port 5173",
-    "serve": "vite preview --host 0.0.0.0 --port 5173",
-    "lint": "eslint . --ext .vue,.js,.ts",
-    "lint:fix": "eslint . --ext .vue,.js,.ts --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
-  },
-  "dependencies": {
-    "@heroicons/vue": "^2.2.0",
-    "@tailwindcss/vite": "^4.1.11",
-    "pinia": "^2.1.7",
-    "vue": "^3.5.13",
-    "vue-router": "^4.3.2"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@tailwindcss/postcss": "^4.1.11",
-    "@typescript-eslint/eslint-plugin": "^8.39.0",
-    "@typescript-eslint/parser": "^8.39.0",
-    "@vitejs/plugin-vue": "6.0.0",
-    "@vue/tsconfig": "^0.7.0",
-    "autoprefixer": "^10.4.18",
-    "eslint": "^9.32.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-vue": "^10.4.0",
-    "postcss": "^8.4.38",
-    "tailwindcss": "^4.1.11",
-    "typescript": "~5.8.3",
-    "vite": "7.0.0",
-    "vue-eslint-parser": "^10.2.0",
-    "vue-tsc": "^2.2.8"
-  },
-  "overrides": {
-    "esbuild": {
-      "version": "0.25.4"
+    "name": "slice-guard",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite --host",
+        "build": "bunx vite build",
+        "preview": "vite preview --host 0.0.0.0 --port 5173",
+        "serve": "vite preview --host 0.0.0.0 --port 5173",
+        "lint": "eslint . --ext .vue,.js,.ts",
+        "lint:fix": "eslint . --ext .vue,.js,.ts --fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "dependencies": {
+        "@heroicons/vue": "^2.2.0",
+        "@tailwindcss/vite": "^4.1.11",
+        "pinia": "^2.1.7",
+        "vue": "^3.5.13",
+        "vue-router": "^4.3.2"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.32.0",
+        "@tailwindcss/postcss": "^4.1.11",
+        "@typescript-eslint/eslint-plugin": "^8.39.0",
+        "@typescript-eslint/parser": "^8.39.0",
+        "@vitejs/plugin-vue": "6.0.0",
+        "@vue/tsconfig": "^0.7.0",
+        "autoprefixer": "^10.4.18",
+        "eslint": "^9.32.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-vue": "^10.4.0",
+        "postcss": "^8.4.38",
+        "tailwindcss": "^4.1.11",
+        "typescript": "~5.8.3",
+        "vite": "7.0.0",
+        "vue-eslint-parser": "^10.2.0",
+        "vue-tsc": "^2.2.8"
+    },
+    "overrides": {
+        "esbuild": {
+            "version": "0.25.4"
+        }
     }
-  }
 }

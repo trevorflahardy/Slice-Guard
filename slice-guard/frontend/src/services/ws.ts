@@ -3,75 +3,75 @@ import { WsEvent, type WsPayloadUnion, type WsPayloadMap } from '@shared/payload
 export type Listener<K extends WsEvent = WsEvent> = (data: WsPayloadMap[K]['d']) => void;
 
 export class WebSocketClient {
-  private ws: WebSocket | null = null;
-  private url: string;
-  private reconnectId: number | null = null;
-  private listeners = new Map<WsEvent, Set<Listener<any>>>();
+    private ws: WebSocket | null = null;
+    private url: string;
+    private reconnectId: number | null = null;
+    private listeners = new Map<WsEvent, Set<Listener<any>>>();
 
-  constructor(url: string) {
-    this.url = url;
-  }
-
-  connect(key?: string) {
-    if (this.ws) {
-      return;
+    constructor(url: string) {
+        this.url = url;
     }
-    const url = key ? `${this.url}?key=${encodeURIComponent(key)}` : this.url;
-    this.ws = new WebSocket(url);
-    this.ws.addEventListener('message', (ev) => {
-      try {
-        const msg: WsPayloadUnion = JSON.parse(ev.data);
-        if (import.meta.env.DEV) {
-          console.debug('[ws] <=', msg);
+
+    connect(key?: string) {
+        if (this.ws) {
+            return;
         }
-        this.dispatch(msg);
-      } catch {
-        console.error('Invalid WS message', ev.data);
-      }
-    });
-    this.ws.addEventListener('close', () => {
-      this.ws = null;
-      if (this.reconnectId == null) {
-        this.reconnectId = window.setTimeout(() => {
-          this.reconnectId = null;
-          this.connect();
-        }, 2000);
-      }
-    });
-  }
-
-  send(op: WsEvent, d: any) {
-    this.ws?.send(JSON.stringify({ op, d }));
-  }
-
-  addListener<K extends WsEvent>(op: K, cb: Listener<K>) {
-    if (!this.listeners.has(op)) {
-      this.listeners.set(op, new Set());
+        const url = key ? `${this.url}?key=${encodeURIComponent(key)}` : this.url;
+        this.ws = new WebSocket(url);
+        this.ws.addEventListener('message', (ev) => {
+            try {
+                const msg: WsPayloadUnion = JSON.parse(ev.data);
+                if (import.meta.env.DEV) {
+                    console.debug('[ws] <=', msg);
+                }
+                this.dispatch(msg);
+            } catch {
+                console.error('Invalid WS message', ev.data);
+            }
+        });
+        this.ws.addEventListener('close', () => {
+            this.ws = null;
+            if (this.reconnectId == null) {
+                this.reconnectId = window.setTimeout(() => {
+                    this.reconnectId = null;
+                    this.connect();
+                }, 2000);
+            }
+        });
     }
-    this.listeners.get(op)!.add(cb as Listener<any>);
-  }
 
-  removeListener<K extends WsEvent>(op: K, cb: Listener<K>) {
-    this.listeners.get(op)?.delete(cb as Listener<any>);
-  }
+    send(op: WsEvent, d: any) {
+        this.ws?.send(JSON.stringify({ op, d }));
+    }
 
-  private dispatch(msg: WsPayloadUnion) {
-    const set = this.listeners.get(msg.op);
-    if (import.meta.env.DEV) {
-      const count = set ? set.size : 0;
-      console.debug('[ws] dispatch', msg.op, `to ${count} listener(s)`);
+    addListener<K extends WsEvent>(op: K, cb: Listener<K>) {
+        if (!this.listeners.has(op)) {
+            this.listeners.set(op, new Set());
+        }
+        this.listeners.get(op)!.add(cb as Listener<any>);
     }
-    if (!set) {
-      return;
+
+    removeListener<K extends WsEvent>(op: K, cb: Listener<K>) {
+        this.listeners.get(op)?.delete(cb as Listener<any>);
     }
-    for (const cb of Array.from(set)) {
-      try {
-        (cb as Listener<typeof msg.op>)(msg.d as any);
-      } catch (err) {
-        console.error(err);
-      }
+
+    private dispatch(msg: WsPayloadUnion) {
+        const set = this.listeners.get(msg.op);
+        if (import.meta.env.DEV) {
+            const count = set ? set.size : 0;
+            console.debug('[ws] dispatch', msg.op, `to ${count} listener(s)`);
+        }
+        if (!set) {
+            return;
+        }
+        for (const cb of Array.from(set)) {
+            try {
+                (cb as Listener<typeof msg.op>)(msg.d as any);
+            } catch (err) {
+                console.error(err);
+            }
+        }
     }
-  }
 }
 
 const WS_URL = (import.meta as any).env.VITE_WS_URL ?? 'ws://localhost:3000/ws';

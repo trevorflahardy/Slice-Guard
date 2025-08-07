@@ -22,31 +22,31 @@ export * from './invite';
  * @returns The created lab.
  */
 export async function createLab(
-  db: SQL,
-  ownerId: number,
-  name: string,
-  description: string | null = null,
-  iconUrl: string | null = null,
+    db: SQL,
+    ownerId: number,
+    name: string,
+    description: string | null = null,
+    iconUrl: string | null = null,
 ): Promise<LabRow> {
-  const rows: LabRow[] = await db`
+    const rows: LabRow[] = await db`
         INSERT INTO lab.labs (owner_id, name, description, icon_url)
              VALUES (${ownerId}, ${name}, ${description}, ${iconUrl})
         RETURNING id, owner_id, name, description, icon_url, default_role_id, created_at
     `;
-  const lab: LabRow = rows[0];
+    const lab: LabRow = rows[0];
 
-  // Create a default role for every member, @everyone
-  const role = await createRole(db, lab.id, 'everyone', LabPermission.READ | LabPermission.WRITE);
-  await db`
+    // Create a default role for every member, @everyone
+    const role = await createRole(db, lab.id, 'everyone', LabPermission.READ | LabPermission.WRITE);
+    await db`
         UPDATE lab.labs
            SET default_role_id = ${role.id}
          WHERE id = ${lab.id}
     `;
-  lab.default_role_id = role.id;
+    lab.default_role_id = role.id;
 
-  // Add this owner to the member list with the default role
-  await addMember(db, lab.id, ownerId, role.id);
-  return lab;
+    // Add this owner to the member list with the default role
+    await addMember(db, lab.id, ownerId, role.id);
+    return lab;
 }
 
 /**
@@ -56,7 +56,7 @@ export async function createLab(
  * @param labId The ID of the lab to delete.
  */
 export async function deleteLab(db: SQL, labId: number): Promise<void> {
-  await db`
+    await db`
         DELETE FROM lab.labs
          WHERE id = ${labId}
     `;
@@ -73,36 +73,36 @@ export async function deleteLab(db: SQL, labId: number): Promise<void> {
  * @returns The updated lab.
  */
 export async function updateLab(
-  db: SQL,
-  labId: number,
-  name: string,
-  description: string | null,
-  iconUrl: string | null,
+    db: SQL,
+    labId: number,
+    name: string,
+    description: string | null,
+    iconUrl: string | null,
 ): Promise<LabRow> {
-  const rows: LabRow[] = await db`
+    const rows: LabRow[] = await db`
         UPDATE lab.labs
            SET name = ${name}, description = ${description}, icon_url = ${iconUrl}
          WHERE id = ${labId}
         RETURNING id, owner_id, name, description, icon_url, created_at
     `;
-  return rows[0];
+    return rows[0];
 }
 
 export async function getLab(db: SQL, id: number): Promise<LabRow | null> {
-  const rows: LabRow[] = await db`
+    const rows: LabRow[] = await db`
         SELECT id, owner_id, name, description, icon_url, default_role_id, created_at
           FROM lab.labs
          WHERE id = ${id}
     `;
-  return rows[0] ?? null;
+    return rows[0] ?? null;
 }
 
 export async function listLabsForUser(db: SQL, userId: number): Promise<LabRow[]> {
-  const rows: LabRow[] = await db`
+    const rows: LabRow[] = await db`
         SELECT l.id, l.owner_id, l.name, l.description, l.icon_url, l.default_role_id, l.created_at
           FROM lab.labs l
           JOIN lab.members m ON m.lab_id = l.id
          WHERE m.user_id = ${userId}
     `;
-  return rows;
+    return rows;
 }

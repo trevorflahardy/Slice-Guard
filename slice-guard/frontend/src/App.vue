@@ -7,18 +7,18 @@ const hideBar = computed(() => ['Login', 'Register'].includes(route.name as stri
 </script>
 
 <template>
-  <div v-if="hideBar">
-    <router-view />
-  </div>
-  <div
-    v-else
-    class="flex min-h-screen"
-  >
-    <LabBar />
-    <div class="flex-1">
-      <router-view />
+    <div v-if="hideBar">
+        <router-view />
     </div>
-  </div>
+    <div
+        v-else
+        class="flex min-h-screen"
+    >
+        <LabBar />
+        <div class="flex-1">
+            <router-view />
+        </div>
+    </div>
 </template>
 
 <style scoped></style>

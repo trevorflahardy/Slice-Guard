@@ -14,7 +14,7 @@ import { type StringOrBuffer } from 'bun';
  * @returns  The hashed password
  */
 export const hashPassword = async (pw: StringOrBuffer): Promise<string> => {
-  return await Bun.password.hash(pw, 'argon2id');
+    return await Bun.password.hash(pw, 'argon2id');
 };
 
 /**
@@ -26,8 +26,8 @@ export const hashPassword = async (pw: StringOrBuffer): Promise<string> => {
  * @returns True if the password matches the hash, False otherwise.
  */
 export const verifyPassword = async (
-  pw: StringOrBuffer,
-  hash: StringOrBuffer,
+    pw: StringOrBuffer,
+    hash: StringOrBuffer,
 ): Promise<boolean> => {
-  return await Bun.password.verify(pw, hash, 'argon2id');
+    return await Bun.password.verify(pw, hash, 'argon2id');
 };

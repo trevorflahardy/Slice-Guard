@@ -5,10 +5,10 @@ import { apiFetch } from '../../services/api';
 import Button from '../../components/Button.vue';
 import { useLabsStore } from '../../store/labs';
 import { computeMemberPermissions } from '../../utils/permissions';
-import { LabPermission, type LabRole } from '@shared/db/lab';
+import { LabPermission, type LabRole, type Lab } from '@shared/db/lab';
 
 interface Props {
-    lab: any | null;
+    lab: Lab | null;
     error: string;
     loading: boolean;
 }

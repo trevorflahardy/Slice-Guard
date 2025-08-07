@@ -12,8 +12,10 @@ interface ChannelNode {
 
 const props = defineProps<{
     node: ChannelNode;
-    dragStart: (ch: Channel) => void;
-    dropOn: (ch: Channel) => void;
+    // eslint-disable-next-line no-unused-vars
+    dragStart: (_ch: Channel) => void;
+    // eslint-disable-next-line no-unused-vars
+    dropOn: (_ch: Channel) => void;
 }>();
 
 defineOptions({ name: 'ChannelItem' });
@@ -27,7 +29,9 @@ function openMenu(e: MouseEvent) {
 }
 
 async function deleteChannel() {
-    if (!current.value) return;
+    if (!current.value) {
+        return;
+    }
     await apiFetch(`/labs/${current.value.lab_id}/channels/${current.value.id}`, {
         method: 'DELETE',
     });
@@ -62,15 +66,15 @@ const menuItems: ContextMenuItem[] = [
             {{ props.node.channel.name }}
         </div>
         <div
-            class="flex flex-col pl-4"
             v-if="props.node.children.length"
+            class="flex flex-col pl-4"
         >
             <ChannelItem
                 v-for="c in props.node.children"
                 :key="c.channel.id"
                 :node="c"
-                :dragStart="props.dragStart"
-                :dropOn="props.dropOn"
+                :drag-start="props.dragStart"
+                :drop-on="props.dropOn"
             />
         </div>
         <ContextMenu

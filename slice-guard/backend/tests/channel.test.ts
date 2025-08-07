@@ -57,8 +57,8 @@ test("createMessage uses expected SQL", async () => {
   const db = createMockSQL([row]);
   const result = await createMessage(db as any, 2, 3, "hello");
   expect(normalize(db.lastQuery)).toBe(
-    "INSERT INTO lab.messages (channel_id, user_id, content, user_mentions, role_mentions) VALUES ($1, $2, $3, $4, $5) RETURNING id, channel_id, user_id, content, user_mentions, role_mentions, created_at, edited_at"
+    "INSERT INTO lab.messages (channel_id, user_id, content, user_mentions, role_mentions) VALUES ($1, $2, $3, $4::int[], $5::int[]) RETURNING id, channel_id, user_id, content, user_mentions, role_mentions, created_at, edited_at"
   );
-  expect(db.lastParams).toEqual([2, 3, "hello", [], []]);
+  expect(db.lastParams).toEqual([2, 3, "hello", "{}", "{}"]);
   expect(result).toEqual(row);
 });

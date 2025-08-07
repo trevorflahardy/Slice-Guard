@@ -8,7 +8,7 @@ export interface ContextMenuItem {
 }
 
 const props = defineProps<{ items: ContextMenuItem[]; x: number; y: number }>();
-const emit = defineEmits<{ (e: 'close'): void }>();
+const emit = defineEmits(['close']);
 
 function onClickOutside() {
     emit('close');

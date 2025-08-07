@@ -13,6 +13,10 @@ function normalizeMessage(row: MessageRow): MessageRow {
     };
 }
 
+function toIntArray(values: number[]): string {
+    return `{${values.join(',')}}`;
+}
+
 /** Insert a new message into a channel. */
 export async function createMessage(
     db: SQL,
@@ -24,7 +28,7 @@ export async function createMessage(
 ): Promise<MessageRow> {
     const rows: MessageRow[] = await db`
         INSERT INTO lab.messages (channel_id, user_id, content, user_mentions, role_mentions)
-             VALUES (${channelId}, ${userId}, ${content}, ${userMentions}, ${roleMentions})
+             VALUES (${channelId}, ${userId}, ${content}, ${toIntArray(userMentions)}::int[], ${toIntArray(roleMentions)}::int[])
         RETURNING id, channel_id, user_id, content, user_mentions, role_mentions, created_at, edited_at
     `;
     return normalizeMessage(rows[0]);
@@ -40,7 +44,7 @@ export async function updateMessage(
 ): Promise<MessageRow> {
     const rows: MessageRow[] = await db`
         UPDATE lab.messages
-           SET content = ${content}, user_mentions = ${userMentions}, role_mentions = ${roleMentions}, edited_at = NOW()
+           SET content = ${content}, user_mentions = ${toIntArray(userMentions)}::int[], role_mentions = ${toIntArray(roleMentions)}::int[], edited_at = NOW()
          WHERE id = ${messageId}
         RETURNING id, channel_id, user_id, content, user_mentions, role_mentions, created_at, edited_at
     `;

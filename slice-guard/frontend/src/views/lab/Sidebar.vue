@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, type Component } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../store/auth';
 import { useLabsStore } from '../../store/labs';
@@ -56,7 +56,7 @@ const initials = computed(() => {
 const dropdownOptions = computed(() => {
     const labState = labsStore.getLab(Number(labId.value));
     const perms = labState?.permissions ?? null;
-    const options: { id: string; name: string; icon?: any; variant?: 'danger' }[] = [];
+    const options: { id: string; name: string; icon?: Component; variant?: 'danger' }[] = [];
     if (hasLabPermission(perms, LabPermission.CREATE_INVITES)) {
         options.push({ id: 'invite', name: 'Invite Users', icon: UserPlusIcon });
     }
@@ -83,7 +83,9 @@ const channelTree = computed<ChannelNode[]>(() => {
     }
     const sortNodes = (arr: ChannelNode[]) => {
         arr.sort((a, b) => a.channel.position - b.channel.position);
-        for (const c of arr) sortNodes(c.children);
+        for (const c of arr) {
+            sortNodes(c.children);
+        }
     };
     sortNodes(roots);
     return roots;
@@ -94,13 +96,14 @@ function dragStart(ch: Channel) {
     dragging = ch;
 }
 async function dropOn(target: Channel) {
-    if (!dragging || dragging.id === target.id) return;
+    if (!dragging || dragging.id === target.id) {
+        return;
+    }
     const labIdNum = Number(labId.value);
     const lab = labsStore.getLab(labIdNum);
-    if (!lab) return;
-    const siblings = target.category_id
-        ? lab.channels.filter((c) => c.category_id === target.category_id)
-        : lab.channels.filter((c) => c.category_id == null);
+    if (!lab) {
+        return;
+    }
     const newPos = target.position + 1;
     await apiFetch(`/labs/${labIdNum}/channels/${dragging.id}/position`, {
         method: 'PATCH',
@@ -111,9 +114,11 @@ async function dropOn(target: Channel) {
 }
 
 async function handleDropdown(action: string | number | (string | number)[] | null) {
-    if (action === 'invite') inviteModal.open();
-    else if (action === 'edit') labSettingsModal.open();
-    else if (action === 'leave') {
+    if (action === 'invite') {
+        inviteModal.open();
+    } else if (action === 'edit') {
+        labSettingsModal.open();
+    } else if (action === 'leave') {
         await apiFetch(`/labs/${labId.value}/members/@me`, { method: 'DELETE' });
         router.push('/dms');
     }
@@ -125,11 +130,17 @@ function openSidebarMenu(e: MouseEvent) {
 }
 
 async function createChannel(type: ChannelType) {
-    const name = prompt(`Enter ${type === ChannelType.CATEGORY ? 'category' : 'channel'} name`);
-    if (!name) return;
+    const name = window.prompt(
+        `Enter ${type === ChannelType.CATEGORY ? 'category' : 'channel'} name`,
+    );
+    if (!name) {
+        return;
+    }
     const labIdNum = Number(labId.value);
     const lab = labsStore.getLab(labIdNum);
-    if (!lab) return;
+    if (!lab) {
+        return;
+    }
     const position = lab.channels.length;
     await apiFetch(`/labs/${labIdNum}/channels`, {
         method: 'POST',
@@ -154,7 +165,7 @@ const sidebarMenuItems: ContextMenuItem[] = [
         <Dropdown
             :options="dropdownOptions"
             :model-value="null"
-            @update:modelValue="handleDropdown"
+            @update:model-value="handleDropdown"
         >
             <template #activator>
                 <div class="flex w-full cursor-pointer flex-col items-start gap-2 text-left">
@@ -227,8 +238,8 @@ const sidebarMenuItems: ContextMenuItem[] = [
                 >
                     <ChannelItem
                         :node="node"
-                        :dragStart="dragStart"
-                        :dropOn="dropOn"
+                        :drag-start="dragStart"
+                        :drop-on="dropOn"
                     />
                 </template>
             </nav>
@@ -260,8 +271,8 @@ const sidebarMenuItems: ContextMenuItem[] = [
 
             <!--Settings gear icon at the end of the flex -->
             <button
-                @click="userSettingsModal.open()"
                 class="ml-auto"
+                @click="userSettingsModal.open()"
             >
                 <Cog6ToothIcon
                     class="text-fg-secondary size-5 transition-transform duration-500 ease-in-out hover:motion-safe:rotate-90"

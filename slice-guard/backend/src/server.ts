@@ -5,6 +5,7 @@ import * as auth from './http/auth';
 import * as lab from './http/lab';
 import * as requestHandlers from './http/request';
 import * as userRoutes from './http/user';
+import * as channelRoutes from './http/channel';
 import { getApiKey } from './db/user';
 import { WsEvent } from '@shared/payloads/ws';
 import { getUserLabStates } from "./utils/lab_state";
@@ -94,6 +95,25 @@ export class Server {
                 '/api/labs/:labId/invites/:inviteId': {
                     PATCH: req => withLogging(lab.updateInviteRoute)(req, this.state, req.params),
                     DELETE: req => withLogging(lab.deleteInviteRoute)(req, this.state, req.params),
+                },
+                '/api/labs/:labId/channels': {
+                    GET: req => withLogging(channelRoutes.listChannelsRoute)(req, this.state, req.params),
+                    POST: req => withLogging(channelRoutes.createChannelRoute)(req, this.state, req.params),
+                },
+                '/api/labs/:labId/channels/:channelId': {
+                    PATCH: req => withLogging(channelRoutes.updateChannelRoute)(req, this.state, req.params),
+                    DELETE: req => withLogging(channelRoutes.deleteChannelRoute)(req, this.state, req.params),
+                },
+                '/api/labs/:labId/channels/:channelId/position': {
+                    PATCH: req => withLogging(channelRoutes.setChannelPositionRoute)(req, this.state, req.params),
+                },
+                '/api/channels/:channelId/messages': {
+                    GET: req => withLogging(channelRoutes.listMessagesRoute)(req, this.state, req.params),
+                    POST: req => withLogging(channelRoutes.createMessageRoute)(req, this.state, req.params),
+                },
+                '/api/channels/:channelId/messages/:messageId': {
+                    PATCH: req => withLogging(channelRoutes.updateMessageRoute)(req, this.state, req.params),
+                    DELETE: req => withLogging(channelRoutes.deleteMessageRoute)(req, this.state, req.params),
                 },
                 '/api/invites/:code': {
                     POST: req => withLogging(lab.useInviteRoute)(req, this.state, req.params),

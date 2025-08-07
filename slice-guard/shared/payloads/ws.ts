@@ -4,6 +4,8 @@ import type { ErrorCode } from '../ws/errors'
 import type { PrintRequest, RequestTag } from '../db/request'
 import type { User } from '../db/user'
 import type { Lab, LabRole, LabMember, LabInvite } from '../db/lab'
+import type { Channel } from '../db/channel'
+import type { Message } from '../db/message'
 
 /**
  * All websocket opcodes supported by the application.
@@ -49,6 +51,18 @@ export enum WsEvent {
   LAB_UPDATED = 18,
   /** Emitted when a lab is deleted. */
   LAB_DELETED = 19,
+  /** Emitted when a channel is created. */
+  CHANNEL_CREATED = 20,
+  /** Emitted when a channel is updated. */
+  CHANNEL_UPDATED = 21,
+  /** Emitted when a channel is deleted. */
+  CHANNEL_DELETED = 22,
+  /** Emitted when a message is created. */
+  MESSAGE_CREATED = 23,
+  /** Emitted when a message is updated. */
+  MESSAGE_UPDATED = 24,
+  /** Emitted when a message is deleted. */
+  MESSAGE_DELETED = 25,
 }
 
 export type WsEventType = keyof typeof WsEvent
@@ -119,6 +133,24 @@ export interface LabDeletedEvent {
   labId: number
 }
 
+export interface ChannelEvent {
+  channel: Channel
+}
+
+export interface ChannelDeletedEvent {
+  channelId: number
+  labId: number | null
+}
+
+export interface MessageEvent {
+  message: Message
+}
+
+export interface MessageDeletedEvent {
+  channelId: number
+  messageId: number
+}
+
 export interface LabState {
   lab: Lab
   roles: LabRole[]
@@ -132,6 +164,10 @@ export interface LabState {
    * scanning the full member list.
    */
   permissions: number | null
+  /** List of all channels belonging to this lab. */
+  channels: Channel[]
+  /** Mapping of channel id to cached messages for that channel. */
+  messages: Record<number, Message[]>
 }
 
 export interface ErrorPayload {
@@ -159,6 +195,12 @@ export type WsPayloads = {
   [WsEvent.LAB_CREATED]: { op: WsEvent.LAB_CREATED; d: LabCreatedEvent }
   [WsEvent.LAB_UPDATED]: { op: WsEvent.LAB_UPDATED; d: LabUpdatedEvent }
   [WsEvent.LAB_DELETED]: { op: WsEvent.LAB_DELETED; d: LabDeletedEvent }
+  [WsEvent.CHANNEL_CREATED]: { op: WsEvent.CHANNEL_CREATED; d: ChannelEvent }
+  [WsEvent.CHANNEL_UPDATED]: { op: WsEvent.CHANNEL_UPDATED; d: ChannelEvent }
+  [WsEvent.CHANNEL_DELETED]: { op: WsEvent.CHANNEL_DELETED; d: ChannelDeletedEvent }
+  [WsEvent.MESSAGE_CREATED]: { op: WsEvent.MESSAGE_CREATED; d: MessageEvent }
+  [WsEvent.MESSAGE_UPDATED]: { op: WsEvent.MESSAGE_UPDATED; d: MessageEvent }
+  [WsEvent.MESSAGE_DELETED]: { op: WsEvent.MESSAGE_DELETED; d: MessageDeletedEvent }
   [WsEvent.ERROR]: { op: WsEvent.ERROR; d: ErrorPayload }
 }
 

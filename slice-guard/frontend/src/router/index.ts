@@ -34,6 +34,11 @@ const routes: RouteRecordRaw[] = [
             path: 'print-requests',
             name: 'LabPrintRequests',
             component: () => import('../views/lab/print_requests/LabPrintRequests.vue'),
+          },
+          {
+            path: 'channels/:channelId',
+            name: 'LabChannel',
+            component: () => import('../views/lab/ChannelView.vue'),
           }
         ],
       },

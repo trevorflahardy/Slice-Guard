@@ -40,6 +40,16 @@ ws.addListener(WsEvent.USER_UPDATED, ({ user }) => {
     localStorage.setItem('user', JSON.stringify(user))
   }
 })
+ws.addListener(WsEvent.CHANNEL_CREATED, ({ channel }) => {
+  if (channel.lab_id != null) labs.addChannel(channel.lab_id, channel)
+})
+ws.addListener(WsEvent.CHANNEL_UPDATED, ({ channel }) => {
+  if (channel.lab_id != null) labs.updateChannel(channel.lab_id, channel)
+})
+ws.addListener(WsEvent.CHANNEL_DELETED, ({ labId, channelId }) => labs.removeChannel(labId, channelId))
+ws.addListener(WsEvent.MESSAGE_CREATED, ({ message }) => labs.addMessage(message.channel_id, message))
+ws.addListener(WsEvent.MESSAGE_UPDATED, ({ message }) => labs.updateMessage(message.channel_id, message))
+ws.addListener(WsEvent.MESSAGE_DELETED, ({ channelId, messageId }) => labs.removeMessage(channelId, messageId))
 
 if (auth.apiKey) ws.connect(auth.apiKey)
 app.use(router).mount('#app')

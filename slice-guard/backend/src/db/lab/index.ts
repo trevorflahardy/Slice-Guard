@@ -10,6 +10,8 @@ export * from "./member";
 export * from "./permissions";
 export * from "./role";
 export * from "./invite";
+export * from "./channel";
+export * from "./message";
 
 /**
  * Creates a new lab.

@@ -2,7 +2,9 @@ import { defineStore } from 'pinia'
 import type { RequestTag } from '@shared/db/request'
 import type { LabState, PrintRequestEvent, MemberEvent } from '@shared/payloads/ws'
 import type { LabInvite, LabRole, Lab } from '@shared/db/lab'
+import type { Channel } from '@shared/db/channel'
 import type { User } from '@shared/db/user'
+import type { Message } from '@shared/db/message'
 import { useAuthStore } from './auth'
 
 const DEV = import.meta.env.DEV
@@ -25,6 +27,14 @@ export const useLabsStore = defineStore('labs', {
     getLab(id: number) {
       return this.labs.find(l => l.lab.id === id) || null
     },
+    /** Find a channel by id across all labs. */
+    getChannel(id: number): Channel | null {
+      for (const l of this.labs) {
+        const ch = l.channels.find(c => c.id === id)
+        if (ch) return ch
+      }
+      return null
+    },
     /** Add a new lab to the store. */
     addLab(lab: LabState) {
       if (DEV) console.debug('[labs] addLab', lab)
@@ -41,6 +51,31 @@ export const useLabsStore = defineStore('labs', {
     removeLab(labId: number) {
       if (DEV) console.debug('[labs] removeLab', labId)
       this.labs = this.labs.filter(l => l.lab.id !== labId)
+    },
+    /** Add a channel to a lab. */
+    addChannel(labId: number, channel: Channel) {
+      const lab = this.getLab(labId)
+      if (!lab) return
+      if (DEV) console.debug('[labs] addChannel', labId, channel)
+      lab.channels.push(channel)
+    },
+    /** Update an existing channel. */
+    updateChannel(labId: number, channel: Channel) {
+      const lab = this.getLab(labId)
+      if (!lab) return
+      const idx = lab.channels.findIndex(c => c.id === channel.id)
+      if (idx !== -1) {
+        if (DEV) console.debug('[labs] updateChannel', labId, channel)
+        lab.channels[idx] = channel
+      }
+    },
+    /** Remove a channel from a lab. */
+    removeChannel(labId: number, channelId: number) {
+      const lab = this.getLab(labId)
+      if (!lab) return
+      if (DEV) console.debug('[labs] removeChannel', labId, channelId)
+      lab.channels = lab.channels.filter(c => c.id !== channelId)
+      delete lab.messages[channelId]
     },
     /** Prepend a new request to the lab list. */
     addRequest(labId: number, entry: PrintRequestEvent) {
@@ -173,6 +208,49 @@ export const useLabsStore = defineStore('labs', {
           if (r.user?.id === user.id) r.user = user
         }
       }
+    },
+    /** Set initial messages for a channel. */
+    setMessages(channelId: number, msgs: Message[]) {
+      const lab = this.labs.find(l => l.channels.some(c => c.id === channelId))
+      if (!lab) return
+      if (DEV) console.debug('[labs] setMessages', channelId, msgs)
+      lab.messages[channelId] = msgs
+    },
+    /** Append a new message to a channel. */
+    addMessage(channelId: number, msg: Message) {
+      const lab = this.labs.find(l => l.channels.some(c => c.id === channelId))
+      if (!lab) return
+      if (!lab.messages[channelId]) lab.messages[channelId] = []
+      if (DEV) console.debug('[labs] addMessage', channelId, msg)
+      lab.messages[channelId].push(msg)
+    },
+    /** Update message content. */
+    updateMessage(channelId: number, msg: Message) {
+      const lab = this.labs.find(l => l.channels.some(c => c.id === channelId))
+      if (!lab || !lab.messages[channelId]) return
+      const idx = lab.messages[channelId].findIndex(m => m.id === msg.id)
+      if (idx !== -1) {
+        if (DEV) console.debug('[labs] updateMessage', channelId, msg)
+        lab.messages[channelId][idx] = msg
+      }
+    },
+    /** Remove a message from a channel. */
+    removeMessage(channelId: number, messageId: number) {
+      const lab = this.labs.find(l => l.channels.some(c => c.id === channelId))
+      if (!lab || !lab.messages[channelId]) return
+      if (DEV) console.debug('[labs] removeMessage', channelId, messageId)
+      lab.messages[channelId] = lab.messages[channelId].filter(m => m.id !== messageId)
+    },
+    /** Check if messages have been loaded for a channel. */
+    hasMessages(channelId: number) {
+      const lab = this.labs.find(l => l.channels.some(c => c.id === channelId))
+      if (!lab) return false
+      return Array.isArray(lab.messages[channelId])
+    },
+    /** Retrieve messages for a channel. */
+    getMessages(channelId: number): Message[] {
+      const lab = this.labs.find(l => l.channels.some(c => c.id === channelId))
+      return lab?.messages[channelId] ?? []
     },
   },
 })

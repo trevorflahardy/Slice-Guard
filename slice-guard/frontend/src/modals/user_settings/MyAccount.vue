@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useAuthStore } from '../../store/auth';
+import UserAvatar from '../../components/UserAvatar.vue';
 import { apiFetch } from '../../services/api';
 import Button from '../../components/Button.vue';
 
 const auth = useAuthStore();
 const name = ref(auth.user?.name ?? '');
-const initials = computed(() => {
-    const base = auth.user?.name || auth.user?.email || '';
-    return base.charAt(0);
-});
 
 async function updateName() {
     if (!auth.user) {
@@ -57,16 +54,16 @@ async function onAvatarChange(e: Event) {
         </div>
 
         <div class="flex items-center gap-4">
-            <img
-                v-if="auth.user?.avatar_url"
-                :src="auth.user.avatar_url"
-                class="h-24 w-24 rounded-full object-cover"
+            <UserAvatar
+                v-if="auth.user"
+                :user="auth.user"
+                size="size-24"
             />
             <div
                 v-else
                 class="flex h-24 w-24 items-center justify-center rounded-full bg-gray-500 text-2xl text-white"
             >
-                {{ initials }}
+                ?
             </div>
             <div>
                 <input

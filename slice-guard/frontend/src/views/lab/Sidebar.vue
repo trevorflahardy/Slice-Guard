@@ -17,6 +17,7 @@ import type { Channel } from '@shared/db/channel';
 import { ChannelType } from '@shared/db/channel';
 import ChannelItem from './channels/ChannelItem.vue';
 import ContextMenu, { type ContextMenuItem } from '../../components/ContextMenu.vue';
+import UserAvatar from '../../components/UserAvatar.vue';
 
 interface ChannelNode {
     channel: Channel;
@@ -39,7 +40,7 @@ const labSettingsModal = useModal();
 const router = useRouter();
 
 const navClass = ref(
-    'text-sm text-fg-primary hover:text-pretty rounded-lg w-full transition-all duration-250 py-1 px-4 hover:shadow-md',
+    'text-sm text-fg-primary hover:text-pretty rounded-lg w-full transition-all duration-100 py-1 px-4 hover:shadow-md',
 );
 
 const navIsActive = (name: string) => {
@@ -47,11 +48,6 @@ const navIsActive = (name: string) => {
 };
 
 const isActiveClass = ref('shadow-md dark:shadow-surface dark:shadow-sm');
-
-const initials = computed(() => {
-    const name = auth.user?.name || auth.user?.email || '';
-    return name.charAt(0);
-});
 
 const dropdownOptions = computed(() => {
     const perms = labsStore.getLabPermissions(Number(labId.value));
@@ -253,16 +249,16 @@ const sidebarMenuItems: ContextMenuItem[] = [
         <hr class="border-fg-secondary mt-auto" />
 
         <div class="flex flex-row items-center justify-start gap-2 rounded-xl">
-            <img
-                v-if="auth.user?.avatar_url"
-                :src="auth.user.avatar_url"
-                class="h-10 w-10 rounded-full object-cover drop-shadow-sm"
+            <UserAvatar
+                v-if="auth.user"
+                :user="auth.user"
+                size="size-10"
             />
             <div
                 v-else
                 class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-500 text-white drop-shadow-sm"
             >
-                {{ initials }}
+                ?
             </div>
 
             <div>

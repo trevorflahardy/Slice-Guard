@@ -10,8 +10,6 @@ const route = useRoute();
 const labs = useLabsStore();
 const labId = computed(() => Number(route.params.id));
 const lab = computed(() => labs.getLab(labId.value));
-const loading = computed(() => lab.value === null);
-const error = computed(() => (lab.value ? '' : 'Failed to load lab'));
 </script>
 
 <template>
@@ -28,11 +26,7 @@ const error = computed(() => (lab.value ? '' : 'Failed to load lab'));
                 class="no-scrollbar max-h-screen w-full flex-1 overflow-y-scroll scroll-smooth p-6"
             >
                 <!-- Actual insert content-->
-                <router-view
-                    :lab="lab"
-                    :error="error"
-                    :loading="loading"
-                />
+                <router-view />
             </div>
 
             <!--User list for lab layout-->

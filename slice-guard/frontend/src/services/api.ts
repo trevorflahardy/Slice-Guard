@@ -1,6 +1,7 @@
 import { useAuthStore } from '../store/auth';
 
-const API_URL = (import.meta as any).env.VITE_API_URL ?? '/api';
+const API_URL =
+    (import.meta as unknown as { env: { VITE_API_URL?: string } }).env.VITE_API_URL ?? '/api';
 
 export function apiFetch(input: string, init: RequestInit = {}) {
     const auth = useAuthStore();

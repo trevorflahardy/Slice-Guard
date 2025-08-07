@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, type Component } from 'vue';
 
 interface DropdownOption {
     id: number | string;
     name: string;
-    icon?: any;
+    icon?: Component;
     variant?: 'danger';
 }
 
@@ -16,6 +16,7 @@ interface Props {
 }
 
 interface Emits {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
     (e: 'update:modelValue', value: number | string | null | (number | string)[]): void;
 }
 

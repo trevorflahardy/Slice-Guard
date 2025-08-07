@@ -6,7 +6,7 @@ export class WebSocketClient {
     private ws: WebSocket | null = null;
     private url: string;
     private reconnectId: number | null = null;
-    private listeners = new Map<WsEvent, Set<Listener<any>>>();
+    private listeners = new Map<WsEvent, Set<Listener>>();
 
     constructor(url: string) {
         this.url = url;
@@ -40,7 +40,7 @@ export class WebSocketClient {
         });
     }
 
-    send(op: WsEvent, d: any) {
+    send(op: WsEvent, d: unknown) {
         this.ws?.send(JSON.stringify({ op, d }));
     }
 
@@ -48,11 +48,11 @@ export class WebSocketClient {
         if (!this.listeners.has(op)) {
             this.listeners.set(op, new Set());
         }
-        this.listeners.get(op)!.add(cb as Listener<any>);
+        this.listeners.get(op)!.add(cb as Listener);
     }
 
     removeListener<K extends WsEvent>(op: K, cb: Listener<K>) {
-        this.listeners.get(op)?.delete(cb as Listener<any>);
+        this.listeners.get(op)?.delete(cb as Listener);
     }
 
     private dispatch(msg: WsPayloadUnion) {
@@ -64,9 +64,9 @@ export class WebSocketClient {
         if (!set) {
             return;
         }
-        for (const cb of Array.from(set)) {
+        for (const cb of Array.from(set) as Listener[]) {
             try {
-                (cb as Listener<typeof msg.op>)(msg.d as any);
+                cb(msg.d as never);
             } catch (err) {
                 console.error(err);
             }
@@ -74,5 +74,7 @@ export class WebSocketClient {
     }
 }
 
-const WS_URL = (import.meta as any).env.VITE_WS_URL ?? 'ws://localhost:3000/ws';
+const WS_URL =
+    (import.meta as unknown as { env: { VITE_WS_URL?: string } }).env.VITE_WS_URL ??
+    'ws://localhost:3000/ws';
 export const ws = new WebSocketClient(WS_URL);

@@ -28,7 +28,9 @@ const members = computed(() => {
     if (!lab.value) {
         return [];
     }
-    return labStore.getLabMembers(lab.value.id) || [];
+    return labStore
+        .getLabMembers(lab.value.id)
+        .map((m) => ({ member: m, user: labStore.getUser(m.user_id) }));
 });
 
 const roles = computed(() => {

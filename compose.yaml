@@ -49,6 +49,15 @@ services:
         restart: unless-stopped
         ports:
             - '3000:3000'
+        develop:
+            watch:
+                - action: sync+restart
+                  path: ./slice-guard/backend
+                  target: /usr/src/app/backend
+                  ignore:
+                      - node_modules/
+                - action: rebuild
+                  path: ./slice-guard/backend/package.json
 
 volumes:
     postgres:

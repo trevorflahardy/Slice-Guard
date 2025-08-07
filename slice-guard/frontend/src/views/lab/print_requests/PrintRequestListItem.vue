@@ -10,6 +10,7 @@ import { useLabsStore } from '../../../store/labs';
 import { useAuthStore } from '../../../store/auth';
 import { hasLabPermission } from '../../../utils/permissions';
 import { LabPermission } from '@shared/db/lab';
+import UserAvatar from '../../../components/UserAvatar.vue';
 
 interface Props {
     entry: RequestItem;
@@ -57,7 +58,7 @@ watch(entry, (val) => {
     }
 });
 
-watch(statusModel, async (val, _old) => {
+watch(statusModel, async (val) => {
     const current = entry.value.request.is_closed ? 'closed' : 'open';
     // Ignore updates coming from external changes
     if (val === current) {
@@ -123,6 +124,10 @@ watch(tagIds, async (val, old) => {
 });
 
 const tagOptions = computed(() => allTags.value.map((t) => ({ id: t.id, name: t.name })));
+
+const author = computed(
+    () => entry.value.user ?? labs.getUser(entry.value.request.user_id) ?? null,
+);
 </script>
 
 <template>
@@ -138,16 +143,16 @@ const tagOptions = computed(() => allTags.value.map((t) => ({ id: t.id, name: t.
                 {{ entry.request.title || '[No title given]' }}
             </h3>
 
-            <img
-                v-if="entry.user?.avatar_url"
-                :src="entry.user.avatar_url"
-                class="h-8 w-8 rounded-full object-cover"
+            <UserAvatar
+                v-if="author"
+                :user="author"
+                size="size-8"
             />
             <div
                 v-else
                 class="text-fg-secondary flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 text-xs"
             >
-                {{ entry.user?.name?.charAt(0) || '?' }}
+                ?
             </div>
         </div>
 
@@ -155,7 +160,7 @@ const tagOptions = computed(() => allTags.value.map((t) => ({ id: t.id, name: t.
         <div class="space-y-1">
             <div class="text-fg-secondary text-xs">
                 <span class="underline decoration-dashed">#{{ entry.request.id }}</span>
-                by {{ entry.user?.name || entry.user?.email || 'Unknown' }}
+                by {{ author?.name || author?.email || 'Unknown' }}
             </div>
 
             <!-- Human readable date of when this ticket was created (with time)-->

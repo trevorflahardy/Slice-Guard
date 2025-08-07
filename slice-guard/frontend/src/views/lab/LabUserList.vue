@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import type { Lab } from '@shared/db/lab';
 import { useLabsStore } from '../../store/labs';
 import SearchBar from '../../components/SearchBar.vue';
+import UserAvatar from '../../components/UserAvatar.vue';
 
 const props = defineProps<{
     lab: Lab | null;
@@ -16,21 +17,17 @@ const members = computed(() => {
         return [];
     }
 
-    return labs.getLabMembers(props.lab.id) || [];
+    return labs.getLabMembers(props.lab.id);
 });
 
 const categorized = computed(() => {
-    const map: Record<string, { id: number; name: string; avatar_url?: string | null }[]> = {};
+    const map: Record<string, { id: number; user: ReturnType<typeof labs.getUser> }[]> = {};
     for (const m of members.value) {
-        const category = m.member.roles[0]?.name ?? 'Member';
+        const category = m.roles[0]?.name ?? 'Member';
         if (!map[category]) {
             map[category] = [];
         }
-        map[category].push({
-            id: m.member.user_id,
-            name: m.user?.name ?? '',
-            avatar_url: m.user?.avatar_url,
-        });
+        map[category].push({ id: m.user_id, user: labs.getUser(m.user_id) });
     }
     return map;
 });
@@ -40,9 +37,9 @@ const filteredMembers = computed(() => {
         return categorized.value;
     }
     const lower = search.value.toLowerCase();
-    const result: Record<string, { id: number; name: string; avatar_url?: string | null }[]> = {};
+    const result: Record<string, { id: number; user: ReturnType<typeof labs.getUser> }[]> = {};
     for (const [category, users] of Object.entries(categorized.value)) {
-        const filtered = users.filter((u) => u.name.toLowerCase().includes(lower));
+        const filtered = users.filter((u) => (u.user?.name || '').toLowerCase().includes(lower));
         if (filtered.length > 0) {
             result[category] = filtered;
         }
@@ -72,16 +69,16 @@ const filteredMembers = computed(() => {
             <!-- Users in this category -->
             <ul class="space-y-1">
                 <li
-                    v-for="user in users"
-                    :key="user.id"
+                    v-for="u in users"
+                    :key="u.id"
                 >
                     <div
                         class="text-fg-primary flex items-center justify-start gap-3 rounded-xl p-2 transition-all duration-200 hover:text-black hover:shadow-md"
                     >
-                        <img
-                            v-if="user.avatar_url"
-                            :src="user.avatar_url"
-                            class="h-7 w-7 flex-none rounded-full object-cover"
+                        <UserAvatar
+                            v-if="u.user"
+                            :user="u.user"
+                            size="size-7"
                         />
                         <div
                             v-else
@@ -89,7 +86,7 @@ const filteredMembers = computed(() => {
                         ></div>
 
                         <span class="truncate text-sm">
-                            {{ user.name }}
+                            {{ u.user?.name || u.user?.email || u.id }}
                         </span>
                     </div>
                 </li>

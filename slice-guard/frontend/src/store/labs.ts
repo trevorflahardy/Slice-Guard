@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import type { RequestTag } from '@shared/db/request';
 import type { LabState, PrintRequestEvent, MemberEvent } from '@shared/payloads/ws';
-import type { LabInvite, LabRole, Lab } from '@shared/db/lab';
+import type { LabInvite, LabRole, Lab, LabMember } from '@shared/db/lab';
 import type { Channel } from '@shared/db/channel';
 import type { User } from '@shared/db/user';
 import type { Message } from '@shared/db/message';
@@ -31,7 +31,7 @@ export const useLabsStore = defineStore('labs', {
         // Lab-scoped data indexed by labId
         channels: new Map<LabId, Map<ChannelId, Channel>>(),
         roles: new Map<LabId, Map<RoleId, LabRole>>(),
-        members: new Map<LabId, Map<UserId, MemberEvent>>(),
+        members: new Map<LabId, Map<UserId, LabMember>>(),
         invites: new Map<LabId, Map<InviteId, LabInvite>>(),
         tags: new Map<LabId, Map<TagId, RequestTag>>(),
         requests: new Map<LabId, PrintRequestEvent[]>(),
@@ -40,6 +40,7 @@ export const useLabsStore = defineStore('labs', {
 
         // Global lookups for convenience
         channelToLab: new Map<ChannelId, LabId>(), // channelId -> labId
+        users: new Map<UserId, User>(), // userId -> User
     }),
 
     getters: {
@@ -62,6 +63,11 @@ export const useLabsStore = defineStore('labs', {
         getLabMembers: (state) => (labId: LabId) => {
             const members = state.members.get(labId);
             return members ? Array.from(members.values()) : [];
+        },
+
+        /** Get a user by id */
+        getUser: (state) => (userId: UserId) => {
+            return state.users.get(userId) || null;
         },
 
         /** Get invites for a lab as array */
@@ -105,6 +111,7 @@ export const useLabsStore = defineStore('labs', {
             this.messages.clear();
             this.permissions.clear();
             this.channelToLab.clear();
+            this.users.clear();
 
             // Populate from LabState array
             for (const labState of labStates) {
@@ -153,10 +160,13 @@ export const useLabsStore = defineStore('labs', {
             }
             this.roles.set(labId, rolesMap);
 
-            // Store members
-            const membersMap = new Map<MemberId, MemberEvent>();
+            // Store members and cache users
+            const membersMap = new Map<MemberId, LabMember>();
             for (const member of labState.members) {
-                membersMap.set(member.member.user_id, member);
+                if (member.user) {
+                    this.users.set(member.user.id, member.user);
+                }
+                membersMap.set(member.member.user_id, member.member);
             }
             this.members.set(labId, membersMap);
 
@@ -174,7 +184,12 @@ export const useLabsStore = defineStore('labs', {
             }
             this.tags.set(labId, tagsMap);
 
-            // Store requests
+            // Store requests and cache request authors
+            for (const req of labState.requests) {
+                if (req.user) {
+                    this.users.set(req.user.id, req.user);
+                }
+            }
             this.requests.set(labId, labState.requests);
 
             // Initialize messages map
@@ -286,6 +301,9 @@ export const useLabsStore = defineStore('labs', {
                 console.debug('[labs] addRequest', labId, entry);
             }
 
+            if (entry.user) {
+                this.users.set(entry.user.id, entry.user);
+            }
             const requests = this.requests.get(labId);
             if (requests) {
                 requests.unshift(entry);
@@ -297,6 +315,9 @@ export const useLabsStore = defineStore('labs', {
                 console.debug('[labs] updateRequest', labId, entry);
             }
 
+            if (entry.user) {
+                this.users.set(entry.user.id, entry.user);
+            }
             const requests = this.requests.get(labId);
             if (!requests) {
                 return;
@@ -366,9 +387,12 @@ export const useLabsStore = defineStore('labs', {
                 console.debug('[labs] addMember', labId, event);
             }
 
+            if (event.user) {
+                this.users.set(event.user.id, event.user);
+            }
             const members = this.members.get(labId);
             if (members) {
-                members.set(event.member.user_id, event);
+                members.set(event.member.user_id, event.member);
             }
         },
         /** Remove member by user id. */
@@ -459,29 +483,13 @@ export const useLabsStore = defineStore('labs', {
                 roles.delete(roleId);
             }
         },
-        /** Update user info across members and requests. */
+        /** Cache or update a user's public profile information. */
         updateUser(user: User) {
             if (DEV) {
                 console.debug('[labs] updateUser', user);
             }
 
-            // Update user info in all members across all labs
-            for (const members of this.members.values()) {
-                for (const memberEvent of members.values()) {
-                    if (memberEvent.user?.id === user.id) {
-                        memberEvent.user = user;
-                    }
-                }
-            }
-
-            // Update user info in all requests across all labs
-            for (const requests of this.requests.values()) {
-                for (const request of requests) {
-                    if (request.user?.id === user.id) {
-                        request.user = user;
-                    }
-                }
-            }
+            this.users.set(user.id, user);
         },
         /** Set initial messages for a channel. */
         setMessages(channelId: ChannelId, msgs: Message[]) {

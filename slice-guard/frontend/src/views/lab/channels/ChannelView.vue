@@ -147,12 +147,11 @@ onMounted(() => {
             >
                 <ChannelMessage
                     :message="m"
-                    :author="null"
-                >
-                </ChannelMessage>
+                    :author="labs.getUser(m.user_id)!"
+                />
                 <div class="flex items-baseline gap-2">
                     <span class="text-fg-secondary text-xs font-medium">
-                        User {{ m.user_id }}
+                        {{ labs.getUser(m.user_id)?.name || 'User ' + m.user_id }}
                     </span>
                     <span class="text-fg-tertiary text-xs">
                         {{ new Date(m.created_at).toLocaleTimeString() }}

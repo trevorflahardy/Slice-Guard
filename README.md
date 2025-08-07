@@ -100,6 +100,15 @@ Ensure the bucket exists and the credentials have read/write access.
 
 # Developmental Preview Images
 
+## Aug 7th Update
+
+A basic channel system has been implemented with multiple client support. Dynamic channels and categories. Improvements to the sidebar are to come soon as it seems to be laggy. A large area of focus is going to be performance improvements in the following days, as I worry about the project's scalability in its current... mangled state.
+
+Regardless, this is a large milestone! Of course, UI improvements will be coming once the scaffolding has been put into place!
+
+<img width="1365" height="744" alt="image" src="https://github.com/user-attachments/assets/92099ce7-5f2b-4dae-9e5d-1677891765c8" />
+
+
 ## Aug 6th Update
 
 Added lab avatars, websocket updates with multi-client support, lab invite codes w/ expiration dates and max uses, leaving and joining multiple labs, and a better sidebar. Will add custom channels and better role permissions managements soon. Of course, all the styling will be cleaned later down the road after core infastructure is set in place.

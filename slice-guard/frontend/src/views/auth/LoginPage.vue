@@ -5,9 +5,9 @@ import Button from '../../components/Button.vue';
 import { login } from '../../services/auth';
 import { useAuthStore } from '../../store/auth';
 
-const email = ref('');
-const password = ref('');
-const error = ref('');
+const email = ref<string>('');
+const password = ref<string>('');
+const error = ref<string>('');
 const router = useRouter();
 const auth = useAuthStore();
 

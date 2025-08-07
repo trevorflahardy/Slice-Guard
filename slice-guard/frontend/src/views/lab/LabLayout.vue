@@ -10,7 +10,7 @@ const route = useRoute();
 const labs = useLabsStore();
 const labId = computed(() => Number(route.params.id));
 const lab = computed(() => labs.getLab(labId.value)?.lab ?? null);
-const loading = computed(() => lab.value == null);
+const loading = computed(() => lab.value === null);
 const error = computed(() => (lab.value ? '' : 'Failed to load lab'));
 </script>
 

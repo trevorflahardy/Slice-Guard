@@ -1,7 +1,7 @@
 import { LabPermission, type LabMember } from '@shared/db/lab';
 
 export function hasLabPermission(perms: number | null, perm: LabPermission): boolean {
-    if (perms == null) {
+    if (perms === null) {
         return false;
     }
     return (Number(perms) & LabPermission.ALL) !== 0 || (Number(perms) & perm) !== 0;

@@ -1,8 +1,8 @@
-import type { User } from "@shared/db/user";
-import type { SQL } from "bun";
+import type { User } from '@shared/db/user';
+import type { SQL } from 'bun';
 
-export * from "./tokens";
-export * from "./api";
+export * from './tokens';
+export * from './api';
 
 /** Row returned from the database containing a user's password hash. */
 interface UserRow {
@@ -13,13 +13,10 @@ interface UserRow {
  * Extension of the public facing {@link User} interface with the internal
  * password hash used for authentication.
  */
-export interface UserWithPassword extends User, UserRow { }
+export interface UserWithPassword extends User, UserRow {}
 
 /** Fetch a user by their e-mail address. */
-export async function findUserByEmail(
-    db: SQL,
-    email: string
-): Promise<UserWithPassword | null> {
+export async function findUserByEmail(db: SQL, email: string): Promise<UserWithPassword | null> {
     const rows: UserWithPassword[] = await db`
         SELECT id, email, name, avatar_url, created_at, password_hash
           FROM auth.users
@@ -30,10 +27,7 @@ export async function findUserByEmail(
 }
 
 /** Fetch a user by their database id. */
-export async function findUserById(
-    db: SQL,
-    id: number
-): Promise<UserWithPassword | null> {
+export async function findUserById(db: SQL, id: number): Promise<UserWithPassword | null> {
     const rows: UserWithPassword[] = await db`
         SELECT id, email, name, avatar_url, created_at, password_hash
           FROM auth.users
@@ -44,10 +38,7 @@ export async function findUserById(
 }
 
 /** Fetch a user by id returning only public fields. */
-export async function findPublicUserById(
-    db: SQL,
-    id: number
-): Promise<User | null> {
+export async function findPublicUserById(db: SQL, id: number): Promise<User | null> {
     const rows: User[] = await db`
         SELECT id, email, name, avatar_url, created_at
           FROM auth.users
@@ -63,7 +54,7 @@ export async function createUser(
     email: string,
     passwordHash: string,
     name: string,
-    avatarUrl: string | null = null
+    avatarUrl: string | null = null,
 ): Promise<UserWithPassword> {
     const rows: UserWithPassword[] = await db`
         INSERT INTO auth.users (email, password_hash, name, avatar_url)
@@ -74,11 +65,7 @@ export async function createUser(
 }
 
 /** Update a user's avatar URL. */
-export async function setAvatarUrl(
-    db: SQL,
-    userId: number,
-    url: string | null
-): Promise<User> {
+export async function setAvatarUrl(db: SQL, userId: number, url: string | null): Promise<User> {
     const rows: User[] = await db`
         UPDATE auth.users
            SET avatar_url = ${url}
@@ -89,11 +76,7 @@ export async function setAvatarUrl(
 }
 
 /** Update a user's display name. */
-export async function setName(
-    db: SQL,
-    userId: number,
-    name: string
-): Promise<User> {
+export async function setName(db: SQL, userId: number, name: string): Promise<User> {
     const rows: User[] = await db`
         UPDATE auth.users
            SET name = ${name}

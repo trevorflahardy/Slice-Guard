@@ -1,17 +1,17 @@
 {
-  "compilerOptions": {
-    "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleDetection": "force",
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "noEmit": true,
-    "baseUrl": "../",
-    "paths": {
-      "@slice-guard/*": ["./*"],
-      "@shared/*": ["./shared/*"]
+    "compilerOptions": {
+        "lib": ["ESNext"],
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleDetection": "force",
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true,
+        "noEmit": true,
+        "baseUrl": "../",
+        "paths": {
+            "@slice-guard/*": ["./*"],
+            "@shared/*": ["./shared/*"]
+        }
     }
-  }
 }

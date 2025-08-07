@@ -1,10 +1,10 @@
-import { type Lab, type LabRole, LabPermission } from "@shared/db/lab";
-import type { SQL } from "bun";
-import { addMember } from "./member";
-import { createRole } from "./role";
+import { type Lab, type LabRole, LabPermission } from '@shared/db/lab';
+import type { SQL } from 'bun';
+import { addMember } from './member';
+import { createRole } from './role';
 
-export interface LabRow extends Lab { }
-export interface LabRoleRow extends LabRole { }
+export interface LabRow extends Lab {}
+export interface LabRoleRow extends LabRole {}
 
 export * from "./member";
 export * from "./permissions";
@@ -12,6 +12,7 @@ export * from "./role";
 export * from "./invite";
 export * from "./channel";
 export * from "./message";
+
 
 /**
  * Creates a new lab.
@@ -28,7 +29,7 @@ export async function createLab(
     ownerId: number,
     name: string,
     description: string | null = null,
-    iconUrl: string | null = null
+    iconUrl: string | null = null,
 ): Promise<LabRow> {
     const rows: LabRow[] = await db`
         INSERT INTO lab.labs (owner_id, name, description, icon_url)
@@ -38,12 +39,7 @@ export async function createLab(
     const lab: LabRow = rows[0];
 
     // Create a default role for every member, @everyone
-    const role = await createRole(
-        db,
-        lab.id,
-        "everyone",
-        LabPermission.READ | LabPermission.WRITE
-    );
+    const role = await createRole(db, lab.id, 'everyone', LabPermission.READ | LabPermission.WRITE);
     await db`
         UPDATE lab.labs
            SET default_role_id = ${role.id}
@@ -84,7 +80,7 @@ export async function updateLab(
     labId: number,
     name: string,
     description: string | null,
-    iconUrl: string | null
+    iconUrl: string | null,
 ): Promise<LabRow> {
     const rows: LabRow[] = await db`
         UPDATE lab.labs
@@ -104,10 +100,7 @@ export async function getLab(db: SQL, id: number): Promise<LabRow | null> {
     return rows[0] ?? null;
 }
 
-export async function listLabsForUser(
-    db: SQL,
-    userId: number
-): Promise<LabRow[]> {
+export async function listLabsForUser(db: SQL, userId: number): Promise<LabRow[]> {
     const rows: LabRow[] = await db`
         SELECT l.id, l.owner_id, l.name, l.description, l.icon_url, l.default_role_id, l.created_at
           FROM lab.labs l

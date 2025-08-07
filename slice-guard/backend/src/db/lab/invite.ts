@@ -1,5 +1,5 @@
-import type { SQL } from "bun";
-import type { LabInvite } from "@shared/db/lab";
+import type { SQL } from 'bun';
+import type { LabInvite } from '@shared/db/lab';
 
 export interface LabInviteRow extends LabInvite {}
 
@@ -8,7 +8,7 @@ export async function createInvite(
     labId: number,
     code: string,
     maxUses: number | null,
-    expiresAt: Date | null
+    expiresAt: Date | null,
 ): Promise<LabInviteRow> {
     const rows: LabInviteRow[] = await db`
         INSERT INTO lab.invites (lab_id, code, max_uses, expires_at)
@@ -32,7 +32,7 @@ export async function updateInvite(
     inviteId: number,
     labId: number,
     maxUses: number | null,
-    expiresAt: Date | null
+    expiresAt: Date | null,
 ): Promise<LabInviteRow> {
     const rows: LabInviteRow[] = await db`
         UPDATE lab.invites

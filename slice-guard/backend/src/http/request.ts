@@ -33,7 +33,7 @@ import { WsEvent, type PrintRequestEvent } from '@shared/payloads/ws';
  */
 export const create = withAuth(async (req, userId, state, params) => {
     const labId = Number(params.labId);
-    const { file, metadata, title, description } = await req.json() as RequestCreatePayload;
+    const { file, metadata, title, description } = (await req.json()) as RequestCreatePayload;
 
     state.logger.debug({ labId, userId }, 'Creating print request');
     const perms = await getMemberRolePermissions(state.db, labId, userId);
@@ -43,7 +43,15 @@ export const create = withAuth(async (req, userId, state, params) => {
 
     const buffer = Buffer.from(file, 'base64');
     const compressed = compressRequestFile(buffer);
-    const result = await createPrintRequest(state.db, labId, userId, compressed, metadata, title, description ?? null);
+    const result = await createPrintRequest(
+        state.db,
+        labId,
+        userId,
+        compressed,
+        metadata,
+        title,
+        description ?? null,
+    );
     state.logger.debug({ id: result.id }, 'Created print request');
 
     // Broadcast the new request to other connected clients
@@ -65,11 +73,14 @@ export const list = withAuth(async (req, userId, state, params) => {
     state.logger.debug({ labId, userId }, 'Listing requests');
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     let rows = await getUserPrintRequests(state.db, labId, userId);
-    if (perms !== null && (perms & LabPermission.MANAGE_REQUESTS)) {
+    if (perms !== null && perms & LabPermission.MANAGE_REQUESTS) {
         rows = await getAllPrintRequests(state.db, labId);
     }
-    if (stateFilter === 'open') rows = rows.filter(r => !r.is_closed);
-    else if (stateFilter === 'closed') rows = rows.filter(r => r.is_closed);
+    if (stateFilter === 'open') {
+        rows = rows.filter((r) => !r.is_closed);
+    } else if (stateFilter === 'closed') {
+        rows = rows.filter((r) => r.is_closed);
+    }
     const results = [] as any[];
     for (const r of rows) {
         const user = await findPublicUserById(state.db, r.user_id);
@@ -92,10 +103,15 @@ export const getRoute = withAuth(async (_req, userId, state, params) => {
     const labId = Number(params.labId);
     const requestId = Number(params.requestId);
     const row = await getPrintRequestById(state.db, requestId);
-    if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
+    if (!row || row.lab_id !== labId) {
+        return new Response('Not found', { status: 404 });
+    }
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     console.log('debug', row.user_id, userId, perms);
-    if (Number(row.user_id) !== userId && (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))) {
+    if (
+        Number(row.user_id) !== userId &&
+        (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))
+    ) {
         return new Response('Unauthorized', { status: 403 });
     }
     const user = await findPublicUserById(state.db, row.user_id);
@@ -108,11 +124,12 @@ export const getRoute = withAuth(async (_req, userId, state, params) => {
  */
 export const createTagRoute = withAuth(async (req, userId, state, params) => {
     const labId = Number(params.labId);
-    const { name, color, isDefault } = await req.json() as TagCreatePayload;
+    const { name, color, isDefault } = (await req.json()) as TagCreatePayload;
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES))
+    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES)) {
         return new Response('Unauthorized', { status: 403 });
+    }
     state.logger.debug({ labId, name, color }, 'Creating tag');
     const tag = await createTag(state.db, labId, name, color, isDefault ?? false);
     state.logger.debug({ id: tag.id }, 'Created tag');
@@ -126,11 +143,12 @@ export const createTagRoute = withAuth(async (req, userId, state, params) => {
 export const setTagDefaultRoute = withAuth(async (req, userId, state, params) => {
     const labId = Number(params.labId);
     const tagId = Number(params.tagId);
-    const { isDefault } = await req.json() as TagSetDefaultPayload;
+    const { isDefault } = (await req.json()) as TagSetDefaultPayload;
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES))
+    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES)) {
         return new Response('Unauthorized', { status: 403 });
+    }
 
     state.logger.debug({ tagId, isDefault }, 'Setting tag default');
     const tag = await setTagDefault(state.db, tagId, isDefault);
@@ -145,7 +163,9 @@ export const setTagDefaultRoute = withAuth(async (req, userId, state, params) =>
 export const listTagsRoute = withAuth(async (_req, userId, state, params) => {
     const labId = Number(params.labId);
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (perms === null) return new Response('Unauthorized', { status: 403 });
+    if (perms === null) {
+        return new Response('Unauthorized', { status: 403 });
+    }
     const tags = await listTags(state.db, labId);
     return Response.json(tags);
 });
@@ -158,13 +178,18 @@ export const assignTagRoute = withAuth(async (req, userId, state, params) => {
     const requestId = Number(params.requestId);
     const tagId = Number(params.tagId);
 
-    const { assign } = await req.json() as RequestAssignTagPayload;
+    const { assign } = (await req.json()) as RequestAssignTagPayload;
     state.logger.debug({ requestId, tagId, assign }, 'Updating tag assignment');
 
     const row = await getPrintRequestById(state.db, requestId);
-    if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
+    if (!row || row.lab_id !== labId) {
+        return new Response('Not found', { status: 404 });
+    }
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (Number(row.user_id) !== userId && (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))) {
+    if (
+        Number(row.user_id) !== userId &&
+        (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))
+    ) {
         return new Response('Unauthorized', { status: 403 });
     }
 
@@ -188,11 +213,16 @@ export const assignTagRoute = withAuth(async (req, userId, state, params) => {
 export const setRequestStateRoute = withAuth(async (req, userId, state, params) => {
     const labId = Number(params.labId);
     const requestId = Number(params.requestId);
-    const { isClosed } = await req.json() as RequestStateUpdatePayload;
+    const { isClosed } = (await req.json()) as RequestStateUpdatePayload;
     const row = await getPrintRequestById(state.db, requestId);
-    if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
+    if (!row || row.lab_id !== labId) {
+        return new Response('Not found', { status: 404 });
+    }
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (row.user_id !== userId && (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))) {
+    if (
+        row.user_id !== userId &&
+        (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))
+    ) {
         return new Response('Unauthorized', { status: 403 });
     }
     const updated = await setRequestClosed(state.db, requestId, isClosed);
@@ -209,7 +239,9 @@ export const deleteRoute = withAuth(async (_req, userId, state, params) => {
     const labId = Number(params.labId);
     const requestId = Number(params.requestId);
     const row = await getPrintRequestById(state.db, requestId);
-    if (!row || row.lab_id !== labId) return new Response('Not found', { status: 404 });
+    if (!row || row.lab_id !== labId) {
+        return new Response('Not found', { status: 404 });
+    }
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     if (row.user_id !== userId && !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS)) {
         return new Response('Unauthorized', { status: 403 });
@@ -227,8 +259,9 @@ export const deleteTagRoute = withAuth(async (_req, userId, state, params) => {
     const tagId = Number(params.tagId);
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES))
+    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES)) {
         return new Response('Unauthorized', { status: 403 });
+    }
 
     await deleteTag(state.db, tagId);
     state.broadcast({ op: WsEvent.TAG_DELETED, d: { labId, tagId } });

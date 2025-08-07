@@ -1,11 +1,11 @@
-import type { SQL } from "bun";
-import type { LabRoleRow } from ".";
+import type { SQL } from 'bun';
+import type { LabRoleRow } from '.';
 
 export async function createRole(
     db: SQL,
     labId: number,
     name: string,
-    permissions: number
+    permissions: number,
 ): Promise<LabRoleRow> {
     const rows: LabRoleRow[] = await db`
         INSERT INTO lab.roles (lab_id, name, permissions)
@@ -19,7 +19,7 @@ export async function updateRole(
     db: SQL,
     labId: number,
     roleId: number,
-    permissions: number
+    permissions: number,
 ): Promise<LabRoleRow> {
     const rows: LabRoleRow[] = await db`
         UPDATE lab.roles

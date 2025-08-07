@@ -1,49 +1,68 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { apiFetch } from '../services/api'
+import { ref } from 'vue';
+import { apiFetch } from '../services/api';
 
 interface Props {
-  labId: number
+    labId: number;
 }
-const props = defineProps<Props>()
-const emit = defineEmits(['close'])
+const props = defineProps<Props>();
+const emit = defineEmits(['close']);
 
-const hours = ref<number | null>(null)
-const maxUses = ref<number | null>(null)
+const hours = ref<number | null>(null);
+const maxUses = ref<number | null>(null);
 
 async function createInvite() {
-  await apiFetch(`/labs/${props.labId}/invites`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      maxUses: maxUses.value ?? null,
-      expiresIn: hours.value != null ? hours.value * 3600 : null,
-    }),
-  })
-  emit('close')
+    await apiFetch(`/labs/${props.labId}/invites`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            maxUses: maxUses.value ?? null,
+            expiresIn: hours.value != null ? hours.value * 3600 : null,
+        }),
+    });
+    emit('close');
 }
 </script>
 
 <template>
-  <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="emit('close')">
-      <div class="bg-surface-lowest rounded-xl p-6 w-80 space-y-4">
-        <h2 class="text-fg-primary text-lg font-semibold">Create Invite</h2>
-        <div class="space-y-1">
-          <label class="block text-sm text-fg-secondary">Valid for (hours)</label>
-          <input type="number" v-model.number="hours"
-            class="w-full bg-surface-low px-2 py-1 rounded-md text-fg-primary" />
+    <Teleport to="body">
+        <div
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            @click.self="emit('close')"
+        >
+            <div class="bg-surface-lowest w-80 space-y-4 rounded-xl p-6">
+                <h2 class="text-fg-primary text-lg font-semibold">Create Invite</h2>
+                <div class="space-y-1">
+                    <label class="text-fg-secondary block text-sm">Valid for (hours)</label>
+                    <input
+                        v-model.number="hours"
+                        type="number"
+                        class="bg-surface-low text-fg-primary w-full rounded-md px-2 py-1"
+                    />
+                </div>
+                <div class="space-y-1">
+                    <label class="text-fg-secondary block text-sm">Max uses</label>
+                    <input
+                        v-model.number="maxUses"
+                        type="number"
+                        class="bg-surface-low text-fg-primary w-full rounded-md px-2 py-1"
+                    />
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button
+                        class="bg-surface-high text-fg-primary rounded-md px-3 py-1"
+                        @click="emit('close')"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        class="bg-salem-800 rounded-md px-3 py-1 text-white"
+                        @click="createInvite"
+                    >
+                        Create
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="space-y-1">
-          <label class="block text-sm text-fg-secondary">Max uses</label>
-          <input type="number" v-model.number="maxUses"
-            class="w-full bg-surface-low px-2 py-1 rounded-md text-fg-primary" />
-        </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button @click="emit('close')" class="px-3 py-1 bg-surface-high rounded-md text-fg-primary">Cancel</button>
-          <button @click="createInvite" class="px-3 py-1 bg-salem-800 text-white rounded-md">Create</button>
-        </div>
-      </div>
-    </div>
-  </Teleport>
+    </Teleport>
 </template>

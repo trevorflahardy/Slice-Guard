@@ -1,22 +1,22 @@
 name: Backend Tests
 
 on:
-  push:
-    paths:
-      - 'slice-guard/backend/**'
-      - '.github/workflows/backend-tests.yml'
-  pull_request:
-    paths:
-      - 'slice-guard/backend/**'
-      - '.github/workflows/backend-tests.yml'
+    push:
+        paths:
+            - 'slice-guard/backend/**'
+            - '.github/workflows/backend-tests.yml'
+    pull_request:
+        paths:
+            - 'slice-guard/backend/**'
+            - '.github/workflows/backend-tests.yml'
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: 'latest'
-      - run: bun install
-      - run: bun test --cwd slice-guard/backend
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: oven-sh/setup-bun@v1
+              with:
+                  bun-version: 'latest'
+            - run: bun install
+            - run: bun test --cwd slice-guard/backend

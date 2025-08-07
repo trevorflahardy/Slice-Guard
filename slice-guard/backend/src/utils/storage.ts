@@ -1,4 +1,4 @@
-import { gzipSync } from "zlib";
+import { gzipSync } from 'zlib';
 
 export const MAX_UPLOAD_SIZE = 30 * 1024 * 1024; // 30MB
 

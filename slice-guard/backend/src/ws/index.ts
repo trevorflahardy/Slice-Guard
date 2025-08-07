@@ -1,15 +1,14 @@
 import { WsEvent, type WsPayloadUnion, type WsEventValue } from '@shared/payloads/ws';
 import type State from '../utils/state';
 import type { Server } from '../server';
-import { handlers, HandlerPayload, type Handler, type HandlerResponse } from "./handlers";
+import { handlers, HandlerPayload, type Handler, type HandlerResponse } from './handlers';
 import { ErrorCode, toErrorCodeValue, type ErrorCodeValue } from '@slice-guard/shared/ws/errors';
-
 
 export type WebSocketData = {
     created_at: number;
     id: string;
     userId: number;
-}
+};
 
 export type ServerWebSocket = Bun.ServerWebSocket<WebSocketData>;
 
@@ -19,24 +18,24 @@ export async function validateAndDispatchMessage(
     message: string | Buffer<ArrayBufferLike>,
     state: State,
 ): Promise<void> {
-    const raw = typeof message === "string" ? message : message.toString();
+    const raw = typeof message === 'string' ? message : message.toString();
     let data: WsPayloadUnion;
 
     try {
         data = JSON.parse(raw);
     } catch (err) {
-        server.logger.error({ err, raw }, "Failed to parse message");
+        server.logger.error({ err, raw }, 'Failed to parse message');
         return;
     }
 
     if (!data || data.d == null) {
-        server.logger.error({ data }, "Invalid payload received");
+        server.logger.error({ data }, 'Invalid payload received');
         return;
     }
 
     const handler: Handler<WsPayloadUnion> | undefined = handlers[data.op as WsEventValue];
     if (!handler) {
-        server.logger.error({ op: data.op }, "Unknown event");
+        server.logger.error({ op: data.op }, 'Unknown event');
         return;
     }
 
@@ -63,7 +62,7 @@ export async function validateAndDispatchMessage(
 
         ws.send(JSON.stringify(response));
     } catch (err) {
-        loggerChild.error({ err }, "Handler threw an exception");
+        loggerChild.error({ err }, 'Handler threw an exception');
         ws.send(
             JSON.stringify({
                 op: WsEvent.ERROR,

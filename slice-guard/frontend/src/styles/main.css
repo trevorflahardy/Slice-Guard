@@ -1,88 +1,88 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-  --radius-5xl: 3rem;
+    --radius-5xl: 3rem;
 }
 
 @utility no-scrollbar {
-  &::-webkit-scrollbar {
-    display: none;
-  }
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /*
+    /*
   * Custom branding colors
   */
 
-  --color-salem-50: #ecfff5;
-  --color-salem-100: #d3ffe8;
-  --color-salem-200: #aaffd3;
-  --color-salem-300: #69ffb2;
-  --color-salem-400: #21ff8a;
-  --color-salem-500: #00f268;
-  --color-salem-600: #00ca53;
-  --color-salem-700: #009e44;
-  --color-salem-800: #007f3c;
-  --color-salem-900: #026532;
-  --color-salem-950: #003919;
+    --color-salem-50: #ecfff5;
+    --color-salem-100: #d3ffe8;
+    --color-salem-200: #aaffd3;
+    --color-salem-300: #69ffb2;
+    --color-salem-400: #21ff8a;
+    --color-salem-500: #00f268;
+    --color-salem-600: #00ca53;
+    --color-salem-700: #009e44;
+    --color-salem-800: #007f3c;
+    --color-salem-900: #026532;
+    --color-salem-950: #003919;
 
-  --color-bird-flower-50: #fafcea;
-  --color-bird-flower-100: #f3f9c8;
-  --color-bird-flower-200: #ecf494;
-  --color-bird-flower-300: #e6ed57;
-  --color-bird-flower-400: #e5e629;
-  --color-bird-flower-500: #c7c11a;
-  --color-bird-flower-600: #b9a615;
-  --color-bird-flower-700: #937a15;
-  --color-bird-flower-800: #7a6019;
-  --color-bird-flower-900: #694f1a;
-  --color-bird-flower-950: #3d2b0b;
+    --color-bird-flower-50: #fafcea;
+    --color-bird-flower-100: #f3f9c8;
+    --color-bird-flower-200: #ecf494;
+    --color-bird-flower-300: #e6ed57;
+    --color-bird-flower-400: #e5e629;
+    --color-bird-flower-500: #c7c11a;
+    --color-bird-flower-600: #b9a615;
+    --color-bird-flower-700: #937a15;
+    --color-bird-flower-800: #7a6019;
+    --color-bird-flower-900: #694f1a;
+    --color-bird-flower-950: #3d2b0b;
 
-  /*
+    /*
   * Surface colors
   */
-  --color-surface-lowest: #f5f5f5;
-  --color-surface-low: #e8e8e8;
-  --color-surface: #bcbcbc;
-  --color-surface-high: #909090;
-  --color-surface-highest: #4f4f4f;
+    --color-surface-lowest: #f5f5f5;
+    --color-surface-low: #e8e8e8;
+    --color-surface: #bcbcbc;
+    --color-surface-high: #909090;
+    --color-surface-highest: #4f4f4f;
 
-  /**
+    /**
   * Text colors
   */
-  --color-fg-primary: #000000ff;
-  --color-fg-secondary: #3c3c4399;
-  --color-fg-tertiary: #3c3c434c;
-  --color-fg-quaternary: #3c3c432d;
-  --color-fg-inverse: #ffffffe6;
-  --color-fg-accent: #007aff;
+    --color-fg-primary: #000000ff;
+    --color-fg-secondary: #3c3c4399;
+    --color-fg-tertiary: #3c3c434c;
+    --color-fg-quaternary: #3c3c432d;
+    --color-fg-inverse: #ffffffe6;
+    --color-fg-accent: #007aff;
 }
 
 .dark {
-  /*
+    /*
   * Dark theme surface colors
   */
-  --color-surface-lowest: #000000;
-  --color-surface-low: #1c1c1e;
-  --color-surface: #2c2c2e;
-  --color-surface-high: #3a3a3c;
-  --color-surface-highest: #48484a;
+    --color-surface-lowest: #000000;
+    --color-surface-low: #1c1c1e;
+    --color-surface: #2c2c2e;
+    --color-surface-high: #3a3a3c;
+    --color-surface-highest: #48484a;
 
-  /*
+    /*
   * Dark theme text colors
   */
-  --color-fg-primary: #ffffffff;
-  --color-fg-secondary: #ebebf599;
-  --color-fg-tertiary: #ebebf54c;
-  --color-fg-quaternary: #ebebf52d;
-  --color-fg-inverse: #000000e6;
-  --color-fg-accent: #0a84ff;
+    --color-fg-primary: #ffffffff;
+    --color-fg-secondary: #ebebf599;
+    --color-fg-tertiary: #ebebf54c;
+    --color-fg-quaternary: #ebebf52d;
+    --color-fg-inverse: #000000e6;
+    --color-fg-accent: #0a84ff;
 }
 
 html {
-  overflow-y: scroll; /* Force scrollbar to always be present */
-  scrollbar-gutter: stable;
+    overflow-y: scroll; /* Force scrollbar to always be present */
+    scrollbar-gutter: stable;
 }

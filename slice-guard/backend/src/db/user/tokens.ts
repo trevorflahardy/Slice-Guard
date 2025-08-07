@@ -1,4 +1,4 @@
-import type { SQL } from "bun";
+import type { SQL } from 'bun';
 
 /** Raw row returned for refresh token queries. */
 export interface RefreshTokenRow {
@@ -14,7 +14,7 @@ export async function insertRefreshToken(
     db: SQL,
     userId: number,
     token: string,
-    expiresAt: Date
+    expiresAt: Date,
 ): Promise<RefreshTokenRow> {
     const rows: RefreshTokenRow[] = await db`
         INSERT INTO auth.refresh_tokens (user_id, token, expires_at)
@@ -25,10 +25,7 @@ export async function insertRefreshToken(
 }
 
 /** Retrieve a refresh token record if it exists. */
-export async function getRefreshToken(
-    db: SQL,
-    token: string
-): Promise<RefreshTokenRow | null> {
+export async function getRefreshToken(db: SQL, token: string): Promise<RefreshTokenRow | null> {
     const rows: RefreshTokenRow[] = await db`
         SELECT id, user_id, token, created_at, expires_at
           FROM auth.refresh_tokens
@@ -39,10 +36,7 @@ export async function getRefreshToken(
 }
 
 /** Delete a specific refresh token. */
-export async function deleteRefreshToken(
-    db: SQL,
-    token: string
-): Promise<void> {
+export async function deleteRefreshToken(db: SQL, token: string): Promise<void> {
     await db`
         DELETE FROM auth.refresh_tokens
          WHERE token = ${token}
@@ -50,10 +44,7 @@ export async function deleteRefreshToken(
 }
 
 /** Remove all refresh tokens belonging to a user. */
-export async function deleteTokensForUser(
-    db: SQL,
-    userId: number
-): Promise<void> {
+export async function deleteTokensForUser(db: SQL, userId: number): Promise<void> {
     await db`
         DELETE FROM auth.refresh_tokens
          WHERE user_id = ${userId}

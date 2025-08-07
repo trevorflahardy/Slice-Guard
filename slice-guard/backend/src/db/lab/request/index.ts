@@ -1,8 +1,8 @@
-import type { PrintRequest, RequestTag } from "@shared/db/request";
-import type { SQL } from "bun";
+import type { PrintRequest, RequestTag } from '@shared/db/request';
+import type { SQL } from 'bun';
 
-export interface PrintRequestRow extends PrintRequest { }
-export interface RequestTagRow extends RequestTag { }
+export interface PrintRequestRow extends PrintRequest {}
+export interface RequestTagRow extends RequestTag {}
 
 export * from './tag';
 
@@ -35,7 +35,7 @@ export async function createPrintRequest(
 export async function getUserPrintRequests(
     db: SQL,
     labId: number,
-    userId: number
+    userId: number,
 ): Promise<PrintRequestRow[]> {
     const rows: PrintRequestRow[] = await db`
         SELECT id, lab_id, user_id, title, file_data, metadata, description, is_closed, created_at
@@ -45,10 +45,7 @@ export async function getUserPrintRequests(
     return rows.map(normalizeRequest);
 }
 
-export async function getAllPrintRequests(
-    db: SQL,
-    labId: number,
-): Promise<PrintRequestRow[]> {
+export async function getAllPrintRequests(db: SQL, labId: number): Promise<PrintRequestRow[]> {
     const rows: PrintRequestRow[] = await db`
         SELECT id, lab_id, user_id, title, file_data, metadata, description, is_closed, created_at
           FROM lab.print_requests
@@ -83,10 +80,7 @@ export async function setRequestClosed(
     return normalizeRequest(rows[0]);
 }
 
-export async function deletePrintRequest(
-    db: SQL,
-    requestId: number,
-): Promise<void> {
+export async function deletePrintRequest(db: SQL, requestId: number): Promise<void> {
     await db`
         DELETE FROM lab.print_requests
          WHERE id = ${requestId}

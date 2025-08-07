@@ -1,6 +1,6 @@
-import type { SQL } from "bun";
+import type { SQL } from 'bun';
 
-import { type RequestTagRow } from ".";
+import { type RequestTagRow } from '.';
 
 function normalizeTag(row: RequestTagRow): RequestTagRow {
     return {
@@ -15,7 +15,7 @@ export async function createTag(
     labId: number,
     name: string,
     color: string,
-    isDefault = false
+    isDefault = false,
 ): Promise<RequestTagRow> {
     const rows: RequestTagRow[] = await db`
         INSERT INTO lab.request_tags (lab_id, name, color, is_default)
@@ -28,7 +28,7 @@ export async function createTag(
 export async function setTagDefault(
     db: SQL,
     tagId: number,
-    isDefault: boolean
+    isDefault: boolean,
 ): Promise<RequestTagRow> {
     const rows: RequestTagRow[] = await db`
         UPDATE lab.request_tags
@@ -39,11 +39,7 @@ export async function setTagDefault(
     return normalizeTag(rows[0]);
 }
 
-export async function assignTag(
-    db: SQL,
-    requestId: number,
-    tagId: number
-): Promise<void> {
+export async function assignTag(db: SQL, requestId: number, tagId: number): Promise<void> {
     await db`
         INSERT INTO lab.request_tag_assignments (request_id, tag_id)
              VALUES (${requestId}, ${tagId})
@@ -51,21 +47,14 @@ export async function assignTag(
     `;
 }
 
-export async function unassignTag(
-    db: SQL,
-    requestId: number,
-    tagId: number
-): Promise<void> {
+export async function unassignTag(db: SQL, requestId: number, tagId: number): Promise<void> {
     await db`
         DELETE FROM lab.request_tag_assignments
          WHERE request_id = ${requestId} AND tag_id = ${tagId}
     `;
 }
 
-export async function getTagsForRequest(
-    db: SQL,
-    requestId: number
-): Promise<RequestTagRow[]> {
+export async function getTagsForRequest(db: SQL, requestId: number): Promise<RequestTagRow[]> {
     const rows: RequestTagRow[] = await db`
         SELECT t.id, t.lab_id, t.name, t.color, t.is_default, t.created_at
           FROM lab.request_tag_assignments a
@@ -75,10 +64,7 @@ export async function getTagsForRequest(
     return rows.map(normalizeTag);
 }
 
-export async function listTags(
-    db: SQL,
-    labId: number,
-): Promise<RequestTagRow[]> {
+export async function listTags(db: SQL, labId: number): Promise<RequestTagRow[]> {
     const rows: RequestTagRow[] = await db`
         SELECT id, lab_id, name, color, is_default, created_at
           FROM lab.request_tags
@@ -87,10 +73,7 @@ export async function listTags(
     return rows.map(normalizeTag);
 }
 
-export async function deleteTag(
-    db: SQL,
-    tagId: number,
-): Promise<void> {
+export async function deleteTag(db: SQL, tagId: number): Promise<void> {
     await db`
         DELETE FROM lab.request_tags
          WHERE id = ${tagId}

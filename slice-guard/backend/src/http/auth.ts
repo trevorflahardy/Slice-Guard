@@ -8,13 +8,14 @@ import type { AuthLoginPayload, AuthRegisterPayload } from '@shared/payloads';
  * POST /api/register
  */
 export async function register(req: Request, state: State): Promise<Response> {
-    const { email, password, name } = await req.json() as AuthRegisterPayload;
+    const { email, password, name } = (await req.json()) as AuthRegisterPayload;
 
     state.logger.debug({ email }, 'Attempting to register user');
     const existing = await findUserByEmail(state.db, email);
     state.logger.debug({ found: !!existing }, 'Checked existing user');
-    if (existing)
+    if (existing) {
         return new Response('Email in use', { status: 400 });
+    }
 
     const hash = await hashPassword(password);
     const user = await createUser(state.db, email, hash, name);
@@ -39,7 +40,7 @@ export async function register(req: Request, state: State): Promise<Response> {
  * POST /api/login
  */
 export async function login(req: Request, state: State): Promise<Response> {
-    const { email, password } = await req.json() as AuthLoginPayload;
+    const { email, password } = (await req.json()) as AuthLoginPayload;
 
     state.logger.debug({ email }, 'Login attempt');
     const user = await findUserByEmail(state.db, email);

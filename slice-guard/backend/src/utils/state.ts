@@ -3,11 +3,10 @@
  * and allow safe access of database connections, managers, etc.
  */
 
-import { SQL } from "bun";
-import type { Logger } from "pino";
-import type { ServerWebSocket } from "../ws";
-import type { WsPayloadUnion } from "@shared/payloads/ws";
-
+import { SQL } from 'bun';
+import type { Logger } from 'pino';
+import type { ServerWebSocket } from '../ws';
+import type { WsPayloadUnion } from '@shared/payloads/ws';
 
 export default class State {
     // The database pool connection
@@ -29,7 +28,7 @@ export default class State {
             try {
                 ws.send(raw);
             } catch (err) {
-                this.logger.error({ err }, "Failed to send WS message");
+                this.logger.error({ err }, 'Failed to send WS message');
             }
         }
     }

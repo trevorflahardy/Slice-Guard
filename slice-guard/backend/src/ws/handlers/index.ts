@@ -1,12 +1,9 @@
-import {
-  type WsPayloadUnion,
-  type WsEventValue,
-} from "@shared/payloads/ws";
-import type State from "../../utils/state";
-import type { Logger } from "pino";
-import type { ServerWebSocket } from "..";
-import { ErrorCode } from "@slice-guard/shared/ws/errors";
-import { verifyJwt } from "../../utils/jwt";
+import { type WsPayloadUnion, type WsEventValue } from '@shared/payloads/ws';
+import type State from '../../utils/state';
+import type { Logger } from 'pino';
+import type { ServerWebSocket } from '..';
+import { ErrorCode } from '@slice-guard/shared/ws/errors';
+import { verifyJwt } from '../../utils/jwt';
 
 export class HandlerPayload<D> {
   public ws: ServerWebSocket;
@@ -24,19 +21,17 @@ export class HandlerPayload<D> {
 
 export type HandlerResponse = ErrorCode | WsPayloadUnion;
 
-export type Handler<D> = (
-  payload: HandlerPayload<D>
-) => Promise<HandlerResponse>;
+export type Handler<D> = (payload: HandlerPayload<D>) => Promise<HandlerResponse>;
 
 export interface AuthenticatedPayload<D> extends HandlerPayload<D> {
   userId: number;
 }
 
 export function withAuth<D>(
-  handler: (payload: AuthenticatedPayload<D>) => Promise<HandlerResponse>
+  handler: (payload: AuthenticatedPayload<D>) => Promise<HandlerResponse>,
 ): Handler<D & { d: { token: string } }> {
   return async (
-    payload: HandlerPayload<D & { d: { token: string } }>
+    payload: HandlerPayload<D & { d: { token: string } }>,
   ): Promise<HandlerResponse> => {
     let userId: number;
     try {

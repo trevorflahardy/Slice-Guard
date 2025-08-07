@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
-import type { User } from '@shared/db/user'
+import { defineStore } from 'pinia';
+import type { User } from '@shared/db/user';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -8,16 +8,16 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     setSession(apiKey: string, user: User) {
-      this.apiKey = apiKey
-      this.user = user
-      localStorage.setItem('apiKey', apiKey)
-      localStorage.setItem('user', JSON.stringify(user))
+      this.apiKey = apiKey;
+      this.user = user;
+      localStorage.setItem('apiKey', apiKey);
+      localStorage.setItem('user', JSON.stringify(user));
     },
     clearSession() {
-      this.apiKey = null
-      this.user = null
-      localStorage.removeItem('apiKey')
-      localStorage.removeItem('user')
+      this.apiKey = null;
+      this.user = null;
+      localStorage.removeItem('apiKey');
+      localStorage.removeItem('user');
     },
   },
-})
+});

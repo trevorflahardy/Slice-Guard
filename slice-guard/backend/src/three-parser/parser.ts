@@ -1,9 +1,9 @@
-import { mkdtemp, readFile, rm } from "fs/promises";
-import { existsSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
-import { spawn } from "child_process";
-import { Plate, type PlateMetadata } from "./plate";
+import { mkdtemp, readFile, rm } from 'fs/promises';
+import { existsSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { spawn } from 'child_process';
+import { Plate, type PlateMetadata } from './plate';
 
 /** Utility to parse <metadata key="" value=""/> blocks from a plate XML section */
 function parseMetadataBlock(block: string): Record<string, string> {
@@ -34,8 +34,8 @@ export class Parser {
     if (!existsSync(filepath)) {
       throw new Error(`File ${filepath} does not exist`);
     }
-    if (!filepath.endsWith(".3mf")) {
-      throw new Error("Only .3mf files are supported");
+    if (!filepath.endsWith('.3mf')) {
+      throw new Error('Only .3mf files are supported');
     }
   }
 
@@ -47,15 +47,18 @@ export class Parser {
   /** Unpack the 3MF archive to a temporary directory using the system unzip tool */
   async unpack(): Promise<void> {
     if (this.tempDir) {
-      throw new Error("Archive already unpacked");
+      throw new Error('Archive already unpacked');
     }
-    const dir = await mkdtemp(join(tmpdir(), "three-parser-"));
+    const dir = await mkdtemp(join(tmpdir(), 'three-parser-'));
     await new Promise<void>((resolve, reject) => {
-      const proc = spawn("unzip", ["-qq", this.filepath, "-d", dir]);
-      proc.on("error", reject);
-      proc.on("exit", (code) => {
-        if (code === 0) resolve();
-        else reject(new Error(`unzip failed with code ${code}`));
+      const proc = spawn('unzip', ['-qq', this.filepath, '-d', dir]);
+      proc.on('error', reject);
+      proc.on('exit', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`unzip failed with code ${code}`));
+        }
       });
     });
     this.tempDir = dir;
@@ -71,39 +74,45 @@ export class Parser {
 
   /** Load the project settings JSON file */
   async getProjectSettings(): Promise<any> {
-    if (!this.tempDir) throw new Error("Archive not unpacked");
-    const path = join(this.tempDir, "Metadata", "project_settings.config");
-    const data = await readFile(path, "utf8");
+    if (!this.tempDir) {
+      throw new Error('Archive not unpacked');
+    }
+    const path = join(this.tempDir, 'Metadata', 'project_settings.config');
+    const data = await readFile(path, 'utf8');
     return JSON.parse(data);
   }
 
   /** Internal helper to read an XML file and parse plates */
   private async loadPlatesFrom(file: string): Promise<Record<string, string>[]> {
-    if (!this.tempDir) throw new Error("Archive not unpacked");
-    const path = join(this.tempDir, "Metadata", file);
-    const xml = await readFile(path, "utf8");
+    if (!this.tempDir) {
+      throw new Error('Archive not unpacked');
+    }
+    const path = join(this.tempDir, 'Metadata', file);
+    const xml = await readFile(path, 'utf8');
     return parsePlates(xml);
   }
 
   /** Extract plate metadata and return Plate instances */
   async extractPlates(): Promise<Plate[]> {
-    const modelPlates = await this.loadPlatesFrom("model_settings.config");
-    const slicePlates = await this.loadPlatesFrom("slice_info.config");
+    const modelPlates = await this.loadPlatesFrom('model_settings.config');
+    const slicePlates = await this.loadPlatesFrom('slice_info.config');
 
     const plates: Plate[] = [];
     for (const mp of modelPlates) {
-      const slice = slicePlates.find((sp) => sp["index"] === mp["plater_id"]);
-      if (!slice) continue;
+      const slice = slicePlates.find((sp) => sp['index'] === mp['plater_id']);
+      if (!slice) {
+        continue;
+      }
       const combined: PlateMetadata = {
         ...mp,
-        weight: slice["weight"],
-        outside: slice["outside"],
-        prediction: slice["prediction"],
+        weight: slice['weight'],
+        outside: slice['outside'],
+        prediction: slice['prediction'],
       } as PlateMetadata;
       plates.push(new Plate(this, combined));
     }
     if (plates.length === 0) {
-      throw new Error("No plates found in archive");
+      throw new Error('No plates found in archive');
     }
     return plates;
   }

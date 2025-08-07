@@ -1,6 +1,6 @@
-import { readFile } from "fs/promises";
-import { join } from "path";
-import Parser from "./parser";
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+import Parser from './parser';
 
 export interface PlateMetadata {
   plater_id: string;
@@ -17,7 +17,10 @@ export interface PlateMetadata {
 }
 
 export class Plate {
-  constructor(private parser: Parser, private meta: PlateMetadata) {}
+  constructor(
+    private parser: Parser,
+    private meta: PlateMetadata,
+  ) {}
 
   get platerId() {
     return this.meta.plater_id;
@@ -33,7 +36,9 @@ export class Plate {
   }
 
   private async readFileRelative(pathName: string): Promise<Buffer> {
-    if (!this.parser.temporaryDirectory) throw new Error("Parser not unpacked");
+    if (!this.parser.temporaryDirectory) {
+      throw new Error('Parser not unpacked');
+    }
     const full = join(this.parser.temporaryDirectory, pathName);
     return await readFile(full);
   }
@@ -56,7 +61,7 @@ export class Plate {
 
   async getPatternBBox(): Promise<any> {
     const buf = await this.readFileRelative(this.meta.pattern_bbox_file);
-    return JSON.parse(buf.toString("utf8"));
+    return JSON.parse(buf.toString('utf8'));
   }
 }
 

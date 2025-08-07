@@ -1,11 +1,11 @@
 export interface InviteCreatePayload {
-  maxUses?: number | null
+  maxUses?: number | null;
   /** expiration in seconds from now */
-  expiresIn?: number | null
+  expiresIn?: number | null;
 }
 
 export interface InviteUpdatePayload {
-  maxUses?: number | null
+  maxUses?: number | null;
   /** ISO timestamp */
-  expiresAt?: string | null
+  expiresAt?: string | null;
 }

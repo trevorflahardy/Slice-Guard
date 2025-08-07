@@ -1,5 +1,3 @@
 <template>
-  <div class="p-10 text-fg-primary">
-    DMs homepage
-  </div>
+  <div class="text-fg-primary p-10">DMs homepage</div>
 </template>

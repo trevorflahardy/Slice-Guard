@@ -9,9 +9,9 @@ system `unzip` utility. After unpacking you may access project settings and plat
 information. Temporary files are cleaned up when `cleanup()` is called.
 
 ```ts
-import { Parser } from "../three-parser";
+import { Parser } from '../three-parser';
 
-const parser = new Parser("path/to/file.3mf");
+const parser = new Parser('path/to/file.3mf');
 await parser.unpack();
 const plates = await parser.extractPlates();
 console.log(plates[0].platerId);

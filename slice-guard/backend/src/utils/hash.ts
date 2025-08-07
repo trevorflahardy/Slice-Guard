@@ -2,7 +2,7 @@
  * @fileoverview Helpers for hashing passwords.
  */
 
-import { type StringOrBuffer } from "bun"
+import { type StringOrBuffer } from 'bun';
 
 /**
  * Hashes a password using Bun's argon2 implementation. This will
@@ -14,8 +14,8 @@ import { type StringOrBuffer } from "bun"
  * @returns  The hashed password
  */
 export const hashPassword = async (pw: StringOrBuffer): Promise<string> => {
-    return await Bun.password.hash(pw, "argon2id");
-}
+  return await Bun.password.hash(pw, 'argon2id');
+};
 
 /**
  * Verifies a password against a hash using Bun's argon2 implementation.
@@ -25,6 +25,9 @@ export const hashPassword = async (pw: StringOrBuffer): Promise<string> => {
  * @throws If the hash is invalid, the algorithm does not match the hash, or the hash is invalid.
  * @returns True if the password matches the hash, False otherwise.
  */
-export const verifyPassword = async (pw: StringOrBuffer, hash: StringOrBuffer): Promise<boolean> => {
-    return await Bun.password.verify(pw, hash, "argon2id");
-}
+export const verifyPassword = async (
+  pw: StringOrBuffer,
+  hash: StringOrBuffer,
+): Promise<boolean> => {
+  return await Bun.password.verify(pw, hash, 'argon2id');
+};

@@ -10,7 +10,7 @@
  * @returns A unique refresh token string.
  */
 export function generateRefreshToken(userId: string): string {
-    const now = Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000);
 
-    return Bun.hash(`${userId}${now}$`).toString();
+  return Bun.hash(`${userId}${now}$`).toString();
 }

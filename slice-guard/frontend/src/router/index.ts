@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { useAuthStore } from '../store/auth'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
+import { useAuthStore } from '../store/auth';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -34,7 +34,7 @@ const routes: RouteRecordRaw[] = [
             path: 'print-requests',
             name: 'LabPrintRequests',
             component: () => import('../views/lab/print_requests/LabPrintRequests.vue'),
-          }
+          },
         ],
       },
     ],
@@ -49,21 +49,25 @@ const routes: RouteRecordRaw[] = [
     name: 'Register',
     component: () => import('../views/auth/RegisterPage.vue'),
   },
-]
+];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-})
+});
 
 router.beforeEach((to) => {
-  const auth = useAuthStore()
+  const auth = useAuthStore();
   if (to.name === 'Login' || to.name === 'Register') {
-    if (auth.apiKey) return { name: 'Root' }
-    return true
+    if (auth.apiKey) {
+      return { name: 'Root' };
+    }
+    return true;
   }
-  if (!auth.apiKey) return { name: 'Login' }
-  return true
-})
+  if (!auth.apiKey) {
+    return { name: 'Login' };
+  }
+  return true;
+});
 
-export default router
+export default router;

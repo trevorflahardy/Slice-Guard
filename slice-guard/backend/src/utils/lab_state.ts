@@ -1,10 +1,17 @@
-import type { SQL } from "bun";
-import { listLabsForUser, listMembers, getMemberRoles, listInvites, getMemberRolePermissions, getLab } from "../db/lab";
-import { getAllPrintRequests, getTagsForRequest, listTags } from "../db/lab/request";
-import { findPublicUserById } from "../db/user";
-import type { LabRole, LabMember, LabInvite } from "@shared/db/lab";
-import type { LabState, MemberEvent, PrintRequestEvent } from "@shared/payloads/ws";
-import type { RequestTag } from "@shared/db/request";
+import type { SQL } from 'bun';
+import {
+  listLabsForUser,
+  listMembers,
+  getMemberRoles,
+  listInvites,
+  getMemberRolePermissions,
+  getLab,
+} from '../db/lab';
+import { getAllPrintRequests, getTagsForRequest, listTags } from '../db/lab/request';
+import { findPublicUserById } from '../db/user';
+import type { LabRole, LabMember, LabInvite } from '@shared/db/lab';
+import type { LabState, MemberEvent, PrintRequestEvent } from '@shared/payloads/ws';
+import type { RequestTag } from '@shared/db/request';
 
 /**
  * Load the full lab state for all labs the user belongs to.
@@ -15,9 +22,9 @@ export async function getUserLabStates(db: SQL, userId: number): Promise<LabStat
 
   for (const lab of labs) {
     // Load roles for the lab
-    const roles: LabRole[] = await db`
+    const roles: LabRole[] = (await db`
       SELECT id, lab_id, name, permissions, created_at
-        FROM lab.roles WHERE lab_id = ${lab.id}` as any;
+        FROM lab.roles WHERE lab_id = ${lab.id}`) as any;
 
     // Load members with their roles and public user info
     const memberRows = await listMembers(db, lab.id);
@@ -59,14 +66,20 @@ export async function getUserLabStates(db: SQL, userId: number): Promise<LabStat
 /**
  * Load the full state for a single lab that the user is a member of.
  */
-export async function getLabState(db: SQL, labId: number, userId: number): Promise<LabState | null> {
+export async function getLabState(
+  db: SQL,
+  labId: number,
+  userId: number,
+): Promise<LabState | null> {
   const lab = await getLab(db, labId);
-  if (!lab) return null;
+  if (!lab) {
+    return null;
+  }
 
   // Load roles
-  const roles: LabRole[] = await db`
+  const roles: LabRole[] = (await db`
     SELECT id, lab_id, name, permissions, created_at
-      FROM lab.roles WHERE lab_id = ${labId}` as any;
+      FROM lab.roles WHERE lab_id = ${labId}`) as any;
 
   // Load members with their roles and public user info
   const memberRows = await listMembers(db, labId);

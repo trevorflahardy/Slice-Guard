@@ -1,6 +1,6 @@
-import { ws } from "./ws";
-import { useAuthStore } from "../store/auth";
-import { apiFetch } from "./api";
+import { ws } from './ws';
+import { useAuthStore } from '../store/auth';
+import { apiFetch } from './api';
 
 const auth = useAuthStore();
 
@@ -11,8 +11,9 @@ export async function login(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
 
-  if (!res.ok)
-    throw new Error("Invalid credentials");
+  if (!res.ok) {
+    throw new Error('Invalid credentials');
+  }
 
   const data = await res.json();
 
@@ -27,8 +28,9 @@ export async function register(email: string, password: string, name: string) {
     body: JSON.stringify({ email, password, name }),
   });
 
-  if (!res.ok)
-    throw new Error("Registration failed");
+  if (!res.ok) {
+    throw new Error('Registration failed');
+  }
 
   const data = await res.json();
 

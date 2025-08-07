@@ -1,9 +1,9 @@
 // Message types used over the WebSocket connection
 
-import type { ErrorCode } from '../ws/errors'
-import type { PrintRequest, RequestTag } from '../db/request'
-import type { User } from '../db/user'
-import type { Lab, LabRole, LabMember, LabInvite } from '../db/lab'
+import type { ErrorCode } from '../ws/errors';
+import type { PrintRequest, RequestTag } from '../db/request';
+import type { User } from '../db/user';
+import type { Lab, LabRole, LabMember, LabInvite } from '../db/lab';
 
 /**
  * All websocket opcodes supported by the application.
@@ -51,117 +51,117 @@ export enum WsEvent {
   LAB_DELETED = 19,
 }
 
-export type WsEventType = keyof typeof WsEvent
-export type WsEventValue = typeof WsEvent[WsEventType]
+export type WsEventType = keyof typeof WsEvent;
+export type WsEventValue = (typeof WsEvent)[WsEventType];
 
 export interface PrintRequestEvent {
-  request: PrintRequest
-  user: User | null
-  tags: RequestTag[]
+  request: PrintRequest;
+  user: User | null;
+  tags: RequestTag[];
 }
 
 export interface RequestDeletedEvent {
-  labId: number
-  requestId: number
+  labId: number;
+  requestId: number;
 }
 
 export interface TagEvent {
-  tag: RequestTag
+  tag: RequestTag;
 }
 
 export interface TagDeletedEvent {
-  labId: number
-  tagId: number
+  labId: number;
+  tagId: number;
 }
 
 export interface MemberEvent {
-  labId: number
-  member: LabMember
-  user: User | null
+  labId: number;
+  member: LabMember;
+  user: User | null;
 }
 
 export interface MemberLeftEvent {
-  labId: number
-  userId: number
+  labId: number;
+  userId: number;
 }
 
 export interface InviteEvent {
-  invite: LabInvite
+  invite: LabInvite;
 }
 
 export interface InviteDeletedEvent {
-  labId: number
-  inviteId: number
+  labId: number;
+  inviteId: number;
 }
 
 export interface UserEvent {
-  user: User
+  user: User;
 }
 
 export interface RoleEvent {
-  role: LabRole
+  role: LabRole;
 }
 
 export interface RoleDeletedEvent {
-  labId: number
-  roleId: number
+  labId: number;
+  roleId: number;
 }
 
 export interface LabCreatedEvent {
-  lab: LabState
+  lab: LabState;
 }
 
 export interface LabUpdatedEvent {
-  lab: Lab
+  lab: Lab;
 }
 
 export interface LabDeletedEvent {
-  labId: number
+  labId: number;
 }
 
 export interface LabState {
-  lab: Lab
-  roles: LabRole[]
-  members: MemberEvent[]
-  tags: RequestTag[]
-  requests: PrintRequestEvent[]
-  invites: LabInvite[]
+  lab: Lab;
+  roles: LabRole[];
+  members: MemberEvent[];
+  tags: RequestTag[];
+  requests: PrintRequestEvent[];
+  invites: LabInvite[];
   /**
    * Permissions that the connected user has within this lab. Provided during
    * the initial handshake so the frontend can gate functionality without
    * scanning the full member list.
    */
-  permissions: number | null
+  permissions: number | null;
 }
 
 export interface ErrorPayload {
-  code: ErrorCode
-  message: number
+  code: ErrorCode;
+  message: number;
 }
 
 export type WsPayloads = {
-  [WsEvent.HELLO]: { op: WsEvent.HELLO; d: { labs: LabState[] } }
-  [WsEvent.REQUEST_CREATED]: { op: WsEvent.REQUEST_CREATED; d: PrintRequestEvent }
-  [WsEvent.REQUEST_UPDATED]: { op: WsEvent.REQUEST_UPDATED; d: PrintRequestEvent }
-  [WsEvent.REQUEST_DELETED]: { op: WsEvent.REQUEST_DELETED; d: RequestDeletedEvent }
-  [WsEvent.TAG_CREATED]: { op: WsEvent.TAG_CREATED; d: TagEvent }
-  [WsEvent.TAG_UPDATED]: { op: WsEvent.TAG_UPDATED; d: TagEvent }
-  [WsEvent.TAG_DELETED]: { op: WsEvent.TAG_DELETED; d: TagDeletedEvent }
-  [WsEvent.MEMBER_JOINED]: { op: WsEvent.MEMBER_JOINED; d: MemberEvent }
-  [WsEvent.MEMBER_LEFT]: { op: WsEvent.MEMBER_LEFT; d: MemberLeftEvent }
-  [WsEvent.INVITE_CREATED]: { op: WsEvent.INVITE_CREATED; d: InviteEvent }
-  [WsEvent.INVITE_UPDATED]: { op: WsEvent.INVITE_UPDATED; d: InviteEvent }
-  [WsEvent.INVITE_DELETED]: { op: WsEvent.INVITE_DELETED; d: InviteDeletedEvent }
-  [WsEvent.USER_UPDATED]: { op: WsEvent.USER_UPDATED; d: UserEvent }
-  [WsEvent.ROLE_CREATED]: { op: WsEvent.ROLE_CREATED; d: RoleEvent }
-  [WsEvent.ROLE_UPDATED]: { op: WsEvent.ROLE_UPDATED; d: RoleEvent }
-  [WsEvent.ROLE_DELETED]: { op: WsEvent.ROLE_DELETED; d: RoleDeletedEvent }
-  [WsEvent.LAB_CREATED]: { op: WsEvent.LAB_CREATED; d: LabCreatedEvent }
-  [WsEvent.LAB_UPDATED]: { op: WsEvent.LAB_UPDATED; d: LabUpdatedEvent }
-  [WsEvent.LAB_DELETED]: { op: WsEvent.LAB_DELETED; d: LabDeletedEvent }
-  [WsEvent.ERROR]: { op: WsEvent.ERROR; d: ErrorPayload }
-}
+  [WsEvent.HELLO]: { op: WsEvent.HELLO; d: { labs: LabState[] } };
+  [WsEvent.REQUEST_CREATED]: { op: WsEvent.REQUEST_CREATED; d: PrintRequestEvent };
+  [WsEvent.REQUEST_UPDATED]: { op: WsEvent.REQUEST_UPDATED; d: PrintRequestEvent };
+  [WsEvent.REQUEST_DELETED]: { op: WsEvent.REQUEST_DELETED; d: RequestDeletedEvent };
+  [WsEvent.TAG_CREATED]: { op: WsEvent.TAG_CREATED; d: TagEvent };
+  [WsEvent.TAG_UPDATED]: { op: WsEvent.TAG_UPDATED; d: TagEvent };
+  [WsEvent.TAG_DELETED]: { op: WsEvent.TAG_DELETED; d: TagDeletedEvent };
+  [WsEvent.MEMBER_JOINED]: { op: WsEvent.MEMBER_JOINED; d: MemberEvent };
+  [WsEvent.MEMBER_LEFT]: { op: WsEvent.MEMBER_LEFT; d: MemberLeftEvent };
+  [WsEvent.INVITE_CREATED]: { op: WsEvent.INVITE_CREATED; d: InviteEvent };
+  [WsEvent.INVITE_UPDATED]: { op: WsEvent.INVITE_UPDATED; d: InviteEvent };
+  [WsEvent.INVITE_DELETED]: { op: WsEvent.INVITE_DELETED; d: InviteDeletedEvent };
+  [WsEvent.USER_UPDATED]: { op: WsEvent.USER_UPDATED; d: UserEvent };
+  [WsEvent.ROLE_CREATED]: { op: WsEvent.ROLE_CREATED; d: RoleEvent };
+  [WsEvent.ROLE_UPDATED]: { op: WsEvent.ROLE_UPDATED; d: RoleEvent };
+  [WsEvent.ROLE_DELETED]: { op: WsEvent.ROLE_DELETED; d: RoleDeletedEvent };
+  [WsEvent.LAB_CREATED]: { op: WsEvent.LAB_CREATED; d: LabCreatedEvent };
+  [WsEvent.LAB_UPDATED]: { op: WsEvent.LAB_UPDATED; d: LabUpdatedEvent };
+  [WsEvent.LAB_DELETED]: { op: WsEvent.LAB_DELETED; d: LabDeletedEvent };
+  [WsEvent.ERROR]: { op: WsEvent.ERROR; d: ErrorPayload };
+};
 
-export type WsPayload<T extends WsEventValue> = WsPayloads[T]
-export type WsPayloadMap = WsPayloads
-export type WsPayloadUnion = WsPayloadMap[WsEventValue]
+export type WsPayload<T extends WsEventValue> = WsPayloads[T];
+export type WsPayloadMap = WsPayloads;
+export type WsPayloadUnion = WsPayloadMap[WsEventValue];

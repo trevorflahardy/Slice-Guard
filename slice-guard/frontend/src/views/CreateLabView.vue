@@ -1,46 +1,77 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import Button from '../components/Button.vue'
-import { apiFetch } from '../services/api'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import Button from '../components/Button.vue';
+import { apiFetch } from '../services/api';
 
-const name = ref('')
-const description = ref('')
-const iconUrl = ref('')
-const error = ref('')
-const router = useRouter()
+const name = ref('');
+const description = ref('');
+const iconUrl = ref('');
+const error = ref('');
+const router = useRouter();
 
 async function submit() {
-  error.value = ''
+  error.value = '';
   try {
     const res = await apiFetch('/labs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.value, description: description.value || undefined, iconUrl: iconUrl.value || undefined }),
-    })
-    if (!res.ok) throw new Error()
-    const lab = await res.json()
-    router.push(`/lab/${lab.id}`)
+      body: JSON.stringify({
+        name: name.value,
+        description: description.value || undefined,
+        iconUrl: iconUrl.value || undefined,
+      }),
+    });
+    if (!res.ok) {
+      throw new Error();
+    }
+    const lab = await res.json();
+    router.push(`/lab/${lab.id}`);
   } catch (e: any) {
-    error.value = e.message ?? 'Failed to create lab'
+    error.value = e.message ?? 'Failed to create lab';
   }
 }
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-start bg-surface-lowest text-white">
-    <h1 class="text-3xl font-semibold mt-10 mb-6 text-black">Create a Lab</h1>
+  <div class="bg-surface-lowest flex min-h-screen flex-col items-center justify-start text-white">
+    <h1 class="mt-10 mb-6 text-3xl font-semibold text-black">Create a Lab</h1>
 
-    <form @submit.prevent="submit" class="flex flex-col gap-3 w-full max-w-md text-sm">
-      <input v-model="name" type="text" placeholder="Name" required
-        class="bg-surface-low shadow-md py-3 px-5 rounded-xl w-full focus:outline-salem-800 placeholder-fg-secondary" />
-      <input v-model="description" type="text" placeholder="Description"
-        class="bg-surface-low shadow-md py-3 px-5 rounded-xl w-full focus:outline-salem-800 placeholder-fg-secondary" />
-      <input v-model="iconUrl" type="url" placeholder="Icon URL"
-        class="bg-surface-low shadow-md py-3 px-5 rounded-xl w-full focus:outline-salem-800 placeholder-fg-secondary" />
-      <p v-if="error" class="text-red-600 px-1">{{ error }}</p>
+    <form
+      class="flex w-full max-w-md flex-col gap-3 text-sm"
+      @submit.prevent="submit"
+    >
+      <input
+        v-model="name"
+        type="text"
+        placeholder="Name"
+        required
+        class="bg-surface-low focus:outline-salem-800 placeholder-fg-secondary w-full rounded-xl px-5 py-3 shadow-md"
+      />
+      <input
+        v-model="description"
+        type="text"
+        placeholder="Description"
+        class="bg-surface-low focus:outline-salem-800 placeholder-fg-secondary w-full rounded-xl px-5 py-3 shadow-md"
+      />
+      <input
+        v-model="iconUrl"
+        type="url"
+        placeholder="Icon URL"
+        class="bg-surface-low focus:outline-salem-800 placeholder-fg-secondary w-full rounded-xl px-5 py-3 shadow-md"
+      />
+      <p
+        v-if="error"
+        class="px-1 text-red-600"
+      >
+        {{ error }}
+      </p>
 
-      <Button variant="primary" class="mt-2 py-2">Create Lab</Button>
+      <Button
+        variant="primary"
+        class="mt-2 py-2"
+        >Create Lab</Button
+      >
     </form>
   </div>
 </template>

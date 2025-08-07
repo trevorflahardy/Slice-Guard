@@ -1,5 +1,5 @@
-import type { Message } from "@shared/db/message";
-import type { SQL } from "bun";
+import type { Message } from '@shared/db/message';
+import { sql, type SQL } from 'bun';
 
 export interface MessageRow extends Message {}
 
@@ -24,13 +24,17 @@ export async function createMessage(
     userId: number,
     content: string,
     userMentions: number[] = [],
-    roleMentions: number[] = []
+    roleMentions: number[] = [],
 ): Promise<MessageRow> {
     const rows: MessageRow[] = await db`
         INSERT INTO lab.messages (channel_id, user_id, content, user_mentions, role_mentions)
-             VALUES (${channelId}, ${userId}, ${content}, ${toIntArray(userMentions)}::int[], ${toIntArray(roleMentions)}::int[])
-        RETURNING id, channel_id, user_id, content, user_mentions, role_mentions, created_at, edited_at
+        VALUES (${channelId}, ${userId}, ${content}, ${toIntArray(userMentions)}, ${toIntArray(roleMentions)})
+        RETURNING id, channel_id, user_id, content,
+            array_to_json(user_mentions) as user_mentions,
+            array_to_json(role_mentions) as role_mentions,
+            created_at, edited_at;
     `;
+
     return normalizeMessage(rows[0]);
 }
 
@@ -40,12 +44,12 @@ export async function updateMessage(
     messageId: number,
     content: string,
     userMentions: number[] = [],
-    roleMentions: number[] = []
+    roleMentions: number[] = [],
 ): Promise<MessageRow> {
     const rows: MessageRow[] = await db`
         UPDATE lab.messages
-           SET content = ${content}, user_mentions = ${toIntArray(userMentions)}::int[], role_mentions = ${toIntArray(roleMentions)}::int[], edited_at = NOW()
-         WHERE id = ${messageId}
+           SET content = ${content}, user_mentions = ${toIntArray(userMentions)}, role_mentions = ${toIntArray(roleMentions)}, edited_at = NOW()
+        WHERE id = ${messageId}
         RETURNING id, channel_id, user_id, content, user_mentions, role_mentions, created_at, edited_at
     `;
     return normalizeMessage(rows[0]);
@@ -62,7 +66,7 @@ export async function deleteMessage(db: SQL, messageId: number): Promise<void> {
 /** Retrieve a single message by id. */
 export async function getMessage(db: SQL, messageId: number): Promise<MessageRow | null> {
     const rows: MessageRow[] = await db`
-        SELECT id, channel_id, user_id, content, user_mentions, role_mentions, created_at, edited_at
+        SELECT id, channel_id, user_id, content, array_to_json(user_mentions) as user_mentions, array_to_json(role_mentions) as role_mentions, created_at, edited_at
           FROM lab.messages WHERE id = ${messageId}
     `;
     return rows.length ? normalizeMessage(rows[0]) : null;
@@ -77,14 +81,18 @@ export async function listMessages(
     db: SQL,
     channelId: number,
     limit: number = 50,
-    before?: number
+    before?: number,
 ): Promise<MessageRow[]> {
+    const beforeFilter = before ? sql`AND id < ${before}` : sql``;
     const rows: MessageRow[] = await db`
-        SELECT id, channel_id, user_id, content, user_mentions, role_mentions, created_at, edited_at
-          FROM lab.messages
-         WHERE channel_id = ${channelId} ${before ? db`AND id < ${before}` : db``}
-         ORDER BY id DESC
-         LIMIT ${limit}
+        SELECT id, channel_id, user_id, content,
+            array_to_json(user_mentions) as user_mentions,
+            array_to_json(role_mentions) as role_mentions,
+            created_at, edited_at
+        FROM lab.messages
+        WHERE channel_id = ${channelId} ${beforeFilter}
+        ORDER BY id DESC
+        LIMIT ${limit}
     `;
     // Return messages in chronological order (oldest first)
     return rows.map(normalizeMessage).reverse();

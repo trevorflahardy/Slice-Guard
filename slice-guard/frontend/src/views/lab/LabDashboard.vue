@@ -39,6 +39,24 @@ const roles = computed(() => {
     return labs.getLab(props.lab.id)?.roles ?? [];
 });
 
+const channels = computed(() => {
+    if (!props.lab) {
+        return [];
+    }
+    return labs.getLab(props.lab.id)?.channels ?? [];
+});
+
+const cacheStats = computed(() => {
+    const labState = props.lab ? labs.getLab(props.lab.id) : null;
+    const totalLabs = labs.labs.length;
+    const totalChannels = labs.labs.reduce((acc, l) => acc + l.channels.length, 0);
+    const cachedMessages = Object.values(labState?.messages ?? {}).reduce(
+        (acc, msgs) => acc + msgs.length,
+        0,
+    );
+    return { totalLabs, totalChannels, cachedMessages };
+});
+
 const PERMISSION_OPTIONS = [
     { value: LabPermission.EDIT_LAB, label: 'Edit Lab' },
     { value: LabPermission.MANAGE_ROLES, label: 'Manage Roles' },
@@ -190,6 +208,41 @@ async function createMockRequest() {
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    <!-- Debug channels -->
+    <div class="mt-6 space-y-2">
+        <h2 class="text-fg-primary font-semibold">Channels (debug)</h2>
+        <table class="w-full text-sm">
+            <thead class="text-fg-secondary">
+                <tr>
+                    <th class="text-left">ID</th>
+                    <th class="text-left">Name</th>
+                    <th class="text-left">Type</th>
+                    <th class="text-left">Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    v-for="c in channels"
+                    :key="c.id"
+                    class="text-fg-primary"
+                >
+                    <td>{{ c.id }}</td>
+                    <td>{{ c.name }}</td>
+                    <td>{{ c.type }}</td>
+                    <td>{{ c.category_id ?? '-' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Debug application state -->
+    <div class="mt-6 space-y-1">
+        <h2 class="text-fg-primary font-semibold">App State (debug)</h2>
+        <p class="text-fg-primary text-sm">Labs Loaded: {{ cacheStats.totalLabs }}</p>
+        <p class="text-fg-primary text-sm">Total Channels: {{ cacheStats.totalChannels }}</p>
+        <p class="text-fg-primary text-sm">Cached Messages: {{ cacheStats.cachedMessages }}</p>
     </div>
 
     <!-- Debug member permissions -->

@@ -1,3 +1,58 @@
+<script setup lang="ts">
+import { onMounted, onUnmounted, type ShallowRef, shallowRef, ref, computed } from 'vue';
+import { XCircleIcon } from '@heroicons/vue/24/outline';
+import SearchBar from '../components/SearchBar.vue';
+
+interface PageDef {
+    name: string;
+    component: any;
+    id: number;
+}
+const props = defineProps<{ pages: Record<string, PageDef[]> }>();
+const emit = defineEmits(['close']);
+
+const search = ref('');
+const firstCategory = Object.keys(props.pages)[0];
+const firstPage = props.pages[firstCategory][0];
+const activePage: ShallowRef<{ category: string; id: number; component: any }> = shallowRef({
+    category: firstCategory,
+    id: firstPage.id,
+    component: firstPage.component,
+});
+
+const filteredPages = computed(() => {
+    const q = search.value.toLowerCase();
+    const result: Record<string, PageDef[]> = {};
+    for (const [category, list] of Object.entries(props.pages)) {
+        const filtered = list.filter((p) => p.name.toLowerCase().includes(q));
+        if (filtered.length) {
+            result[category] = filtered;
+        }
+    }
+    return q ? result : props.pages;
+});
+
+const isActivePage = (category: string, id: number) => {
+    return activePage.value.category === category && activePage.value.id === id;
+};
+
+function handleEscape(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+        emit('close');
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('keydown', handleEscape);
+    document.body.style.overflow = 'hidden';
+});
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleEscape);
+    document.body.style.overflow = '';
+});
+</script>
+
 <template>
     <Teleport to="body">
         <div
@@ -67,57 +122,3 @@
         </div>
     </Teleport>
 </template>
-<script setup lang="ts">
-import { onMounted, onUnmounted, type ShallowRef, shallowRef, ref, computed } from 'vue';
-import { XCircleIcon } from '@heroicons/vue/24/outline';
-import SearchBar from '../components/SearchBar.vue';
-
-interface PageDef {
-    name: string;
-    component: any;
-    id: number;
-}
-const props = defineProps<{ pages: Record<string, PageDef[]> }>();
-const emit = defineEmits(['close']);
-
-const search = ref('');
-const firstCategory = Object.keys(props.pages)[0];
-const firstPage = props.pages[firstCategory][0];
-const activePage: ShallowRef<{ category: string; id: number; component: any }> = shallowRef({
-    category: firstCategory,
-    id: firstPage.id,
-    component: firstPage.component,
-});
-
-const filteredPages = computed(() => {
-    const q = search.value.toLowerCase();
-    const result: Record<string, PageDef[]> = {};
-    for (const [category, list] of Object.entries(props.pages)) {
-        const filtered = list.filter((p) => p.name.toLowerCase().includes(q));
-        if (filtered.length) {
-            result[category] = filtered;
-        }
-    }
-    return q ? result : props.pages;
-});
-
-const isActivePage = (category: string, id: number) => {
-    return activePage.value.category === category && activePage.value.id === id;
-};
-
-function handleEscape(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
-        emit('close');
-    }
-}
-
-onMounted(() => {
-    document.addEventListener('keydown', handleEscape);
-    document.body.style.overflow = 'hidden';
-});
-
-onUnmounted(() => {
-    document.removeEventListener('keydown', handleEscape);
-    document.body.style.overflow = '';
-});
-</script>

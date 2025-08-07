@@ -6,13 +6,12 @@ import { createRole } from './role';
 export interface LabRow extends Lab {}
 export interface LabRoleRow extends LabRole {}
 
-export * from "./member";
-export * from "./permissions";
-export * from "./role";
-export * from "./invite";
-export * from "./channel";
-export * from "./message";
-
+export * from './member';
+export * from './permissions';
+export * from './role';
+export * from './invite';
+export * from './channel';
+export * from './message';
 
 /**
  * Creates a new lab.

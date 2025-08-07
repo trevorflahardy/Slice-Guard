@@ -17,7 +17,7 @@ async function createInvite() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             maxUses: maxUses.value ?? null,
-            expiresIn: hours.value != null ? hours.value * 3600 : null,
+            expiresIn: hours.value !== null ? hours.value * 3600 : null,
         }),
     });
     emit('close');

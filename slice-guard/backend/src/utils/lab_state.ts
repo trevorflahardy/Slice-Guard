@@ -1,11 +1,18 @@
-import type { SQL } from "bun";
-import { listLabsForUser, listMembers, getMemberRoles, listInvites, getMemberRolePermissions, getLab } from "../db/lab";
-import { getAllPrintRequests, getTagsForRequest, listTags } from "../db/lab/request";
-import { listChannels } from "../db/lab/channel";
-import { findPublicUserById } from "../db/user";
-import type { LabRole, LabMember, LabInvite } from "@shared/db/lab";
-import type { LabState, MemberEvent, PrintRequestEvent } from "@shared/payloads/ws";
-import type { RequestTag } from "@shared/db/request";
+import type { SQL } from 'bun';
+import {
+    listLabsForUser,
+    listMembers,
+    getMemberRoles,
+    listInvites,
+    getMemberRolePermissions,
+    getLab,
+} from '../db/lab';
+import { getAllPrintRequests, getTagsForRequest, listTags } from '../db/lab/request';
+import { listChannels } from '../db/lab/channel';
+import { findPublicUserById } from '../db/user';
+import type { LabRole, LabMember, LabInvite } from '@shared/db/lab';
+import type { LabState, MemberEvent, PrintRequestEvent } from '@shared/payloads/ws';
+import type { RequestTag } from '@shared/db/request';
 
 /**
  * Load the full lab state for all labs the user belongs to.
@@ -50,12 +57,22 @@ export async function getUserLabStates(db: SQL, userId: number): Promise<LabStat
             const rTags = await getTagsForRequest(db, r.id);
             requests.push({ request: r, user, tags: rTags });
         }
-      
+
         // Load channels for the lab
         const channels = await listChannels(db, lab.id);
 
-        result.push({ lab, roles, members, tags, requests, invites, permissions, channels, messages: {} });
-  }
+        result.push({
+            lab,
+            roles,
+            members,
+            tags,
+            requests,
+            invites,
+            permissions,
+            channels,
+            messages: {},
+        });
+    }
 
     return result;
 }

@@ -1,5 +1,5 @@
-import type { Channel, ChannelType } from "@shared/db/channel";
-import type { SQL } from "bun";
+import type { Channel, ChannelType } from '@shared/db/channel';
+import type { SQL } from 'bun';
 
 export interface ChannelRow extends Channel {}
 
@@ -24,7 +24,7 @@ export async function createChannel(
     labId: number | null = null,
     categoryId: number | null = null,
     description: string | null = null,
-    requestId: number | null = null
+    requestId: number | null = null,
 ): Promise<ChannelRow> {
     const rows: ChannelRow[] = await db`
         INSERT INTO lab.channels (type, category_id, lab_id, name, description, request_id, position)
@@ -35,10 +35,7 @@ export async function createChannel(
 }
 
 /** Retrieve all channels for the given lab (or DM when labId is null). */
-export async function listChannels(
-    db: SQL,
-    labId: number | null
-): Promise<ChannelRow[]> {
+export async function listChannels(db: SQL, labId: number | null): Promise<ChannelRow[]> {
     const rows: ChannelRow[] = await db`
         SELECT id, type, category_id, lab_id, name, description, request_id, position, created_at
           FROM lab.channels
@@ -64,7 +61,7 @@ export async function updateChannel(
     channelId: number,
     name: string,
     description: string | null,
-    categoryId: number | null
+    categoryId: number | null,
 ): Promise<ChannelRow> {
     const rows: ChannelRow[] = await db`
         UPDATE lab.channels
@@ -79,7 +76,7 @@ export async function updateChannel(
 export async function setChannelPosition(
     db: SQL,
     channelId: number,
-    position: number
+    position: number,
 ): Promise<ChannelRow> {
     const rows: ChannelRow[] = await db`
         UPDATE lab.channels

@@ -31,7 +31,7 @@ export class WebSocketClient {
         });
         this.ws.addEventListener('close', () => {
             this.ws = null;
-            if (this.reconnectId == null) {
+            if (this.reconnectId === null) {
                 this.reconnectId = window.setTimeout(() => {
                     this.reconnectId = null;
                     this.connect();

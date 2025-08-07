@@ -1,6 +1,6 @@
 export enum ChannelType {
-    TEXT = "text",
-    CATEGORY = "category",
+    TEXT = 'text',
+    CATEGORY = 'category',
 }
 
 export interface Channel {

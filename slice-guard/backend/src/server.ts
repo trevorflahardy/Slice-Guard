@@ -115,23 +115,36 @@ export class Server {
                         withLogging(lab.deleteInviteRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/channels': {
-                    GET: req => withLogging(channelRoutes.listChannelsRoute)(req, this.state, req.params),
-                    POST: req => withLogging(channelRoutes.createChannelRoute)(req, this.state, req.params),
+                    GET: (req) =>
+                        withLogging(channelRoutes.listChannelsRoute)(req, this.state, req.params),
+                    POST: (req) =>
+                        withLogging(channelRoutes.createChannelRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/channels/:channelId': {
-                    PATCH: req => withLogging(channelRoutes.updateChannelRoute)(req, this.state, req.params),
-                    DELETE: req => withLogging(channelRoutes.deleteChannelRoute)(req, this.state, req.params),
+                    PATCH: (req) =>
+                        withLogging(channelRoutes.updateChannelRoute)(req, this.state, req.params),
+                    DELETE: (req) =>
+                        withLogging(channelRoutes.deleteChannelRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/channels/:channelId/position': {
-                    PATCH: req => withLogging(channelRoutes.setChannelPositionRoute)(req, this.state, req.params),
+                    PATCH: (req) =>
+                        withLogging(channelRoutes.setChannelPositionRoute)(
+                            req,
+                            this.state,
+                            req.params,
+                        ),
                 },
                 '/api/channels/:channelId/messages': {
-                    GET: req => withLogging(channelRoutes.listMessagesRoute)(req, this.state, req.params),
-                    POST: req => withLogging(channelRoutes.createMessageRoute)(req, this.state, req.params),
+                    GET: (req) =>
+                        withLogging(channelRoutes.listMessagesRoute)(req, this.state, req.params),
+                    POST: (req) =>
+                        withLogging(channelRoutes.createMessageRoute)(req, this.state, req.params),
                 },
                 '/api/channels/:channelId/messages/:messageId': {
-                    PATCH: req => withLogging(channelRoutes.updateMessageRoute)(req, this.state, req.params),
-                    DELETE: req => withLogging(channelRoutes.deleteMessageRoute)(req, this.state, req.params),
+                    PATCH: (req) =>
+                        withLogging(channelRoutes.updateMessageRoute)(req, this.state, req.params),
+                    DELETE: (req) =>
+                        withLogging(channelRoutes.deleteMessageRoute)(req, this.state, req.params),
                 },
                 '/api/invites/:code': {
                     POST: (req) => withLogging(lab.useInviteRoute)(req, this.state, req.params),

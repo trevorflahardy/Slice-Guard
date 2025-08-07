@@ -24,29 +24,11 @@
         "lint:fix:frontend": "bun run --cwd slice-guard/frontend lint:fix",
         "lint:fix:backend": "bun run --cwd slice-guard/backend lint:fix",
         "format": "prettier --write .",
-        "format:check": "prettier --check .",
-        "prepare": "husky"
-    },
-    "lint-staged": {
-        "slice-guard/frontend/**/*.{js,ts,vue}": [
-            "cd slice-guard/frontend && bunx eslint --fix",
-            "prettier --write"
-        ],
-        "slice-guard/backend/**/*.{js,ts}": [
-            "cd slice-guard/backend && bunx eslint --fix",
-            "prettier --write"
-        ],
-        "**/*.{json,md,yml,yaml}": [
-            "prettier --write"
-        ],
-        "**/*.xml": [
-            "prettier --write --plugin @prettier/plugin-xml"
-        ]
+        "format:check": "prettier --check ."
     },
     "dependencies": {},
     "devDependencies": {
         "@prettier/plugin-xml": "^3.4.2",
-        "husky": "^9.1.7",
         "lint-staged": "^16.1.4",
         "prettier": "^3.6.2",
         "prettier-plugin-tailwindcss": "^0.6.14"

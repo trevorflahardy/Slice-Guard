@@ -72,26 +72,24 @@ useSortable(listEl, roleList, {
             roleList.value = [...roleList.value].sort((a, b) => b.rank - a.rank);
             return;
         }
-        const total = roleList.value.length;
+
         const updates: { id: number; rank: number; permissions: number }[] = [];
-        roleList.value.forEach((r, idx) => {
-            const newRank = total - idx;
+
+        roleList.value.forEach((r, newRank) => {
             if (r.rank !== newRank && r.rank <= topRank) {
                 updates.push({ id: r.id, rank: newRank, permissions: Number(r.permissions) });
             }
             r.rank = newRank;
         });
+
         for (const u of updates) {
+            // This will send a ROLE_UPDATE causing our cache to be up to date, no need
+            // to do it manually.
             await apiFetch(`/labs/${labId}/roles/${u.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ permissions: u.permissions, rank: u.rank }),
             });
-            // Update store immediately so order persists
-            const role = labs.roles.get(labId)?.get(u.id);
-            if (role) {
-                role.rank = u.rank;
-            }
         }
     },
 });
@@ -273,10 +271,10 @@ async function removeRole() {
                                 @change="togglePerm(p.bit)"
                             />
                             <div
-                                class="bg-surface-low h-5 w-10 rounded-full transition-colors peer-checked:bg-accent"
+                                class="bg-surface-low peer-checked:bg-accent h-5 w-10 rounded-full transition-colors"
                             >
                                 <span
-                                    class="bg-surface absolute left-0.5 top-0.5 h-4 w-4 rounded-full transition-transform peer-checked:translate-x-5"
+                                    class="bg-surface absolute top-0.5 left-0.5 h-4 w-4 rounded-full transition-transform peer-checked:translate-x-5"
                                 />
                             </div>
                         </label>

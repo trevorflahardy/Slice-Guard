@@ -78,7 +78,7 @@ export async function getMemberRoles(
     userId: number,
 ): Promise<LabRoleRow[]> {
     const rows: LabRoleRow[] = await db`
-        SELECT r.id, r.lab_id, r.name, r.permissions, r.rank, r.created_at
+        SELECT r.id, r.lab_id, r.name, r.permissions, r.rank, r.color, r.created_at
           FROM lab.member_roles mr
           JOIN lab.roles r ON mr.role_id = r.id
          WHERE mr.lab_id = ${labId} AND mr.user_id = ${userId}

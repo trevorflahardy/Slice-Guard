@@ -17,6 +17,7 @@ export interface LabRole {
     lab_id: number;
     name: string;
     permissions: bigint | number;
+    color?: string | null;
     /**
      * Role hierarchy rank. Higher value means higher precedence.
      */

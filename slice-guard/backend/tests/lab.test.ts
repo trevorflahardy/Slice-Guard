@@ -99,22 +99,22 @@ test('updateLab updates fields', async () => {
 test('createRole inserts expected values', async () => {
     const role = sampleRole();
     const db = createMockSQL([[role]]);
-    const result = await createRole(db as any, role.lab_id, role.name, role.permissions as number);
+    const result = await createRole(db as any, role.lab_id, role.name, role.permissions as number, 0, null);
     expect(normalize(db.queries.at(-1))).toBe(
-        'INSERT INTO lab.roles (lab_id, name, permissions) VALUES ($1, $2, $3) RETURNING id, lab_id, name, permissions, created_at',
+        'INSERT INTO lab.roles (lab_id, name, permissions, rank, color) VALUES ($1, $2, $3, $4, $5) RETURNING id, lab_id, name, permissions, rank, color, created_at',
     );
-    expect(db.params.at(-1)).toEqual([role.lab_id, role.name, role.permissions]);
+    expect(db.params.at(-1)).toEqual([role.lab_id, role.name, role.permissions, 0, null]);
     expect(result).toEqual(role);
 });
 
 test('updateRole updates permissions', async () => {
     const role = sampleRole();
     const db = createMockSQL([[role]]);
-    const result = await updateRole(db as any, role.lab_id, role.id, role.permissions as number);
+    const result = await updateRole(db as any, role.lab_id, role.id, role.permissions as number, undefined, undefined, null);
     expect(normalize(db.queries.at(-1))).toBe(
-        'UPDATE lab.roles SET permissions = $1 WHERE id = $2 AND lab_id = $3 RETURNING id, lab_id, name, permissions, created_at',
+        'UPDATE lab.roles SET permissions = $1, rank = COALESCE($2, rank), name = COALESCE($3, name), color = COALESCE($4, color) WHERE id = $5 AND lab_id = $6 RETURNING id, lab_id, name, permissions, rank, color, created_at',
     );
-    expect(db.params.at(-1)).toEqual([role.permissions, role.id, role.lab_id]);
+    expect(db.params.at(-1)).toEqual([role.permissions, undefined, undefined, null, role.id, role.lab_id]);
     expect(result).toEqual(role);
 });
 
@@ -148,7 +148,7 @@ test('getMemberRolePermissions selects join', async () => {
     expect(normalize(db.queries[0])).toBe('SELECT owner_id FROM lab.labs WHERE id = $1');
     expect(db.params[0]).toEqual([1]);
     expect(normalize(db.queries[1])).toBe(
-        'SELECT r.permissions FROM lab.member_roles mr JOIN lab.roles r ON mr.role_id = r.id WHERE mr.lab_id = $1 AND mr.user_id = $2',
+        'SELECT r.permissions FROM lab.member_roles mr JOIN lab.roles r ON mr.role_id = r.id WHERE mr.lab_id = $1 AND mr.user_id = $2 ORDER BY r.rank DESC, r.id ASC LIMIT 1',
     );
     expect(db.params[1]).toEqual([1, 2]);
     expect(result).toEqual(8);

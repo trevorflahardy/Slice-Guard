@@ -56,6 +56,7 @@ export class Server {
                 },
                 '/api/labs/:labId/roles/:roleId': {
                     PATCH: (req) => withLogging(lab.updateRoleRoute)(req, this.state, req.params),
+                    DELETE: (req) => withLogging(lab.deleteRoleRoute)(req, this.state, req.params),
                 },
                 '/api/labs/:labId/members': {
                     POST: (req) => withLogging(lab.addMemberRoute)(req, this.state, req.params),

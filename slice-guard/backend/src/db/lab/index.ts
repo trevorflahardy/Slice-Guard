@@ -3,8 +3,8 @@ import type { SQL } from 'bun';
 import { addMember } from './member';
 import { createRole } from './role';
 
-export interface LabRow extends Lab {}
-export interface LabRoleRow extends LabRole {}
+export type LabRow = Lab;
+export type LabRoleRow = LabRole;
 
 export * from './member';
 export * from './permissions';
@@ -44,6 +44,7 @@ export async function createLab(
         'everyone',
         LabPermission.READ | LabPermission.WRITE,
         0,
+        null,
     );
     await db`
         UPDATE lab.labs

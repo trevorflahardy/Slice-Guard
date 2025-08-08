@@ -24,7 +24,7 @@ export async function getUserLabStates(db: SQL, userId: number): Promise<LabStat
     for (const lab of labs) {
         // Load roles for the lab
         const roles: LabRole[] = (await db`
-      SELECT id, lab_id, name, permissions, rank, created_at
+      SELECT id, lab_id, name, permissions, rank, color, created_at
         FROM lab.roles WHERE lab_id = ${lab.id}
         ORDER BY rank DESC, id ASC`) as any;
 
@@ -93,7 +93,7 @@ export async function getLabState(
 
     // Load roles
     const roles: LabRole[] = (await db`
-    SELECT id, lab_id, name, permissions, rank, created_at
+    SELECT id, lab_id, name, permissions, rank, color, created_at
       FROM lab.roles WHERE lab_id = ${labId}
       ORDER BY rank DESC, id ASC`) as any;
 

@@ -100,6 +100,12 @@ Ensure the bucket exists and the credentials have read/write access.
 
 # Developmental Preview Images
 
+## Aug 8th Update
+
+Improved UI for channels, started diagnosing issues related to performance.
+
+<img width="1501" height="772" alt="image" src="https://github.com/user-attachments/assets/73254b65-7d10-43ce-b59a-e8cbd1a91f50" />
+
 ## Aug 7th Update
 
 A basic channel system has been implemented with multiple client support. Dynamic channels and categories. Improvements to the sidebar are to come soon as it seems to be laggy. A large area of focus is going to be performance improvements in the following days, as I worry about the project's scalability in its current... mangled state.

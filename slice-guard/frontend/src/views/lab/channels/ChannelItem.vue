@@ -14,6 +14,10 @@ const props = defineProps<{
     node: ChannelNode;
     navClass: string;
     navIsActiveClass: string;
+    // eslint-disable-next-line no-unused-vars
+    dragStart: (_ch: Channel) => void;
+    // eslint-disable-next-line no-unused-vars
+    dropOn: (_ch: Channel) => void;
 }>();
 
 defineOptions({ name: 'ChannelItem' });
@@ -82,6 +86,8 @@ const menuItems: ContextMenuItem[] = [
                 :node="c"
                 :nav-class="navClass"
                 :nav-is-active-class="navIsActiveClass"
+                :drag-start="props.dragStart"
+                :drop-on="props.dropOn"
             />
         </div>
         <ContextMenu

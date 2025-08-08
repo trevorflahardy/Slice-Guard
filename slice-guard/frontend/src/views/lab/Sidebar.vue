@@ -88,6 +88,28 @@ const channelTree = computed<ChannelNode[]>(() => {
     return roots;
 });
 
+let dragging: Channel | null = null;
+function dragStart(ch: Channel) {
+    dragging = ch;
+}
+async function dropOn(target: Channel) {
+    if (!dragging || dragging.id === target.id) {
+        return;
+    }
+    const labIdNum = Number(labId.value);
+    const lab = labsStore.getLab(labIdNum);
+    if (!lab) {
+        return;
+    }
+    const newPos = target.position + 1;
+    await apiFetch(`/labs/${labIdNum}/channels/${dragging.id}/position`, {
+        method: 'PATCH',
+        body: JSON.stringify({ position: newPos }),
+        headers: { 'Content-Type': 'application/json' },
+    });
+    dragging = null;
+}
+
 async function handleDropdown(action: string | number | (string | number)[] | null) {
     if (action === 'invite') {
         inviteModal.open();
@@ -215,6 +237,8 @@ const sidebarMenuItems: ContextMenuItem[] = [
                         :node="node"
                         :nav-class="navClass"
                         :nav-is-active-class="isActiveClass"
+                        :drag-start="dragStart"
+                        :drop-on="dropOn"
                     />
                 </template>
             </nav>

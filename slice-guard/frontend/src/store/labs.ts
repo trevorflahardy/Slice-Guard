@@ -483,6 +483,16 @@ export const useLabsStore = defineStore('labs', {
                 roles.delete(roleId);
             }
         },
+        /**
+         * Add a user's public profile information
+         */
+        addUser(user: User) {
+            if (DEV) {
+                console.debug('[labs] addUser', user);
+            }
+
+            this.users.set(user.id, user);
+        },
         /** Cache or update a user's public profile information. */
         updateUser(user: User) {
             if (DEV) {

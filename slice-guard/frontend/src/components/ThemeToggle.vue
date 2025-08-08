@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, watchEffect, computed } from 'vue';
 import Button from './Button.vue';
+import { useLocalStorage } from '@vueuse/core';
 
-const isDark = ref(false);
+const theme = useLocalStorage<'light' | 'dark'>('theme', 'light', {
+    listenToStorageChanges: true,
+});
+const isDark = computed(() => theme.value === 'dark');
 
 // Initialize theme from localStorage or system preference
 onMounted(() => {
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = theme.value;
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    isDark.value = savedTheme ? savedTheme === 'dark' : systemPrefersDark;
-    applyTheme();
+    theme.value = savedTheme ? savedTheme : systemPrefersDark ? 'dark' : 'light';
 });
 
 function toggleTheme() {
-    isDark.value = !isDark.value;
-    applyTheme();
+    theme.value = theme.value === 'dark' ? 'light' : 'dark';
 }
 
-function applyTheme() {
-    if (isDark.value) {
+watchEffect(() => {
+    if (theme.value === 'dark') {
         document.documentElement.classList.add('dark');
         document.documentElement.classList.remove('light');
-        localStorage.setItem('theme', 'dark');
     } else {
         document.documentElement.classList.add('light');
         document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
+        theme.value = 'light';
     }
-}
+});
 </script>
 
 <template>

@@ -1,14 +1,43 @@
 <script setup lang="ts">
+import { computedAsync } from '@vueuse/core';
+
 import type { Message } from '@shared/db/message';
 import type { User } from '@shared/db/user';
 
 import UserAvatar from '../UserAvatar.vue';
 
+import { useLabsStore } from '../../store/labs';
+import { apiFetch } from '../../services/api';
+
 export interface ChannelMessageProps {
     message: Message;
-    author: User;
+    author: User | null;
 }
-defineProps<ChannelMessageProps>();
+
+const props = defineProps<ChannelMessageProps>();
+const labStore = useLabsStore();
+
+const author = computedAsync(async () => {
+    // If this is already set then great!
+    if (props.author) {
+        return props.author;
+    }
+
+    // If not, we have to fetch this, and store it into the lab store.
+    const authorId = props.message.user_id;
+    const res = await apiFetch(`/users/${authorId}`);
+    if (!res.ok) {
+        console.error('[labs] fetchUser failed', res);
+        return null;
+    }
+
+    const author: User = await res.json();
+
+    // Storing this user should also update the props, as the parent of this is getting the updated user
+    // from the store and is reactive
+    labStore.addUser(author);
+    return author;
+}, null);
 </script>
 
 <template>
@@ -18,6 +47,7 @@ defineProps<ChannelMessageProps>();
         <div class="flex flex-row items-start justify-center gap-2">
             <!-- The user's avatar off to the left -->
             <UserAvatar
+                v-if="author"
                 :user="author"
                 size="size-8"
             />
@@ -25,7 +55,10 @@ defineProps<ChannelMessageProps>();
             <div>
                 <!-- Their name and when the message was created off to the right next to each other -->
                 <div class="flex flex-row items-center justify-start gap-2">
-                    <div class="text-fg-primary text-left text-sm">
+                    <div
+                        v-if="author"
+                        class="text-fg-primary text-left text-sm"
+                    >
                         {{ author.name || 'User ' + author.id }}
                     </div>
                     <!-- Show the date and the time it was created-->

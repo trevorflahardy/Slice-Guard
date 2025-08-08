@@ -4,8 +4,9 @@ import { useRoute } from 'vue-router';
 import type { RequestTag } from '@shared/db/request';
 import type { PrintRequestEvent } from '@shared/payloads/ws';
 import Dropdown from '../../../components/Dropdown.vue';
-import PrintRequestListItem from './PrintRequestListItem.vue';
+import PrintRequestListItem from './PrintRequestItem.vue';
 import { useLabsStore } from '../../../store/labs';
+import PrintRequestitemLoading from './PrintRequestitemLoading.vue';
 
 export interface RequestItem extends PrintRequestEvent {}
 
@@ -137,15 +138,21 @@ const selectClass = 'bg-surface-low px-2 py-1 rounded-md text-fg-primary';
                 tag="div"
                 class="grid auto-rows-fr grid-cols-1 gap-5 transition-all duration-300 lg:grid-cols-2 xl:grid-cols-3"
             >
-                <PrintRequestListItem
-                    v-for="(item, index) in filtered"
-                    :key="item.request.id"
-                    :entry="item"
-                    class="grid-item"
-                    :style="{
-                        transitionDelay: `${index * 70}ms`,
-                    }"
-                />
+                <Suspense>
+                    <PrintRequestListItem
+                        v-for="(item, index) in filtered"
+                        :key="item.request.id"
+                        :entry="item"
+                        class="grid-item"
+                        :style="{
+                            transitionDelay: `${index * 70}ms`,
+                        }"
+                    />
+
+                    <template #fallback>
+                        <PrintRequestitemLoading />
+                    </template>
+                </Suspense>
             </TransitionGroup>
         </div>
     </div>

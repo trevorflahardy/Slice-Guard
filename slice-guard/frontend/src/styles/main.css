@@ -1,9 +1,5 @@
 @import 'tailwindcss';
 
-@theme {
-    --radius-5xl: 3rem;
-}
-
 @utility no-scrollbar {
     &::-webkit-scrollbar {
         display: none;
@@ -11,6 +7,36 @@
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --radius-5xl: 3rem;
+}
+
+/**
+* Custom animations
+*/
+@theme {
+    --ease-emph-decel: cubic-bezier(0.05, 0.7, 0.1, 1); /* starts fast, slows at end */
+    --ease-emph-accel: cubic-bezier(0.3, 0, 0.8, 0.15); /* starts slow, speeds up at end */
+
+    --animate-spin-snappy: spin-snappy 700ms 0ms 1 both;
+    --animate-spin-snappy-infinite: spin-snappy 1500ms infinite;
+}
+
+/* 0→180 uses emphasized decel; 180→360 uses emphasized accel */
+@keyframes spin-snappy {
+    0% {
+        transform: rotate(0deg);
+        animation-timing-function: var(--ease-emph-decel);
+    }
+    50% {
+        transform: rotate(180deg);
+        animation-timing-function: var(--ease-emph-accel);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
 
 @theme {
     /*

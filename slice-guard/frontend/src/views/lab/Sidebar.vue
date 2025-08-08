@@ -39,15 +39,14 @@ const inviteModal = useModal();
 const labSettingsModal = useModal();
 const router = useRouter();
 
-const navClass = ref(
-    'text-sm text-fg-primary hover:text-pretty rounded-lg w-full transition-all duration-100 py-1 px-4 hover:shadow-md',
-);
+const navClass =
+    'text-sm text-fg-primary rounded-lg w-full transition-colors duration-0 py-1 px-4 hover:bg-surface';
 
 const navIsActive = (name: string) => {
     return route.name === name;
 };
 
-const isActiveClass = ref('shadow-md dark:shadow-surface dark:shadow-sm');
+const isActiveClass = 'bg-surface outline-1 outline-surface-high';
 
 const dropdownOptions = computed(() => {
     const perms = labsStore.getLabPermissions(Number(labId.value));
@@ -88,28 +87,6 @@ const channelTree = computed<ChannelNode[]>(() => {
     sortNodes(roots);
     return roots;
 });
-
-let dragging: Channel | null = null;
-function dragStart(ch: Channel) {
-    dragging = ch;
-}
-async function dropOn(target: Channel) {
-    if (!dragging || dragging.id === target.id) {
-        return;
-    }
-    const labIdNum = Number(labId.value);
-    const lab = labsStore.getLab(labIdNum);
-    if (!lab) {
-        return;
-    }
-    const newPos = target.position + 1;
-    await apiFetch(`/labs/${labIdNum}/channels/${dragging.id}/position`, {
-        method: 'PATCH',
-        body: JSON.stringify({ position: newPos }),
-        headers: { 'Content-Type': 'application/json' },
-    });
-    dragging = null;
-}
 
 async function handleDropdown(action: string | number | (string | number)[] | null) {
     if (action === 'invite') {
@@ -236,8 +213,8 @@ const sidebarMenuItems: ContextMenuItem[] = [
                 >
                     <ChannelItem
                         :node="node"
-                        :drag-start="dragStart"
-                        :drop-on="dropOn"
+                        :nav-class="navClass"
+                        :nav-is-active-class="isActiveClass"
                     />
                 </template>
             </nav>

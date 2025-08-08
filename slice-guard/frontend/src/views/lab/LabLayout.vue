@@ -23,7 +23,7 @@ const lab = computed(() => labs.getLab(labId.value));
         <!-- Main content area -->
         <div class="bg-surface-lowest flex w-full gap-0">
             <div
-                class="no-scrollbar max-h-screen w-full flex-1 overflow-y-scroll scroll-smooth p-6"
+                class="no-scrollbar max-h-screen w-full flex-1 overflow-y-scroll scroll-smooth px-4 py-6"
             >
                 <!-- Actual insert content-->
                 <router-view />

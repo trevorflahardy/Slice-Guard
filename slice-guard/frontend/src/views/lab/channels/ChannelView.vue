@@ -112,6 +112,7 @@ async function send() {
 
 onMounted(() => {
     ensureHistory();
+    scrollToBottom(false);
 });
 </script>
 
@@ -120,7 +121,7 @@ onMounted(() => {
         <!-- Messages container with scroll handling -->
         <div
             ref="messagesContainer"
-            class="flex-1 space-y-2 overflow-y-auto px-2 py-2"
+            class="flex-1 space-y-2 overflow-y-auto py-2"
             @scroll="checkScrollPosition"
         >
             <!-- Load more button at TOP -->
@@ -140,27 +141,12 @@ onMounted(() => {
             </div>
 
             <!-- Messages displayed in chronological order (oldest to newest) -->
-            <div
+            <ChannelMessage
                 v-for="m in messages"
                 :key="m.id"
-                class="hover:bg-surface-low rounded p-2 transition-colors"
-            >
-                <ChannelMessage
-                    :message="m"
-                    :author="labs.getUser(m.user_id)!"
-                />
-                <div class="flex items-baseline gap-2">
-                    <span class="text-fg-secondary text-xs font-medium">
-                        {{ labs.getUser(m.user_id)?.name || 'User ' + m.user_id }}
-                    </span>
-                    <span class="text-fg-tertiary text-xs">
-                        {{ new Date(m.created_at).toLocaleTimeString() }}
-                    </span>
-                </div>
-                <div class="text-fg-primary mt-1 text-sm whitespace-pre-wrap">
-                    {{ m.content }}
-                </div>
-            </div>
+                :message="m"
+                :author="labs.getUser(m.user_id)!"
+            />
 
             <!-- Empty state -->
             <div

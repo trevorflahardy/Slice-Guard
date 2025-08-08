@@ -5,14 +5,16 @@ import { useLabsStore } from '../../../store/labs';
 import { apiFetch } from '../../../services/api';
 import type { Message } from '@shared/db/message';
 import type { MessageCreatePayload } from '@shared/payloads';
-
 import ChannelMessage from '../../../components/channels/ChannelMessage.vue';
+
+import { HashtagIcon } from '@heroicons/vue/24/solid';
 
 const route = useRoute();
 const labs = useLabsStore();
 const channelId = computed(() => Number(route.params.channelId));
 
 const messages = computed(() => labs.getMessages(channelId.value) || []);
+const channel = computed(() => labs.getChannel(channelId.value));
 
 const content = ref('');
 const loadingMore = ref(false);
@@ -130,6 +132,25 @@ onMounted(() => {
 
 <template>
     <div class="flex h-full flex-col">
+        <!-- Top header that shows information about this current channel. Assume this is a text channel for now
+         and  -->
+        <div
+            v-if="channel"
+            class="sticky top-0 flex items-center justify-start gap-2 rounded-xl px-2 py-3 shadow-sm"
+        >
+            <div class="flex items-center justify-start gap-1">
+                <HashtagIcon class="stroke-fg-secondary/50 h-3 w-3 stroke-3" />
+                <span class="text-fg-secondary inline-block text-center align-top font-semibold">
+                    {{ channel.name }}
+                </span>
+            </div>
+
+            <!-- After goes the description -->
+            <div v-if="channel.description">
+                {{ channel.description }}
+            </div>
+        </div>
+
         <!-- Messages container with scroll handling -->
         <div
             ref="messagesContainer"

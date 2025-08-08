@@ -21,7 +21,6 @@ const props = defineProps<Props>();
 const entry: Ref<RequestItem> = toRef(props, 'entry');
 
 const route = useRoute();
-
 const labId = computed(() => Number(route.params.id));
 
 const statusOptions = [

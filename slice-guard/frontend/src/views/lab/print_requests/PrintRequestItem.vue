@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type RequestItem } from './LabPrintRequests.vue';
-import { computed, ref, toRef, watch } from 'vue';
+import { computed, ref, toRef, watch, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import Dropdown from '../../../components/Dropdown.vue';
 import { apiFetch } from '../../../services/api';
@@ -11,13 +11,14 @@ import { useAuthStore } from '../../../store/auth';
 import { hasLabPermission } from '../../../utils/permissions';
 import { LabPermission } from '@shared/db/lab';
 import UserAvatar from '../../../components/UserAvatar.vue';
+import { watchArray } from '@vueuse/core';
 
 interface Props {
     entry: RequestItem;
 }
 
 const props = defineProps<Props>();
-const entry = toRef(props, 'entry');
+const entry: Ref<RequestItem> = toRef(props, 'entry');
 
 const route = useRoute();
 
@@ -83,44 +84,28 @@ watch(statusModel, async (val) => {
     }
 });
 
-watch(tagIds, async (val, old) => {
-    const currentIds = entry.value.tags.map((t) => t.id);
-    // Ignore updates that mirror current tags (e.g. from websocket patches)
-    if (arraysEqual(val as (number | string)[], currentIds)) {
-        return;
-    }
-
+watchArray(tagIds, async (__newList, oldList, added, removed) => {
     if (!canManage.value) {
         // Revert to actual tags if user lacks permission
-        tagIds.value = currentIds;
+        tagIds.value = oldList;
         return;
     }
 
-    const valNums = val as number[];
-    const oldNums = old as number[];
-    const added = valNums.filter((id) => !oldNums.includes(id));
-    const removed = oldNums.filter((id) => !valNums.includes(id));
-    if (!added.length && !removed.length) {
-        return;
+    for (const id of added) {
+        await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
+            method: 'POST',
+            body: JSON.stringify({ assign: true }),
+        });
     }
 
-    try {
-        for (const id of added) {
-            await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
-                method: 'POST',
-                body: JSON.stringify({ assign: true }),
-            });
-        }
-        for (const id of removed) {
-            await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
-                method: 'POST',
-                body: JSON.stringify({ assign: false }),
-            });
-        }
-        entry.value.tags = allTags.value.filter((t) => valNums.includes(t.id));
-    } catch {
-        tagIds.value = old;
+    for (const id of removed) {
+        await apiFetch(`/labs/${labId.value}/requests/${entry.value.request.id}/tags/${id}`, {
+            method: 'POST',
+            body: JSON.stringify({ assign: false }),
+        });
     }
+
+    entry.value.tags = allTags.value.filter((t) => tagIds.value.includes(t.id));
 });
 
 const tagOptions = computed(() => allTags.value.map((t) => ({ id: t.id, name: t.name })));

@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, defineAsyncComponent, hydrateOnVisible } from 'vue';
 import { useRoute } from 'vue-router';
 import type { RequestTag } from '@shared/db/request';
 import type { PrintRequestEvent } from '@shared/payloads/ws';
 import Dropdown from '../../../components/Dropdown.vue';
-import PrintRequestListItem from './PrintRequestItem.vue';
 import { useLabsStore } from '../../../store/labs';
-import PrintRequestitemLoading from './PrintRequestitemLoading.vue';
+import PrintRequestItemLoading from './PrintRequestItemLoading.vue';
 
 export interface RequestItem extends PrintRequestEvent {}
+
+const PrintRequestListItem = defineAsyncComponent({
+    loader: () => import('./PrintRequestItem.vue'),
+    hydrate: hydrateOnVisible(),
+});
 
 const route = useRoute();
 const labs = useLabsStore();
@@ -133,7 +137,6 @@ const selectClass = 'bg-surface-low px-2 py-1 rounded-md text-fg-primary';
 
         <div class="h-screen">
             <TransitionGroup
-                ref="gridRef"
                 name="grid"
                 tag="div"
                 class="grid auto-rows-fr grid-cols-1 gap-5 transition-all duration-300 lg:grid-cols-2 xl:grid-cols-3"
@@ -150,7 +153,10 @@ const selectClass = 'bg-surface-low px-2 py-1 rounded-md text-fg-primary';
                     />
 
                     <template #fallback>
-                        <PrintRequestitemLoading />
+                        <PrintRequestItemLoading
+                            v-for="n in filtered.length"
+                            :key="n"
+                        />
                     </template>
                 </Suspense>
             </TransitionGroup>

@@ -48,6 +48,10 @@ watch(messages, async (newMessages, oldMessages) => {
     }
 });
 
+/**
+ * Fetch the most recent messages for the active channel if they
+ * haven't been loaded yet.
+ */
 async function ensureHistory() {
     if (labs.hasMessages(channelId.value)) {
         return;
@@ -109,6 +113,14 @@ async function send() {
     wasAtBottom.value = true;
     await scrollToBottom(true);
 }
+
+// Reload message history whenever the active channel changes
+watch(channelId, async () => {
+    // Reset scroll tracking when switching channels
+    wasAtBottom.value = true;
+    await ensureHistory();
+    await scrollToBottom(false);
+});
 
 onMounted(() => {
     ensureHistory();

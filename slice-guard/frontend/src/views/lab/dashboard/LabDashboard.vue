@@ -47,11 +47,33 @@ const channels = computed(() => {
     return labStore.getLabChannels(lab.value.id) || [];
 });
 
+/**
+ * Aggregate cache information across all labs for debug display.
+ */
 const cacheStats = computed(() => {
-    const totalLabs = labStore.labs.size;
-    const totalChannels = labStore.channels.size;
-    const cachedMessages = labStore.messages.size;
-    return { totalLabs, totalChannels, cachedMessages };
+    let totalChannels = 0;
+    let channelsWithMessages = 0;
+    let totalMessages = 0;
+
+    // Sum all channels across labs
+    for (const channelMap of labStore.channels.values()) {
+        totalChannels += channelMap.size;
+    }
+
+    // Sum message counts across all channels
+    for (const msgMap of labStore.messages.values()) {
+        channelsWithMessages += msgMap.size;
+        for (const msgs of msgMap.values()) {
+            totalMessages += msgs.length;
+        }
+    }
+
+    return {
+        totalLabs: labStore.labs.size,
+        totalChannels,
+        channelsWithMessages,
+        totalMessages,
+    };
 });
 
 const PERMISSION_OPTIONS = [
@@ -211,12 +233,27 @@ async function createMockRequest() {
         </table>
     </div>
 
-    <!-- Debug application state -->
-    <div class="mt-6 space-y-1">
-        <h2 class="text-fg-primary font-semibold">App State (debug)</h2>
-        <p class="text-fg-primary text-sm">Labs Loaded: {{ cacheStats.totalLabs }}</p>
-        <p class="text-fg-primary text-sm">Total Channels: {{ cacheStats.totalChannels }}</p>
-        <p class="text-fg-primary text-sm">Cached Messages: {{ cacheStats.cachedMessages }}</p>
+    <!-- Debug cache statistics in a compact card layout -->
+    <div class="mt-6">
+        <h2 class="text-fg-primary font-semibold">Cache State</h2>
+        <div class="mt-2 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div class="bg-surface-low rounded-lg p-3 text-center">
+                <p class="text-fg-secondary text-xs">Labs</p>
+                <p class="text-fg-primary font-medium">{{ cacheStats.totalLabs }}</p>
+            </div>
+            <div class="bg-surface-low rounded-lg p-3 text-center">
+                <p class="text-fg-secondary text-xs">Channels</p>
+                <p class="text-fg-primary font-medium">{{ cacheStats.totalChannels }}</p>
+            </div>
+            <div class="bg-surface-low rounded-lg p-3 text-center">
+                <p class="text-fg-secondary text-xs">Channels w/ Messages</p>
+                <p class="text-fg-primary font-medium">{{ cacheStats.channelsWithMessages }}</p>
+            </div>
+            <div class="bg-surface-low rounded-lg p-3 text-center">
+                <p class="text-fg-secondary text-xs">Messages Cached</p>
+                <p class="text-fg-primary font-medium">{{ cacheStats.totalMessages }}</p>
+            </div>
+        </div>
     </div>
 
     <!-- Debug member permissions -->

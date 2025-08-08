@@ -29,6 +29,7 @@ in real time.
 |      17 | `LAB_CREATED`     | Server → Client | `{ lab }` full lab state when a lab is created                                                       |
 |      18 | `LAB_UPDATED`     | Server → Client | `{ lab }` broadcast when lab details change                                                          |
 |      19 | `LAB_DELETED`     | Server → Client | `{ labId }` broadcast when a lab is deleted                                                          |
+|      26 | `MEMBER_UPDATED`  | Server → Client | `{ labId, member, user }` broadcast when a member's roles change                                     |
 
 Payload interfaces are defined in `slice-guard/shared/payloads/ws.ts` and reused
 by both the frontend and backend.

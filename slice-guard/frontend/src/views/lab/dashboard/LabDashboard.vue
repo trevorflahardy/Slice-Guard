@@ -117,6 +117,18 @@ watch(
     { immediate: true },
 );
 
+const memberRoleSelections = ref<Record<number, number[]>>({});
+
+watch(
+    members,
+    (ms) => {
+        for (const m of ms) {
+            memberRoleSelections.value[m.member.user_id] = m.member.roles.map((r) => r.id);
+        }
+    },
+    { immediate: true },
+);
+
 /**
  * Persist permission changes for a given role.
  */
@@ -133,6 +145,21 @@ async function updateRolePermissions(role: LabRole) {
     const updated = await res.json();
 
     labStore.updateRole(lab.value.id, updated);
+}
+
+async function updateMemberRoles(userId: number) {
+    if (!lab.value) {
+        return;
+    }
+    await apiFetch(`/labs/${lab.value.id}/members/${userId}/roles`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            labId: lab.value.id,
+            userId,
+            roleIds: memberRoleSelections.value[userId],
+        }),
+        headers: { 'Content-Type': 'application/json' },
+    });
 }
 
 /**
@@ -278,6 +305,7 @@ async function createTag() {
                 <thead class="text-fg-secondary">
                     <tr>
                         <th class="text-left">Member</th>
+                        <th class="text-left">Roles</th>
                         <th class="text-left">Permissions</th>
                     </tr>
                 </thead>
@@ -288,6 +316,29 @@ async function createTag() {
                         class="text-fg-primary"
                     >
                         <td>{{ m.user?.name || m.user?.email || m.member.user_id }}</td>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <select
+                                    v-model="memberRoleSelections[m.member.user_id]"
+                                    multiple
+                                    class="border-surface-high bg-surface-low rounded text-sm"
+                                >
+                                    <option
+                                        v-for="r in roles"
+                                        :key="r.id"
+                                        :value="r.id"
+                                    >
+                                        {{ r.name }}
+                                    </option>
+                                </select>
+                                <Button
+                                    variant="secondary"
+                                    @click="updateMemberRoles(m.member.user_id)"
+                                >
+                                    Save
+                                </Button>
+                            </div>
+                        </td>
                         <td>{{ computeMemberPermissions(m.member) }}</td>
                     </tr>
                 </tbody>

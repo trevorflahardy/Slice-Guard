@@ -67,6 +67,10 @@ export class Server {
                         withLogging(lab.removeMemberRoute)(req, this.state, req.params),
                     GET: (req) => withLogging(lab.getMemberRoute)(req, this.state, req.params),
                 },
+                '/api/labs/:labId/members/:userId/roles': {
+                    PUT: (req) =>
+                        withLogging(lab.updateMemberRolesRoute)(req, this.state, req.params),
+                },
                 '/api/labs/:labId/members/@me': {
                     DELETE: (req) => withLogging(lab.leaveLabRoute)(req, this.state, req.params),
                 },

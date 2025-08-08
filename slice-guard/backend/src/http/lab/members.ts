@@ -6,11 +6,12 @@ import {
     listMembers,
     getMemberRoles,
     getMemberRolePermissions,
+    setMemberRoles,
 } from '../../db/lab';
 import { findPublicUserById } from '../../db/user';
 import { LabPermission, type LabMember } from '@shared/db/lab';
 import { hasLabPermission } from '../../utils/permissions';
-import type { MemberAddPayload } from '@shared/payloads';
+import type { MemberAddPayload, MemberRoleUpdatePayload } from '@shared/payloads';
 import { WsEvent } from '@shared/payloads/ws';
 
 /**
@@ -127,4 +128,29 @@ export const listMembersRoute = withAuth(async (_req, userId, state, params) => 
     }
 
     return Response.json(results);
+});
+
+/**
+ * PUT /api/labs/:labId/members/:userId/roles
+ */
+export const updateMemberRolesRoute = withAuth(async (req, userId, state, params) => {
+    const labId = Number(params.labId);
+    const targetId = Number(params.userId);
+    const { roleIds } = (await req.json()) as MemberRoleUpdatePayload;
+
+    const perms = await getMemberRolePermissions(state.db, labId, userId);
+    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES)) {
+        return new Response('Unauthorized', { status: 403 });
+    }
+
+    await setMemberRoles(state.db, labId, targetId, roleIds);
+    const memberRow = await getMember(state.db, labId, targetId);
+    if (!memberRow) {
+        return new Response('Not found', { status: 404 });
+    }
+    const roles = await getMemberRoles(state.db, labId, targetId);
+    const member: LabMember = { ...memberRow, roles };
+    const user = await findPublicUserById(state.db, targetId);
+    state.broadcast({ op: WsEvent.MEMBER_UPDATED, d: { labId, member, user } });
+    return Response.json(member);
 });

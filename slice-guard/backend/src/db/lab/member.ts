@@ -86,3 +86,34 @@ export async function getMemberRoles(
     `;
     return rows;
 }
+
+/**
+ * Replace all role assignments for a member within a lab.
+ *
+ * Ensures the lab's default role is always included even if omitted
+ * from the provided list.
+ */
+export async function setMemberRoles(
+    db: SQL,
+    labId: number,
+    userId: number,
+    roleIds: number[],
+): Promise<void> {
+    const [{ default_role_id }] = await db`
+        SELECT default_role_id FROM lab.labs WHERE id = ${labId}
+    `;
+    const ids = roleIds.includes(Number(default_role_id))
+        ? roleIds
+        : [...roleIds, Number(default_role_id)];
+
+    await db`
+        DELETE FROM lab.member_roles
+         WHERE lab_id = ${labId} AND user_id = ${userId}
+    `;
+    for (const roleId of ids) {
+        await db`
+            INSERT INTO lab.member_roles (lab_id, user_id, role_id)
+                 VALUES (${labId}, ${userId}, ${roleId})
+        `;
+    }
+}

@@ -395,6 +395,20 @@ export const useLabsStore = defineStore('labs', {
                 members.set(event.member.user_id, event.member);
             }
         },
+        /** Update an existing member's data. */
+        updateMember(labId: LabId, event: MemberEvent) {
+            if (DEV) {
+                console.debug('[labs] updateMember', labId, event);
+            }
+
+            if (event.user) {
+                this.users.set(event.user.id, event.user);
+            }
+            const members = this.members.get(labId);
+            if (members && members.has(event.member.user_id)) {
+                members.set(event.member.user_id, event.member);
+            }
+        },
         /** Remove member by user id. */
         removeMember(labId: LabId, userId: UserId) {
             if (DEV) {

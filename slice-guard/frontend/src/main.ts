@@ -23,6 +23,7 @@ ws.addListener(WsEvent.TAG_UPDATED, ({ tag }) => labs.updateTag(tag.lab_id, tag)
 ws.addListener(WsEvent.TAG_DELETED, ({ labId, tagId }) => labs.removeTag(labId, tagId));
 ws.addListener(WsEvent.MEMBER_JOINED, (d) => labs.addMember(d.labId, d));
 ws.addListener(WsEvent.MEMBER_LEFT, (d) => labs.handleMemberLeft(d.labId, d.userId));
+ws.addListener(WsEvent.MEMBER_UPDATED, (d) => labs.updateMember(d.labId, d));
 ws.addListener(WsEvent.LAB_UPDATED, (d) => labs.updateLab(d.lab));
 ws.addListener(WsEvent.INVITE_CREATED, (d) => labs.addInvite(d.invite.lab_id, d.invite));
 ws.addListener(WsEvent.INVITE_UPDATED, (d) => labs.updateInvite(d.invite.lab_id, d.invite));

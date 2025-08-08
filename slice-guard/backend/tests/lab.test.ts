@@ -9,6 +9,7 @@ import {
     removeMember,
     listMembers,
     getMemberRolePermissions,
+    setMemberRoles,
     type LabRow,
     type LabRoleRow,
     type LabMemberRow,
@@ -99,7 +100,14 @@ test('updateLab updates fields', async () => {
 test('createRole inserts expected values', async () => {
     const role = sampleRole();
     const db = createMockSQL([[role]]);
-    const result = await createRole(db as any, role.lab_id, role.name, role.permissions as number, 0, null);
+    const result = await createRole(
+        db as any,
+        role.lab_id,
+        role.name,
+        role.permissions as number,
+        0,
+        null,
+    );
     expect(normalize(db.queries.at(-1))).toBe(
         'INSERT INTO lab.roles (lab_id, name, permissions, rank, color) VALUES ($1, $2, $3, $4, $5) RETURNING id, lab_id, name, permissions, rank, color, created_at',
     );
@@ -110,11 +118,26 @@ test('createRole inserts expected values', async () => {
 test('updateRole updates permissions', async () => {
     const role = sampleRole();
     const db = createMockSQL([[role]]);
-    const result = await updateRole(db as any, role.lab_id, role.id, role.permissions as number, undefined, undefined, null);
+    const result = await updateRole(
+        db as any,
+        role.lab_id,
+        role.id,
+        role.permissions as number,
+        undefined,
+        undefined,
+        null,
+    );
     expect(normalize(db.queries.at(-1))).toBe(
         'UPDATE lab.roles SET permissions = $1, rank = COALESCE($2, rank), name = COALESCE($3, name), color = COALESCE($4, color) WHERE id = $5 AND lab_id = $6 RETURNING id, lab_id, name, permissions, rank, color, created_at',
     );
-    expect(db.params.at(-1)).toEqual([role.permissions, undefined, undefined, null, role.id, role.lab_id]);
+    expect(db.params.at(-1)).toEqual([
+        role.permissions,
+        undefined,
+        undefined,
+        null,
+        role.id,
+        role.lab_id,
+    ]);
     expect(result).toEqual(role);
 });
 
@@ -163,4 +186,23 @@ test('listMembers selects expected', async () => {
     );
     expect(db.params.at(-1)).toEqual([m.lab_id]);
     expect(result).toEqual([m]);
+});
+
+test('setMemberRoles replaces roles and enforces default', async () => {
+    const db = createMockSQL([[{ default_role_id: 5 }]]);
+    await setMemberRoles(db as any, 1, 2, [3]);
+    expect(normalize(db.queries[0])).toBe('SELECT default_role_id FROM lab.labs WHERE id = $1');
+    expect(db.params[0]).toEqual([1]);
+    expect(normalize(db.queries[1])).toBe(
+        'DELETE FROM lab.member_roles WHERE lab_id = $1 AND user_id = $2',
+    );
+    expect(db.params[1]).toEqual([1, 2]);
+    expect(normalize(db.queries[2])).toBe(
+        'INSERT INTO lab.member_roles (lab_id, user_id, role_id) VALUES ($1, $2, $3)',
+    );
+    expect(db.params[2]).toEqual([1, 2, 3]);
+    expect(normalize(db.queries[3])).toBe(
+        'INSERT INTO lab.member_roles (lab_id, user_id, role_id) VALUES ($1, $2, $3)',
+    );
+    expect(db.params[3]).toEqual([1, 2, 5]);
 });

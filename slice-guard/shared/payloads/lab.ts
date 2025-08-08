@@ -46,3 +46,10 @@ export interface MemberRemovePayload {
     labId: number;
     userId: number;
 }
+
+/** Payload for updating a member's role assignments. */
+export interface MemberRoleUpdatePayload {
+    labId: number;
+    userId: number;
+    roleIds: number[];
+}

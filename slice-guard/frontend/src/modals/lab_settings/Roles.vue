@@ -58,7 +58,6 @@ function togglePerm(bit: number) {
 
 const manageable = computed(() => !!selectedRole.value && selectedRole.value.rank <= topRank);
 const isDefault = computed(() => selectedRole.value?.id === defaultRoleId);
-const editable = computed(() => manageable.value && !isDefault.value);
 
 const listEl = ref<HTMLElement | null>(null);
 

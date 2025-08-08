@@ -63,6 +63,8 @@ export enum WsEvent {
     MESSAGE_UPDATED = 24,
     /** Emitted when a message is deleted. */
     MESSAGE_DELETED = 25,
+    /** Emitted when a member's roles change. */
+    MEMBER_UPDATED = 26,
 }
 
 export type WsEventType = keyof typeof WsEvent;
@@ -201,6 +203,7 @@ export type WsPayloads = {
     [WsEvent.MESSAGE_CREATED]: { op: WsEvent.MESSAGE_CREATED; d: MessageEvent };
     [WsEvent.MESSAGE_UPDATED]: { op: WsEvent.MESSAGE_UPDATED; d: MessageEvent };
     [WsEvent.MESSAGE_DELETED]: { op: WsEvent.MESSAGE_DELETED; d: MessageDeletedEvent };
+    [WsEvent.MEMBER_UPDATED]: { op: WsEvent.MEMBER_UPDATED; d: MemberEvent };
     [WsEvent.ERROR]: { op: WsEvent.ERROR; d: ErrorPayload };
 };
 

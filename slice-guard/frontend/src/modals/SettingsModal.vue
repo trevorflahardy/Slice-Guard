@@ -105,7 +105,7 @@ onUnmounted(() => {
                         </div>
                     </div>
                 </div>
-                <div class="bg-surface-low flex h-full w-full px-7 py-10">
+                <div class="bg-surface-low flex h-full w-full overflow-y-scroll px-7 py-10">
                     <div class="h-full w-[80%]">
                         <component :is="activePage.component" />
                     </div>

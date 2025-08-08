@@ -18,6 +18,7 @@ const labId = Number(route.params.id);
 const roles = computed(() => labs.getLabRoles(labId));
 const roleList = ref<LabRole[]>([]);
 const selectedId = ref<number | null>(null);
+const defaultRoleId = labs.getLab(labId)?.default_role_id ?? null;
 
 watch(
     roles,
@@ -39,6 +40,7 @@ const roleName = ref('');
 const roleColor = ref<string>('#000000');
 const permMask = ref<number>(0);
 
+// Keep form fields in sync with the selected role
 watch(selectedRole, (r) => {
     if (r) {
         roleName.value = r.name;
@@ -47,11 +49,16 @@ watch(selectedRole, (r) => {
     }
 });
 
+/**
+ * Toggle a permission bit on or off in the local mask.
+ */
 function togglePerm(bit: number) {
     permMask.value ^= bit;
 }
 
-const editable = computed(() => !!selectedRole.value && selectedRole.value.rank <= topRank);
+const manageable = computed(() => !!selectedRole.value && selectedRole.value.rank <= topRank);
+const isDefault = computed(() => selectedRole.value?.id === defaultRoleId);
+const editable = computed(() => manageable.value && !isDefault.value);
 
 const listEl = ref<HTMLElement | null>(null);
 
@@ -61,6 +68,7 @@ useSortable(listEl, roleList, {
     onEnd: async (evt) => {
         const firstEditable = roleList.value.findIndex((r) => r.rank <= topRank);
         if (evt.newIndex < firstEditable) {
+            // Revert if trying to move above unmanaged roles
             roleList.value = [...roleList.value].sort((a, b) => b.rank - a.rank);
             return;
         }
@@ -68,12 +76,10 @@ useSortable(listEl, roleList, {
         const updates: { id: number; rank: number; permissions: number }[] = [];
         roleList.value.forEach((r, idx) => {
             const newRank = total - idx;
-            if (r.rank !== newRank) {
-                if (r.rank <= topRank) {
-                    updates.push({ id: r.id, rank: newRank, permissions: Number(r.permissions) });
-                }
-                r.rank = newRank;
+            if (r.rank !== newRank && r.rank <= topRank) {
+                updates.push({ id: r.id, rank: newRank, permissions: Number(r.permissions) });
             }
+            r.rank = newRank;
         });
         for (const u of updates) {
             await apiFetch(`/labs/${labId}/roles/${u.id}`, {
@@ -81,6 +87,11 @@ useSortable(listEl, roleList, {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ permissions: u.permissions, rank: u.rank }),
             });
+            // Update store immediately so order persists
+            const role = labs.roles.get(labId)?.get(u.id);
+            if (role) {
+                role.rank = u.rank;
+            }
         }
     },
 });
@@ -114,6 +125,9 @@ const PERMS = [
     },
 ];
 
+/**
+ * Persist changes made to the currently selected role.
+ */
 async function save() {
     if (!selectedRole.value) {
         return;
@@ -128,9 +142,20 @@ async function save() {
             rank: selectedRole.value.rank,
         }),
     });
+    // Sync updated role back into the store
+    const role = labs.roles.get(labId)?.get(selectedRole.value.id);
+    if (role) {
+        role.name = roleName.value;
+        role.color = roleColor.value;
+        role.permissions = permMask.value;
+    }
 }
 
+/**
+ * Create a new role at a rank the current user can manage and select it.
+ */
 async function createRole() {
+    const defaultRank = roleList.value.find((r) => r.id === defaultRoleId)?.rank ?? 0;
     const res = await apiFetch(`/labs/${labId}/roles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -138,15 +163,21 @@ async function createRole() {
             name: 'new role',
             color: '#888888',
             permissions: 0,
-            rank: topRank,
+            rank: Math.max(defaultRank + 1, topRank),
         }),
     });
     if (res.ok) {
         const role: LabRole = await res.json();
+        labs.roles.get(labId)?.set(role.id, role);
+        roleList.value.push(role);
+        roleList.value.sort((a, b) => b.rank - a.rank);
         selectedId.value = role.id;
     }
 }
 
+/**
+ * Remove the currently selected role.
+ */
 async function removeRole() {
     if (!selectedRole.value) {
         return;
@@ -156,8 +187,8 @@ async function removeRole() {
 }
 </script>
 <template>
-    <div class="flex gap-4">
-        <aside class="border-surface-high w-48 border-r pr-2">
+    <div class="flex h-full gap-4 overflow-y-auto">
+        <aside class="border-surface w-48 border-r pr-2">
             <ul
                 ref="listEl"
                 class="flex flex-col gap-1"
@@ -165,9 +196,9 @@ async function removeRole() {
                 <li
                     v-for="r in roleList"
                     :key="r.id"
-                    class="hover:bg-surface-high flex cursor-pointer items-center gap-2 rounded p-2"
+                    class="hover:bg-surface flex cursor-pointer items-center gap-2 rounded-lg p-2"
                     :class="[
-                        { 'bg-surface-high': selectedId === r.id },
+                        { 'bg-surface': selectedId === r.id },
                         r.rank <= topRank ? 'draggable' : '',
                     ]"
                     @click="selectedId = r.id"
@@ -189,13 +220,14 @@ async function removeRole() {
         <div
             v-if="selectedRole"
             class="flex flex-1 flex-col gap-4"
-            :class="!editable ? 'pointer-events-none opacity-50' : ''"
+            :class="!manageable ? 'pointer-events-none opacity-50' : ''"
         >
             <label class="flex flex-col gap-1">
                 <span>Name</span>
                 <input
                     v-model="roleName"
-                    class="bg-surface-high rounded p-2"
+                    :disabled="isDefault"
+                    class="bg-surface rounded-lg p-2 disabled:opacity-50"
                 />
             </label>
             <div class="flex flex-col gap-2">
@@ -204,10 +236,11 @@ async function removeRole() {
                     <input
                         v-model="roleColor"
                         type="color"
-                        class="h-8 w-16 border-none p-0"
+                        :disabled="isDefault"
+                        class="h-8 w-16 rounded border-none p-0 disabled:opacity-50"
                     />
                 </label>
-                <div class="bg-surface-high max-h-40 rounded p-2">
+                <div class="bg-surface max-h-40 rounded-lg p-2">
                     <MockChannelMessage
                         :name="auth.user?.name || 'User'"
                         :color="roleColor"
@@ -222,30 +255,44 @@ async function removeRole() {
             </div>
             <div class="flex flex-col gap-2">
                 <h3 class="font-semibold">Permissions</h3>
-                <label
-                    v-for="p in PERMS"
-                    :key="p.bit"
-                    class="flex cursor-pointer items-center gap-2"
-                >
-                    <input
-                        type="checkbox"
-                        :checked="(permMask & p.bit) !== 0"
-                        @change="togglePerm(p.bit)"
-                    />
-                    <div>
-                        <div class="font-medium">{{ p.label }}</div>
-                        <div class="text-content-dimmed text-sm">{{ p.desc }}</div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div
+                        v-for="p in PERMS"
+                        :key="p.bit"
+                        class="bg-surface flex items-center justify-between rounded-lg p-3"
+                    >
+                        <div>
+                            <div class="font-medium">{{ p.label }}</div>
+                            <div class="text-content-dimmed text-sm">{{ p.desc }}</div>
+                        </div>
+                        <label class="relative inline-flex cursor-pointer items-center">
+                            <input
+                                type="checkbox"
+                                class="peer sr-only"
+                                :checked="(permMask & p.bit) !== 0"
+                                @change="togglePerm(p.bit)"
+                            />
+                            <div
+                                class="bg-surface-low h-5 w-10 rounded-full transition-colors peer-checked:bg-accent"
+                            >
+                                <span
+                                    class="bg-surface absolute left-0.5 top-0.5 h-4 w-4 rounded-full transition-transform peer-checked:translate-x-5"
+                                />
+                            </div>
+                        </label>
                     </div>
-                </label>
+                </div>
             </div>
             <div class="mt-auto flex justify-between">
                 <Button
                     variant="danger"
+                    :disabled="isDefault"
                     @click="removeRole"
                     >Delete</Button
                 >
                 <Button
                     variant="primary"
+                    :disabled="!manageable"
                     @click="save"
                     >Save</Button
                 >

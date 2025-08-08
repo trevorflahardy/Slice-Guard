@@ -1,5 +1,5 @@
 import { withAuth } from '../middleware';
-import { createRole, getMemberRolePermissions, updateRole, deleteRole } from '../../db/lab';
+import { createRole, getMemberRolePermissions, updateRole, deleteRole, getLab } from '../../db/lab';
 import { LabPermission } from '@shared/db/lab';
 import { hasLabPermission } from '../../utils/permissions';
 import { WsEvent } from '@shared/payloads/ws';
@@ -35,7 +35,18 @@ export const updateRoleRoute = withAuth(async (req, userId, state, params) => {
         return new Response('Unauthorized', { status: 403 });
     }
 
-    const role = await updateRole(state.db, labId, roleId, permissions, rank, name, color ?? null);
+    const lab = await getLab(state.db, labId);
+    const isDefault = lab?.default_role_id === roleId;
+    // Prevent renaming or recoloring the lab's default role
+    const role = await updateRole(
+        state.db,
+        labId,
+        roleId,
+        permissions,
+        rank,
+        isDefault ? undefined : name,
+        isDefault ? undefined : color ?? null,
+    );
     state.broadcast({ op: WsEvent.ROLE_UPDATED, d: { role } });
     return Response.json(role);
 });

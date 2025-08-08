@@ -28,7 +28,7 @@ const routes: RouteRecordRaw[] = [
                     {
                         path: '',
                         name: 'LabDashboard',
-                        component: () => import('../views/lab/LabDashboard.vue'),
+                        component: () => import('../views/lab/dashboard/LabDashboard.vue'),
                     },
                     {
                         path: 'print-requests',

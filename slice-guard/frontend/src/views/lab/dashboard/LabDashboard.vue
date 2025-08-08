@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import ThemeToggle from '../../components/ThemeToggle.vue';
+import ThemeToggle from '../../../components/ThemeToggle.vue';
 import { ref, computed, watch } from 'vue';
-import { apiFetch } from '../../services/api';
-import Button from '../../components/Button.vue';
-import { useLabsStore } from '../../store/labs';
-import { computeMemberPermissions } from '../../utils/permissions';
+import { apiFetch } from '../../../services/api';
+import Button from '../../../components/Button.vue';
+import { useLabsStore } from '../../../store/labs';
+import { computeMemberPermissions } from '../../../utils/permissions';
 import { LabPermission, type LabRole } from '@shared/db/lab';
 import { useRoute } from 'vue-router';
 

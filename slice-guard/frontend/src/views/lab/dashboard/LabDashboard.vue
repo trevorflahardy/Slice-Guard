@@ -14,7 +14,9 @@ const routeLabId = computed(() => Number(route.params.id));
 
 const lab = computed(() => labStore.getLab(routeLabId.value));
 
+// Tag management fields
 const tagName = ref('');
+const tagColor = ref('#000000');
 
 const invites = computed(() => {
     if (!lab.value) {
@@ -89,10 +91,16 @@ const PERMISSION_OPTIONS = [
     { value: LabPermission.MANAGE_INVITES, label: 'Manage Invites' },
 ];
 
+/**
+ * Convert a bitmask of permissions into an array of option values.
+ */
 function bitsToArray(bits: number) {
     return PERMISSION_OPTIONS.filter((p) => (Number(bits) & p.value) !== 0).map((p) => p.value);
 }
 
+/**
+ * Collapse an array of permission values into a bitmask.
+ */
 function arrayToBits(arr: number[]) {
     return arr.reduce((acc, v) => acc | v, 0);
 }
@@ -109,6 +117,9 @@ watch(
     { immediate: true },
 );
 
+/**
+ * Persist permission changes for a given role.
+ */
 async function updateRolePermissions(role: LabRole) {
     if (!lab.value) {
         return;
@@ -124,6 +135,9 @@ async function updateRolePermissions(role: LabRole) {
     labStore.updateRole(lab.value.id, updated);
 }
 
+/**
+ * Create a new tag with a custom color.
+ */
 async function createTag() {
     if (!lab.value) {
         return;
@@ -131,200 +145,180 @@ async function createTag() {
     await apiFetch(`/labs/${lab.value.id}/tags`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: tagName.value, color: '#000000', isDefault: false }),
+        body: JSON.stringify({
+            name: tagName.value,
+            color: tagColor.value,
+            isDefault: false,
+        }),
     });
     tagName.value = '';
-}
-
-async function createMockRequest() {
-    if (!lab.value) {
-        return;
-    }
-    await apiFetch(`/labs/${lab.value.id}/requests`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file: btoa('mock'), metadata: {}, description: 'Mock request' }),
-    });
+    tagColor.value = '#000000';
 }
 </script>
 
 <template>
-    <!-- Theme Toggle Button -->
     <ThemeToggle
         class="mt-4"
         variant="secondary"
     />
 
-    <!-- Development helpers -->
-    <div class="mt-6 space-y-2">
-        <h2 class="text-fg-primary font-semibold">Dev Tools</h2>
-        <div class="flex items-center gap-2">
-            <input
-                v-model="tagName"
-                placeholder="Tag name"
-                class="bg-surface-low text-fg-primary rounded-md px-2 py-1"
-            />
-            <button
-                class="bg-salem-800 rounded-md px-2 py-1 text-white"
-                @click="createTag"
-            >
-                Create Tag
-            </button>
-        </div>
-        <button
-            class="bg-surface-low text-fg-primary rounded-md px-2 py-1"
-            @click="createMockRequest"
-        >
-            Create Mock Request
-        </button>
-    </div>
-
-    <!-- Debug invites -->
-    <div class="mt-6 space-y-2">
-        <h2 class="text-fg-primary font-semibold">Invites (debug)</h2>
-        <table class="w-full text-sm">
-            <thead class="text-fg-secondary">
-                <tr>
-                    <th class="text-left">Code</th>
-                    <th class="text-left">Uses</th>
-                    <th class="text-left">Max</th>
-                    <th class="text-left">Expires</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr
-                    v-for="i in invites"
-                    :key="i.id"
-                    class="text-fg-primary"
+    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Tag management -->
+        <div class="bg-surface-low space-y-4 rounded-lg p-4">
+            <h2 class="text-fg-primary font-semibold">Tags</h2>
+            <div class="flex items-center gap-2">
+                <input
+                    v-model="tagName"
+                    placeholder="Tag name"
+                    class="bg-surface text-fg-primary flex-1 rounded-md px-2 py-1"
+                />
+                <input
+                    v-model="tagColor"
+                    type="color"
+                    class="h-9 w-9 cursor-pointer rounded-md border-none bg-transparent p-0"
+                />
+                <Button
+                    variant="secondary"
+                    @click="createTag"
+                    >Create</Button
                 >
-                    <td>{{ i.code }}</td>
-                    <td>{{ i.uses }}</td>
-                    <td>{{ i.max_uses ?? '∞' }}</td>
-                    <td>{{ i.expires_at ? new Date(i.expires_at).toLocaleString() : 'never' }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Debug channels -->
-    <div class="mt-6 space-y-2">
-        <h2 class="text-fg-primary font-semibold">Channels (debug)</h2>
-        <table class="w-full text-sm">
-            <thead class="text-fg-secondary">
-                <tr>
-                    <th class="text-left">ID</th>
-                    <th class="text-left">Name</th>
-                    <th class="text-left">Type</th>
-                    <th class="text-left">Category</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr
-                    v-for="c in channels"
-                    :key="c.id"
-                    class="text-fg-primary"
-                >
-                    <td>{{ c.id }}</td>
-                    <td>{{ c.name }}</td>
-                    <td>{{ c.type }}</td>
-                    <td>{{ c.category_id ?? '-' }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Debug cache statistics in a compact card layout -->
-    <div class="mt-6">
-        <h2 class="text-fg-primary font-semibold">Cache State</h2>
-        <div class="mt-2 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div class="bg-surface-low rounded-lg p-3 text-center">
-                <p class="text-fg-secondary text-xs">Labs</p>
-                <p class="text-fg-primary font-medium">{{ cacheStats.totalLabs }}</p>
-            </div>
-            <div class="bg-surface-low rounded-lg p-3 text-center">
-                <p class="text-fg-secondary text-xs">Channels</p>
-                <p class="text-fg-primary font-medium">{{ cacheStats.totalChannels }}</p>
-            </div>
-            <div class="bg-surface-low rounded-lg p-3 text-center">
-                <p class="text-fg-secondary text-xs">Channels w/ Messages</p>
-                <p class="text-fg-primary font-medium">{{ cacheStats.channelsWithMessages }}</p>
-            </div>
-            <div class="bg-surface-low rounded-lg p-3 text-center">
-                <p class="text-fg-secondary text-xs">Messages Cached</p>
-                <p class="text-fg-primary font-medium">{{ cacheStats.totalMessages }}</p>
             </div>
         </div>
-    </div>
 
-    <!-- Debug member permissions -->
-    <div class="mt-6 space-y-2">
-        <h2 class="text-fg-primary font-semibold">Member Permissions (debug)</h2>
-        <table class="w-full text-sm">
-            <thead class="text-fg-secondary">
-                <tr>
-                    <th class="text-left">Member</th>
-                    <th class="text-left">Permissions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr
-                    v-for="m in members"
-                    :key="m.member.user_id"
-                    class="text-fg-primary"
-                >
-                    <td>{{ m.user?.name || m.user?.email || m.member.user_id }}</td>
-                    <td>{{ computeMemberPermissions(m.member) }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Debug roles -->
-    <div class="mt-6 space-y-2">
-        <h2 class="text-fg-primary font-semibold">Roles (debug)</h2>
-        <div
-            v-for="r in roles"
-            :key="r.id"
-            class="flex items-center gap-2 text-sm"
-        >
-            <span class="text-fg-primary w-32">{{ r.name }}</span>
-            <select
-                v-model="roleSelections[r.id]"
-                multiple
-                class="bg-surface-low text-fg-primary rounded-md px-2 py-1"
-            >
-                <option
-                    v-for="opt in PERMISSION_OPTIONS"
-                    :key="opt.value"
-                    :value="opt.value"
-                >
-                    {{ opt.label }}
-                </option>
-            </select>
-            <button
-                class="bg-surface-low text-fg-primary rounded-md px-2 py-1"
-                @click="updateRolePermissions(r)"
-            >
-                Save
-            </button>
+        <!-- Cache statistics -->
+        <div class="bg-surface-low space-y-4 rounded-lg p-4">
+            <h2 class="text-fg-primary font-semibold">Cache State</h2>
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div class="text-center">
+                    <p class="text-fg-secondary text-xs">Labs</p>
+                    <p class="text-fg-primary font-medium">{{ cacheStats.totalLabs }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-fg-secondary text-xs">Channels</p>
+                    <p class="text-fg-primary font-medium">{{ cacheStats.totalChannels }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-fg-secondary text-xs">Channels w/ Messages</p>
+                    <p class="text-fg-primary font-medium">{{ cacheStats.channelsWithMessages }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-fg-secondary text-xs">Messages Cached</p>
+                    <p class="text-fg-primary font-medium">{{ cacheStats.totalMessages }}</p>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- Testing for theme -->
-    <div class="mt-6 flex flex-row gap-2">
-        <Button
-            v-for="entry in [
-                'surface-lowest',
-                'surface-low',
-                'surface',
-                'surface-high',
-                'surface-highest',
-            ]"
-            :key="entry"
-            :class="`bg-${entry}`"
-            class="drop-shadow-md"
-        >
-            <span class="text-fg-primary"> Foo bar </span>
-        </Button>
+        <!-- Invites -->
+        <div class="bg-surface-low space-y-4 rounded-lg p-4 lg:col-span-2">
+            <h2 class="text-fg-primary font-semibold">Invites</h2>
+            <table class="w-full text-sm">
+                <thead class="text-fg-secondary">
+                    <tr>
+                        <th class="text-left">Code</th>
+                        <th class="text-left">Uses</th>
+                        <th class="text-left">Max</th>
+                        <th class="text-left">Expires</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="i in invites"
+                        :key="i.id"
+                        class="text-fg-primary"
+                    >
+                        <td>{{ i.code }}</td>
+                        <td>{{ i.uses }}</td>
+                        <td>{{ i.max_uses ?? '∞' }}</td>
+                        <td>
+                            {{ i.expires_at ? new Date(i.expires_at).toLocaleString() : 'never' }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Roles -->
+        <div class="bg-surface-low space-y-4 rounded-lg p-4 lg:col-span-2">
+            <h2 class="text-fg-primary font-semibold">Roles</h2>
+            <div
+                v-for="r in roles"
+                :key="r.id"
+                class="border-surface-high mb-4 rounded-md border p-4 last:mb-0"
+            >
+                <h3 class="text-fg-primary mb-2 font-medium">{{ r.name }}</h3>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <label
+                        v-for="opt in PERMISSION_OPTIONS"
+                        :key="opt.value"
+                        class="flex items-center gap-2"
+                    >
+                        <input
+                            v-model="roleSelections[r.id]"
+                            type="checkbox"
+                            :value="opt.value"
+                            class="border-surface-high bg-surface-low text-primary focus:ring-primary rounded"
+                        />
+                        <span class="text-fg-primary text-sm">{{ opt.label }}</span>
+                    </label>
+                </div>
+                <Button
+                    class="mt-2"
+                    variant="secondary"
+                    @click="updateRolePermissions(r)"
+                >
+                    Save
+                </Button>
+            </div>
+        </div>
+
+        <!-- Members -->
+        <div class="bg-surface-low space-y-4 rounded-lg p-4 lg:col-span-2">
+            <h2 class="text-fg-primary font-semibold">Members</h2>
+            <table class="w-full text-sm">
+                <thead class="text-fg-secondary">
+                    <tr>
+                        <th class="text-left">Member</th>
+                        <th class="text-left">Permissions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="m in members"
+                        :key="m.member.user_id"
+                        class="text-fg-primary"
+                    >
+                        <td>{{ m.user?.name || m.user?.email || m.member.user_id }}</td>
+                        <td>{{ computeMemberPermissions(m.member) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Channels -->
+        <div class="bg-surface-low space-y-4 rounded-lg p-4 lg:col-span-2">
+            <h2 class="text-fg-primary font-semibold">Channels</h2>
+            <table class="w-full text-sm">
+                <thead class="text-fg-secondary">
+                    <tr>
+                        <th class="text-left">ID</th>
+                        <th class="text-left">Name</th>
+                        <th class="text-left">Type</th>
+                        <th class="text-left">Category</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="c in channels"
+                        :key="c.id"
+                        class="text-fg-primary"
+                    >
+                        <td>{{ c.id }}</td>
+                        <td>{{ c.name }}</td>
+                        <td>{{ c.type }}</td>
+                        <td>{{ c.category_id ?? '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>

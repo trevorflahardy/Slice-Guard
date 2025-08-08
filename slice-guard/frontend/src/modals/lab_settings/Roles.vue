@@ -6,6 +6,9 @@ import { useAuthStore } from '../../store/auth';
 import { apiFetch } from '../../services/api';
 import Button from '../../components/Button.vue';
 import { LabPermission, type LabRole } from '@shared/db/lab';
+import { useSortable } from '@vueuse/integrations/useSortable';
+import MockChannelMessage from '../../components/channels/MockChannelMessage.vue';
+import { Bars3Icon } from '@heroicons/vue/24/outline';
 
 const route = useRoute();
 const labs = useLabsStore();
@@ -13,12 +16,24 @@ const auth = useAuthStore();
 
 const labId = Number(route.params.id);
 const roles = computed(() => labs.getLabRoles(labId));
+const roleList = ref<LabRole[]>([]);
+const selectedId = ref<number | null>(null);
+
+watch(
+    roles,
+    (val) => {
+        roleList.value = [...val].sort((a, b) => b.rank - a.rank);
+        if (!selectedId.value && roleList.value.length > 0) {
+            selectedId.value = roleList.value[0].id;
+        }
+    },
+    { immediate: true },
+);
 
 const member = labs.members.get(labId)?.get(auth.user?.id ?? 0) ?? null;
 const topRank = member?.roles[0]?.rank ?? 0;
 
-const selectedId = ref<number | null>(roles.value[0]?.id ?? null);
-const selectedRole = computed(() => roles.value.find((r) => r.id === selectedId.value) || null);
+const selectedRole = computed(() => roleList.value.find((r) => r.id === selectedId.value) || null);
 
 const roleName = ref('');
 const roleColor = ref<string>('#000000');
@@ -37,6 +52,38 @@ function togglePerm(bit: number) {
 }
 
 const editable = computed(() => !!selectedRole.value && selectedRole.value.rank <= topRank);
+
+const listEl = ref<HTMLElement | null>(null);
+
+useSortable(listEl, roleList, {
+    animation: 150,
+    draggable: '.draggable',
+    onEnd: async (evt) => {
+        const firstEditable = roleList.value.findIndex((r) => r.rank <= topRank);
+        if (evt.newIndex < firstEditable) {
+            roleList.value = [...roleList.value].sort((a, b) => b.rank - a.rank);
+            return;
+        }
+        const total = roleList.value.length;
+        const updates: { id: number; rank: number; permissions: number }[] = [];
+        roleList.value.forEach((r, idx) => {
+            const newRank = total - idx;
+            if (r.rank !== newRank) {
+                if (r.rank <= topRank) {
+                    updates.push({ id: r.id, rank: newRank, permissions: Number(r.permissions) });
+                }
+                r.rank = newRank;
+            }
+        });
+        for (const u of updates) {
+            await apiFetch(`/labs/${labId}/roles/${u.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ permissions: u.permissions, rank: u.rank }),
+            });
+        }
+    },
+});
 
 const PERMS = [
     { bit: LabPermission.EDIT_LAB, label: 'Edit Lab', desc: 'Change basic lab info.' },
@@ -105,21 +152,31 @@ async function removeRole() {
         return;
     }
     await apiFetch(`/labs/${labId}/roles/${selectedRole.value.id}`, { method: 'DELETE' });
-    selectedId.value = roles.value[0]?.id ?? null;
+    selectedId.value = roleList.value[0]?.id ?? null;
 }
 </script>
 <template>
     <div class="flex gap-4">
         <aside class="border-surface-high w-48 border-r pr-2">
-            <ul class="flex flex-col gap-1">
+            <ul
+                ref="listEl"
+                class="flex flex-col gap-1"
+            >
                 <li
-                    v-for="r in roles"
+                    v-for="r in roleList"
                     :key="r.id"
-                    class="hover:bg-surface-high cursor-pointer rounded p-2"
-                    :class="{ 'bg-surface-high': selectedId === r.id }"
+                    class="hover:bg-surface-high flex cursor-pointer items-center gap-2 rounded p-2"
+                    :class="[
+                        { 'bg-surface-high': selectedId === r.id },
+                        r.rank <= topRank ? 'draggable' : '',
+                    ]"
                     @click="selectedId = r.id"
                 >
-                    {{ r.name }}
+                    <Bars3Icon
+                        v-if="r.rank <= topRank"
+                        class="text-content-dimmed h-4 w-4 flex-shrink-0 cursor-move"
+                    />
+                    <span>{{ r.name }}</span>
                 </li>
             </ul>
             <Button
@@ -150,9 +207,17 @@ async function removeRole() {
                         class="h-8 w-16 border-none p-0"
                     />
                 </label>
-                <div class="bg-surface-high rounded p-2">
-                    <span :style="{ color: roleColor }">{{ auth.user?.name || 'User' }}</span>
-                    : This is how a message will look.
+                <div class="bg-surface-high max-h-40 rounded p-2">
+                    <MockChannelMessage
+                        :name="auth.user?.name || 'User'"
+                        :color="roleColor"
+                        content="This is how a message will look."
+                    />
+                    <MockChannelMessage
+                        name="Other member"
+                        color="#888888"
+                        content="Another message for context."
+                    />
                 </div>
             </div>
             <div class="flex flex-col gap-2">

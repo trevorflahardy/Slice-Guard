@@ -1,5 +1,5 @@
 import { withAuth } from '../middleware';
-import { createRole, getMemberRolePermissions, updateRole } from '../../db/lab';
+import { createRole, getMemberRolePermissions, updateRole, deleteRole } from '../../db/lab';
 import { LabPermission } from '@shared/db/lab';
 import { hasLabPermission } from '../../utils/permissions';
 import { WsEvent } from '@shared/payloads/ws';
@@ -10,14 +10,14 @@ import type { RoleCreatePayload, RoleUpdatePayload } from '@shared/payloads';
  */
 export const createRoleRoute = withAuth(async (req, userId, state, params) => {
     const labId = Number(params.labId);
-    const { name, permissions, rank } = (await req.json()) as RoleCreatePayload;
+    const { name, permissions, rank, color } = (await req.json()) as RoleCreatePayload;
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES)) {
         return new Response('Unauthorized', { status: 403 });
     }
 
-    const role = await createRole(state.db, labId, name, permissions, rank ?? 0);
+    const role = await createRole(state.db, labId, name, permissions, rank ?? 0, color ?? null);
     state.broadcast({ op: WsEvent.ROLE_CREATED, d: { role } });
     return Response.json(role);
 });
@@ -28,14 +28,31 @@ export const createRoleRoute = withAuth(async (req, userId, state, params) => {
 export const updateRoleRoute = withAuth(async (req, userId, state, params) => {
     const labId = Number(params.labId);
     const roleId = Number(params.roleId);
-    const { permissions, rank } = (await req.json()) as RoleUpdatePayload;
+    const { permissions, rank, name, color } = (await req.json()) as RoleUpdatePayload;
 
     const perms = await getMemberRolePermissions(state.db, labId, userId);
     if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES)) {
         return new Response('Unauthorized', { status: 403 });
     }
 
-    const role = await updateRole(state.db, labId, roleId, permissions, rank);
+    const role = await updateRole(state.db, labId, roleId, permissions, rank, name, color ?? null);
     state.broadcast({ op: WsEvent.ROLE_UPDATED, d: { role } });
     return Response.json(role);
+});
+
+/**
+ * DELETE /api/labs/:labId/roles/:roleId
+ */
+export const deleteRoleRoute = withAuth(async (req, userId, state, params) => {
+    const labId = Number(params.labId);
+    const roleId = Number(params.roleId);
+
+    const perms = await getMemberRolePermissions(state.db, labId, userId);
+    if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES)) {
+        return new Response('Unauthorized', { status: 403 });
+    }
+
+    await deleteRole(state.db, labId, roleId);
+    state.broadcast({ op: WsEvent.ROLE_DELETED, d: { labId, roleId } });
+    return new Response(null, { status: 204 });
 });

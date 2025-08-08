@@ -23,12 +23,17 @@ export interface RoleCreatePayload {
     permissions: number;
     /** Optional role rank (default 0). */
     rank?: number;
+    color?: string | null;
 }
 
 export interface RoleUpdatePayload {
     permissions: number;
     /** Optional new rank for the role. */
     rank?: number;
+    /** Optional new name for the role. */
+    name?: string;
+    /** Optional new color for the role. */
+    color?: string | null;
 }
 
 export interface MemberAddPayload {

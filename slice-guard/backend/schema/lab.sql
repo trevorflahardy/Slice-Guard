@@ -17,6 +17,7 @@ CREATE TABLE lab.roles (
     lab_id INTEGER NOT NULL REFERENCES lab.labs(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     permissions BIGINT NOT NULL,
+    color TEXT,
     rank INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW()
 );

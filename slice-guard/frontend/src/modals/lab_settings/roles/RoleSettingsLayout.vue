@@ -71,7 +71,6 @@ useSortable(listEl, editableRoles, {
  * Create a new role at a rank the current user can manage and select it.
  */
 async function createRole() {
-    const defaultRank = roleList.value.find((r) => r.id === defaultRoleId)?.rank ?? 0;
     const res = await apiFetch(`/labs/${labId}/roles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,9 +78,9 @@ async function createRole() {
             name: 'new role',
             color: '#888888',
             permissions: 0,
-            rank: Math.max(defaultRank + 1, topRank),
         }),
     });
+
     if (res.ok) {
         const role: LabRole = await res.json();
         labs.roles.get(labId)?.set(role.id, role);

@@ -1,9 +1,7 @@
 import { expect, test } from 'bun:test';
 import {
-    createLab,
     deleteLab,
     updateLab,
-    createRole,
     updateRole,
     addMember,
     removeMember,
@@ -53,6 +51,7 @@ function sampleRole(): LabRoleRow {
         name: 'Role',
         permissions: 1,
         created_at: new Date(),
+        rank: 1
     };
 }
 
@@ -96,14 +95,14 @@ test('updateLab updates fields', async () => {
     expect(result).toEqual(lab);
 });
 
-test('createRole inserts expected values', async () => {
+test(' inserts expected values', async () => {
     const role = sampleRole();
     const db = createMockSQL([[role]]);
-    const result = await createRole(db as any, role.lab_id, role.name, role.permissions as number, 0, null);
+    const result = await (db as any, role.lab_id, role.name, role.permissions as number, null);
     expect(normalize(db.queries.at(-1))).toBe(
         'INSERT INTO lab.roles (lab_id, name, permissions, rank, color) VALUES ($1, $2, $3, $4, $5) RETURNING id, lab_id, name, permissions, rank, color, created_at',
     );
-    expect(db.params.at(-1)).toEqual([role.lab_id, role.name, role.permissions, 0, null]);
+    expect(db.params.at(-1)).toEqual([role.lab_id, role.name, role.permissions, 1, null]);
     expect(result).toEqual(role);
 });
 

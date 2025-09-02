@@ -46,11 +46,7 @@ export async function createLab(
         0,
         null,
     );
-    await db`
-        UPDATE lab.labs
-           SET default_role_id = ${role.id}
-         WHERE id = ${lab.id}
-    `;
+
     lab.default_role_id = role.id;
 
     // Add this owner to the member list with the default role

@@ -17,7 +17,7 @@ export const createRoleRoute = withAuth(async (req, userId, state, params) => {
         return new Response('Unauthorized', { status: 403 });
     }
 
-    const role = await createRole(state.db, labId, name, permissions, rank ?? 0, color ?? null);
+    const role = await createRole(state.db, labId, name, permissions, rank ?? 1, color ?? null);
     state.broadcast({ op: WsEvent.ROLE_CREATED, d: { role } });
     return Response.json(role);
 });

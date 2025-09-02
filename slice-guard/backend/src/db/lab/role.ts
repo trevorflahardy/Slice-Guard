@@ -27,7 +27,6 @@ export async function createRole(
         INSERT INTO lab.roles (lab_id, name, permissions, rank, color)
              VALUES (${labId}, ${name}, ${permissions}, ${rank}, ${color})
         RETURNING id, lab_id, name, permissions, rank, color, created_at
-        ON CONFLICT (lab_id, rank) DO NOTHING;
     `;
 
     // If this rank is 0, we should also update the lab to set the default role

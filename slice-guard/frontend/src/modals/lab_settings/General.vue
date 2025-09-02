@@ -44,17 +44,17 @@ async function handleFile(e: Event) {
 <template>
     <div class="flex flex-col gap-4">
         <label class="flex flex-col gap-1">
-            <span>Name</span>
+            <h2 class="text-fg-primary font-semibold">Name</h2>
             <input
                 v-model="name"
-                class="bg-surface-high rounded p-2"
+                class="bg-surface-high text-fg-secondary rounded p-2"
             />
         </label>
         <label class="flex flex-col gap-1">
-            <span>Description</span>
+            <h2 class="text-fg-primary font-semibold">Description</h2>
             <textarea
                 v-model="description"
-                class="bg-surface-high rounded p-2"
+                class="bg-surface-high text-fg-secondary rounded p-2"
             />
         </label>
         <div class="flex items-center gap-4">
@@ -65,12 +65,14 @@ async function handleFile(e: Event) {
             />
             <div
                 v-else
-                class="bg-surface-high flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold"
+                class="bg-surface-high text-fg-primary flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold"
             >
                 {{ name.charAt(0) }}
             </div>
+
             <input
                 type="file"
+                class="text-fg-secondary"
                 @change="handleFile"
             />
         </div>

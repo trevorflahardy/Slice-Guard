@@ -243,9 +243,11 @@ async function createTag() {
             <div
                 v-for="r in roles"
                 :key="r.id"
-                class="border-surface-high mb-4 rounded-md border p-4 last:mb-0"
+                class="border-surface-high mb-4 space-y-5 rounded-md border p-4 last:mb-0"
             >
-                <h3 class="text-fg-primary mb-2 font-medium">{{ r.name }}</h3>
+                <h3 class="text-fg-primary mb-2 text-xl font-semibold">{{ r.name }}</h3>
+                <p class="text-fg-primary">Rank: {{ r.rank }}</p>
+
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <label
                         v-for="opt in PERMISSION_OPTIONS"

@@ -10,7 +10,7 @@ import { type LabRole } from '@shared/db/lab';
 import { Bars3Icon } from '@heroicons/vue/24/outline';
 
 import RoleEdit from './RoleEdit.vue';
-import { useSortable } from '@vueuse/integrations';
+import { useSortable } from '@vueuse/integrations/useSortable';
 
 const route = useRoute();
 const labs = useLabsStore();
@@ -42,16 +42,30 @@ const selectedRole: ComputedRef<LabRole | null> = computed(
 );
 
 const listEl = useTemplateRef<HTMLElement>('listEl');
+console.log(listEl);
 
 // The roles that the user cannot edit (below them) will not be included in the useSortable and will be marked as disabled.
 // The others will be draggable using the useSortable
-const memberEditableRoles = computed(() => {
+const editableRoles = computed(() => {
     if (!member) return [];
-    return roleList.value.filter((r) => r.rank <= topRank);
+    return roleList.value.filter((r) => r.rank < topRank);
 });
-console.log(memberEditableRoles);
 
-useSortable(listEl, memberEditableRoles);
+const nonEditableRoles = computed(() => {
+    if (!member) return [];
+    return roleList.value.filter((r) => r.rank >= topRank);
+});
+
+useSortable(listEl, editableRoles, {
+    onUpdate: async (__e: Event) => {
+        // We have an update here, we need to sync the roleList with an updated version of the editableRoles -> it's going to be [nonEditableRoles, editableRoles]
+        roleList.value = [...nonEditableRoles.value, ...editableRoles.value];
+        console.log('Doing update');
+        console.log(roleList.value);
+
+        // ! TODO: API call for update
+    },
+});
 
 /**
  * Create a new role at a rank the current user can manage and select it.
@@ -79,13 +93,28 @@ async function createRole() {
 </script>
 <template>
     <div class="flex h-full gap-4 overflow-y-auto">
+        <!--Holds the sidebar selector for all the roles. This is in the order of [nonEditableRoles, editableRoles], as roles higher than the user cannot be edited.
+        -->
         <aside class="border-surface w-48 border-r pr-2">
+            <div class="flex flex-col gap-3">
+                <div
+                    v-for="r in nonEditableRoles"
+                    :key="r.id"
+                    class="bg-surface-low flex items-center gap-2 rounded-lg p-2"
+                >
+                    <Bars3Icon
+                        class="text-content-dimmed text-fg-primary h-4 w-4 flex-shrink-0 opacity-50"
+                    />
+                    <div class="text-fg-secondary">{{ r.name }}</div>
+                </div>
+            </div>
+
             <div
                 ref="listEl"
                 class="flex flex-col gap-3"
             >
                 <div
-                    v-for="r in memberEditableRoles"
+                    v-for="r in editableRoles"
                     :key="r.id"
                     class="hover:bg-surface flex cursor-pointer items-center gap-2 rounded-lg p-2"
                     :class="[{ 'bg-surface': selectedId === r.id }]"

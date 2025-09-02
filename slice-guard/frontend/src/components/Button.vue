@@ -21,10 +21,10 @@ const outlineClass = ref(
     <button
         v-if="variant === 'primary' || variant === 'secondary'"
         :class="[
-            'cursor-pointer shadow transition-colors duration-200 ease-out',
+            'cursor-pointer font-medium shadow transition-colors duration-200 ease-out',
             variant === 'primary'
-                ? 'bg-salem-800 hover:bg-salem-800/90 font-medium text-white'
-                : 'bg-surface-low text-salem-800 hover:bg-gray2 ring-salem-800 dark:shadow-fg-secondary ring dark:ring-0 dark:inset-shadow-2xs',
+                ? 'bg-salem-800 hover:bg-salem-800/90 text-white'
+                : 'bg-surface text-salem-700 hover:bg-gray2 ring-salem-700 ring dark:text-gray-100 dark:ring-1 dark:inset-shadow-2xs dark:ring-gray-100',
             bubbleClass,
             outlineClass,
         ]"

@@ -25,6 +25,7 @@ const props = withDefaults(
 function clamp(n: number, min = 0, max = 1) {
     return Math.min(max, Math.max(min, n));
 }
+
 function hexToRgb(hex: string) {
     let v = hex.trim().toLowerCase();
     if (!v.startsWith('#')) return { r: 0, g: 0, b: 0 };
@@ -32,9 +33,11 @@ function hexToRgb(hex: string) {
     const num = parseInt(v.slice(1, 7), 16);
     return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
 }
+
 function rgbToHex(r: number, g: number, b: number) {
     return ('#' + [r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('')).toLowerCase();
 }
+
 function rgbToHsv(r: number, g: number, b: number) {
     r /= 255;
     g /= 255;
@@ -61,6 +64,7 @@ function rgbToHsv(r: number, g: number, b: number) {
     const v = max;
     return { h: h * 360, s: s * 100, v: v * 100 };
 }
+
 function hsvToRgb(h: number, s: number, v: number) {
     h = ((h % 360) + 360) % 360;
     s = clamp(s / 100);
@@ -158,10 +162,12 @@ function onSquareDown(ev: PointerEvent) {
     (ev.currentTarget as HTMLElement).setPointerCapture?.(ev.pointerId);
     setSVFromEvent(ev);
 }
+
 function onSquareMove(ev: PointerEvent) {
     if (!draggingSquare) return;
     setSVFromEvent(ev);
 }
+
 function onSquareUp() {
     if (!draggingSquare) return;
     draggingSquare = false;
@@ -189,20 +195,24 @@ function setHueFromEvent(ev: PointerEvent) {
     const x = clamp((ev.clientX - rect.left) / rect.width);
     hsv.value.h = Math.round(x * 360);
 }
+
 function onHueDown(ev: PointerEvent) {
     draggingHue = true;
     (ev.currentTarget as HTMLElement).setPointerCapture?.(ev.pointerId);
     setHueFromEvent(ev);
 }
+
 function onHueMove(ev: PointerEvent) {
     if (!draggingHue) return;
     setHueFromEvent(ev);
 }
+
 function onHueUp() {
     if (!draggingHue) return;
     draggingHue = false;
     emit('change', hex.value);
 }
+
 useEventListener(window, 'pointermove', onHueMove);
 useEventListener(window, 'pointerup', onHueUp);
 

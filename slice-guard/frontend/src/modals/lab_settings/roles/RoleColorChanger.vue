@@ -37,7 +37,7 @@ const showColorModal = ref(false);
     </div>
 
     <!-- Swatches -->
-    <div class="mt-3 grid grid-cols-10 gap-2">
+    <div class="grid-cols-auto mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-10">
         <button
             v-for="c in colorSwatches"
             :key="c"

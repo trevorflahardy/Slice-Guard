@@ -92,9 +92,9 @@ async function createRole() {
 </script>
 <template>
     <div class="flex h-full gap-4 overflow-y-auto">
-        <!--Holds the sidebar selector for all the roles. This is in the order of [nonEditableRoles, editableRoles], as roles higher than the user cannot be edited.
-        -->
-        <aside class="border-surface w-48 border-r pr-2">
+        <!--Holds the sidebar selector for all the roles. This is in the order of [nonEditableRoles, editableRoles], as roles higher than the user cannot be edited.-->
+        <aside class="border-surface w-48 border-r px-5">
+            <!-- Display all the non-editable roles beforehand. -->
             <div class="flex flex-col gap-3">
                 <div
                     v-for="r in nonEditableRoles"
@@ -108,6 +108,7 @@ async function createRole() {
                 </div>
             </div>
 
+            <!-- After, show the roles that this user is able to make changes to. -->
             <div
                 ref="listEl"
                 class="flex flex-col gap-3"
@@ -126,6 +127,10 @@ async function createRole() {
                 </div>
             </div>
 
+            <!--
+            TODO: For now, the styling of this button isn't great - the component has to be updated to better
+            TODO: accommodate more stylings, including hover effects and active states
+            -->
             <Button
                 variant="secondary"
                 class="mt-2 w-full"
@@ -136,7 +141,7 @@ async function createRole() {
 
         <div
             v-if="selectedRole"
-            class="flex flex-1 flex-col gap-4"
+            class="no-scrollbar flex flex-1 flex-col gap-4 overflow-y-scroll p-5"
         >
             <RoleEdit
                 :selected-role="selectedRole"

@@ -7,6 +7,7 @@ import { useLabsStore } from '../../../store/labs';
 import { computeMemberPermissions } from '../../../utils/permissions';
 import { LabPermission, type LabRole } from '@shared/db/lab';
 import { useRoute } from 'vue-router';
+import RoleAssignmentPanel from './RoleAssignmentPanel.vue';
 
 const labStore = useLabsStore();
 const route = useRoute();
@@ -290,6 +291,12 @@ async function deleteRole(role: LabRole) {
                 </Button>
             </div>
         </div>
+
+        <!-- Role Assignment Panel -->
+        <RoleAssignmentPanel
+            :lab-id="lab?.id || null"
+            class="lg:col-span-2"
+        />
 
         <!-- Members -->
         <div class="bg-surface-low space-y-4 rounded-lg p-4 lg:col-span-2">

@@ -71,8 +71,8 @@
   * Surface colors
   */
     --color-surface-lowest: #f5f5f5;
-    --color-surface-low: #e8e8e8;
-    --color-surface: #bcbcbc;
+    --color-surface-low: #f0f0f0;
+    --color-surface: #e3e3e3;
     --color-surface-high: #909090;
     --color-surface-highest: #4f4f4f;
 

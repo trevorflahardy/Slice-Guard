@@ -154,6 +154,16 @@ async function createTag() {
     tagName.value = '';
     tagColor.value = '#000000';
 }
+
+async function deleteRole(role: LabRole) {
+    if (!lab.value) {
+        return;
+    }
+
+    await apiFetch(`/labs/${lab.value.id}/roles/${role.id}`, {
+        method: 'DELETE',
+    });
+}
 </script>
 
 <template>
@@ -269,6 +279,14 @@ async function createTag() {
                     @click="updateRolePermissions(r)"
                 >
                     Save
+                </Button>
+
+                <Button
+                    class="mt-2"
+                    variant="secondary"
+                    @click="deleteRole(r)"
+                >
+                    Delete
                 </Button>
             </div>
         </div>

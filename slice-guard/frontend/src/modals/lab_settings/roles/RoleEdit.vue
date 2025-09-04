@@ -100,7 +100,7 @@ async function save() {
         <input
             v-model="roleName"
             :placeholder="selectedRole.name"
-            class="bg-surface focus-ring-2 focus:ring-accent text-fg-secondary rounded-lg p-2"
+            class="bg-surface focus-ring-2 focus:ring-accent text-fg-primary rounded-lg p-2"
         />
     </label>
 

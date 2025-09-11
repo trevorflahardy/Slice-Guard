@@ -23,6 +23,7 @@ const defaultRoleId = labs.getLab(labId)?.default_role_id ?? null;
 const roleList = ref<LabRole[]>([]);
 const selectedId = ref<number | null>(null);
 
+// Sync local role list when roles change
 watch(
     roles,
     (val) => {
@@ -42,10 +43,9 @@ const selectedRole: ComputedRef<LabRole | null> = computed(
 );
 
 const listEl = useTemplateRef<HTMLElement>('listEl');
-console.log(listEl);
 
-// The roles that the user cannot edit (below them) will not be included in the useSortable and will be marked as disabled.
-// The others will be draggable using the useSortable
+// The roles that the user cannot edit (below them) will not be included in
+// useSortable and will be marked as disabled. The others will be draggable.
 const editableRoles = computed(() => {
     if (!member) return [];
     return roleList.value.filter((r) => r.rank < topRank);
@@ -57,12 +57,9 @@ const nonEditableRoles = computed(() => {
 });
 
 useSortable(listEl, editableRoles, {
-    onUpdate: async (__e: Event) => {
-        // We have an update here, we need to sync the roleList with an updated version of the editableRoles -> it's going to be [nonEditableRoles, editableRoles]
+    onUpdate: async () => {
+        // Merge updated draggable roles with non-editable roles
         roleList.value = [...nonEditableRoles.value, ...editableRoles.value];
-        console.log('Doing update');
-        console.log(roleList.value);
-
         // ! TODO: API call for update
     },
 });

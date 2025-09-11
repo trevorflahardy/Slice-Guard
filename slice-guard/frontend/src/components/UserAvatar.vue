@@ -2,12 +2,17 @@
 import type { User } from '@shared/db/user';
 import { computed } from 'vue';
 
+/** Props for {@link UserAvatar}. */
 export interface UserAvatarProps {
+    /** User whose avatar should be displayed. */
     user: User;
-    size: string; // 'size-5', 'size-10', etc.
+    /** Tailwind size class such as `size-5` or `size-10`. */
+    size: string;
 }
+
 const props = defineProps<UserAvatarProps>();
 
+/** Fallback initials when no avatar is present. */
 const initials = computed(() => {
     const base = props.user?.name || props.user?.email || '';
     return base.charAt(0);

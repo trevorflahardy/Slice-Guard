@@ -1,18 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed } from 'vue';
 
+/**
+ * Props for the {@link Button} component.
+ */
 export interface ButtonProps {
+    /** Visual style of the button. */
     variant?: 'primary' | 'secondary' | 'tertiary';
+    /** Whether the button should be rendered as a circular bubble. */
     bubble?: boolean;
-    outline?: string; // Outline color class (color only).
+    /** Outline color class (color only). */
+    outline?: string;
 }
 
 const props = defineProps<ButtonProps>();
 
+// Default values for optional props.
 const { variant = 'secondary', bubble = false, outline } = props;
 
-const bubbleClass = ref(bubble ? 'rounded-full p-2' : 'rounded-xl px-4 py-2');
-const outlineClass = ref(
+// Computed classes for styling.
+const bubbleClass = computed(() => (bubble ? 'rounded-full p-2' : 'rounded-xl px-4 py-2'));
+const outlineClass = computed(() =>
     outline ? `outline outline-1 hover:scale-[1.02] duration-200 ease-out` : '',
 );
 </script>

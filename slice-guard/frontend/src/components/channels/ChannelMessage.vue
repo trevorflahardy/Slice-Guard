@@ -4,26 +4,27 @@ import { computedAsync } from '@vueuse/core';
 import type { Message } from '@shared/db/message';
 import type { User } from '@shared/db/user';
 
+import { apiFetch } from '../../services/api';
+import { useLabsStore } from '../../store/labs';
 import UserAvatar from '../UserAvatar.vue';
 
-import { useLabsStore } from '../../store/labs';
-import { apiFetch } from '../../services/api';
-
+/** Props for {@link ChannelMessage}. */
 export interface ChannelMessageProps {
+    /** Message record to display. */
     message: Message;
+    /** Optional author; fetched if not provided. */
     author: User | null;
 }
 
 const props = defineProps<ChannelMessageProps>();
 const labStore = useLabsStore();
 
-const author = computedAsync(async () => {
-    // If this is already set then great!
-    if (props.author) {
-        return props.author;
-    }
+/**
+ * Resolve the message author, fetching the user if necessary.
+ */
+async function resolveAuthor(): Promise<User | null> {
+    if (props.author) return props.author;
 
-    // If not, we have to fetch this, and store it into the lab store.
     const authorId = props.message.user_id;
     const res = await apiFetch(`/users/${authorId}`);
     if (!res.ok) {
@@ -31,13 +32,13 @@ const author = computedAsync(async () => {
         return null;
     }
 
-    const author: User = await res.json();
+    const fetched: User = await res.json();
+    // Store fetched user so future lookups can reuse it.
+    labStore.addUser(fetched);
+    return fetched;
+}
 
-    // Storing this user should also update the props, as the parent of this is getting the updated user
-    // from the store and is reactive
-    labStore.addUser(author);
-    return author;
-}, null);
+const author = computedAsync<User | null>(resolveAuthor, null);
 </script>
 
 <template>

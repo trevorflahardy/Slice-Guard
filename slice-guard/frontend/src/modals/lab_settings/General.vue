@@ -14,7 +14,8 @@ const name = ref(lab?.name || '');
 const description = ref(lab?.description || '');
 const iconUrl = ref(lab?.icon_url || '');
 
-async function save() {
+/** Persist general lab details to the backend. */
+async function save(): Promise<void> {
     await apiFetch(`/labs/${labId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -26,7 +27,8 @@ async function save() {
     });
 }
 
-async function handleFile(e: Event) {
+/** Upload a new lab icon image and update local store. */
+async function handleFile(e: Event): Promise<void> {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) {
         return;

@@ -2,6 +2,16 @@
 import { ref, computed, watch } from 'vue';
 import { useElementSize, useEventListener, watchDebounced } from '@vueuse/core';
 
+import { clamp, hexToRgb, rgbToHex, rgbToHsv, hsvToRgb, normalizeHex } from '../utils/color';
+
+/**
+ * Interactive HSV color picker consisting of a saturation/value square and
+ * a horizontal hue slider.
+ *
+ * The component exposes a `v-model` for the selected color and emits a
+ * `change` event when the user finishes an interaction (pointer up).
+ */
+
 interface Emits {
     (e: 'update:modelValue', v: string): void;
     (e: 'change', v: string): void; // fired on pointer up / finalize interaction
@@ -10,9 +20,12 @@ const emit = defineEmits<Emits>();
 
 const props = withDefaults(
     defineProps<{
-        modelValue?: string; // #RRGGBB or #RGB
-        size?: number; // square size in px
-        sliderThickness?: number; // hue slider thickness
+        /** Selected color as `#rrggbb` or `#rgb`. */
+        modelValue?: string;
+        /** Square size in pixels. */
+        size?: number;
+        /** Hue slider thickness in pixels. */
+        sliderThickness?: number;
     }>(),
     {
         modelValue: '#ff0000',
@@ -20,105 +33,6 @@ const props = withDefaults(
         sliderThickness: 12,
     },
 );
-
-// ---------- color math (HSV) ----------
-function clamp(n: number, min = 0, max = 1) {
-    return Math.min(max, Math.max(min, n));
-}
-
-function hexToRgb(hex: string) {
-    let v = hex.trim().toLowerCase();
-    if (!v.startsWith('#')) return { r: 0, g: 0, b: 0 };
-    if (v.length === 4) v = `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}`;
-    const num = parseInt(v.slice(1, 7), 16);
-    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
-}
-
-function rgbToHex(r: number, g: number, b: number) {
-    return ('#' + [r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('')).toLowerCase();
-}
-
-function rgbToHsv(r: number, g: number, b: number) {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-    const max = Math.max(r, g, b),
-        min = Math.min(r, g, b);
-    const d = max - min;
-    let h = 0;
-    if (d !== 0) {
-        switch (max) {
-            case r:
-                h = (g - b) / d + (g < b ? 6 : 0);
-                break;
-            case g:
-                h = (b - r) / d + 2;
-                break;
-            default:
-                h = (r - g) / d + 4;
-                break;
-        }
-        h /= 6;
-    }
-    const s = max === 0 ? 0 : d / max;
-    const v = max;
-    return { h: h * 360, s: s * 100, v: v * 100 };
-}
-
-function hsvToRgb(h: number, s: number, v: number) {
-    h = ((h % 360) + 360) % 360;
-    s = clamp(s / 100);
-    v = clamp(v / 100);
-    const i = Math.floor(h / 60);
-    const f = h / 60 - i;
-    const p = v * (1 - s);
-    const q = v * (1 - s * f);
-    const t = v * (1 - s * (1 - f));
-    let r = 0,
-        g = 0,
-        b = 0;
-    switch (i % 6) {
-        case 0:
-            r = v;
-            g = t;
-            b = p;
-            break;
-        case 1:
-            r = q;
-            g = v;
-            b = p;
-            break;
-        case 2:
-            r = p;
-            g = v;
-            b = t;
-            break;
-        case 3:
-            r = p;
-            g = q;
-            b = v;
-            break;
-        case 4:
-            r = t;
-            g = p;
-            b = v;
-            break;
-        case 5:
-            r = v;
-            g = p;
-            b = q;
-            break;
-    }
-    return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
-}
-
-function normalizeHex(v: string) {
-    if (!v) return '#000000';
-    if (!v.startsWith('#')) return v;
-    return v.length === 4
-        ? `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}`.toLowerCase()
-        : v.slice(0, 7).toLowerCase();
-}
 
 // ---------- state ----------
 const initial = hexToRgb(normalizeHex(props.modelValue));
@@ -147,7 +61,11 @@ const squareRef = ref<HTMLElement | null>(null);
 const { width: squareW, height: squareH } = useElementSize(squareRef);
 let draggingSquare = false;
 
-function setSVFromEvent(ev: PointerEvent) {
+/**
+ * Update saturation and value based on pointer event coordinates within the
+ * square selector.
+ */
+function setSVFromEvent(ev: PointerEvent): void {
     const el = squareRef.value;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -157,18 +75,21 @@ function setSVFromEvent(ev: PointerEvent) {
     hsv.value.v = Math.round((1 - y) * 100); // top=high value
 }
 
-function onSquareDown(ev: PointerEvent) {
+/** Begin dragging within the SV square. */
+function onSquareDown(ev: PointerEvent): void {
     draggingSquare = true;
     (ev.currentTarget as HTMLElement).setPointerCapture?.(ev.pointerId);
     setSVFromEvent(ev);
 }
 
-function onSquareMove(ev: PointerEvent) {
+/** Track pointer movement while dragging within SV square. */
+function onSquareMove(ev: PointerEvent): void {
     if (!draggingSquare) return;
     setSVFromEvent(ev);
 }
 
-function onSquareUp() {
+/** Finish SV drag and emit final color. */
+function onSquareUp(): void {
     if (!draggingSquare) return;
     draggingSquare = false;
     emit('change', hex.value);
@@ -188,7 +109,8 @@ const squareBg = computed(() => `hsl(${Math.round(hsv.value.h)} 100% 50%)`);
 // ---------- Hue slider interactions ----------
 const sliderRef = ref<HTMLElement | null>(null);
 let draggingHue = false;
-function setHueFromEvent(ev: PointerEvent) {
+/** Update hue value based on pointer position on the hue slider. */
+function setHueFromEvent(ev: PointerEvent): void {
     const el = sliderRef.value;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -196,18 +118,21 @@ function setHueFromEvent(ev: PointerEvent) {
     hsv.value.h = Math.round(x * 360);
 }
 
-function onHueDown(ev: PointerEvent) {
+/** Start dragging on the hue slider. */
+function onHueDown(ev: PointerEvent): void {
     draggingHue = true;
     (ev.currentTarget as HTMLElement).setPointerCapture?.(ev.pointerId);
     setHueFromEvent(ev);
 }
 
-function onHueMove(ev: PointerEvent) {
+/** Track pointer movement while adjusting hue. */
+function onHueMove(ev: PointerEvent): void {
     if (!draggingHue) return;
     setHueFromEvent(ev);
 }
 
-function onHueUp() {
+/** Finish hue drag and emit final color. */
+function onHueUp(): void {
     if (!draggingHue) return;
     draggingHue = false;
     emit('change', hex.value);

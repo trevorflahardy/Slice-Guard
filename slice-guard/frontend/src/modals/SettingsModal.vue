@@ -3,11 +3,13 @@ import { onMounted, onUnmounted, type ShallowRef, shallowRef, ref, computed } fr
 import { XCircleIcon } from '@heroicons/vue/24/outline';
 import SearchBar from '../components/SearchBar.vue';
 
+/** Definition for a settings page entry. */
 interface PageDef {
     name: string;
     component: any;
     id: number;
 }
+
 const props = defineProps<{ pages: Record<string, PageDef[]> }>();
 const emit = defineEmits(['close']);
 
@@ -20,6 +22,7 @@ const activePage: ShallowRef<{ category: string; id: number; component: any }> =
     component: firstPage.component,
 });
 
+/** Filter pages based on search query. */
 const filteredPages = computed(() => {
     const q = search.value.toLowerCase();
     const result: Record<string, PageDef[]> = {};
@@ -32,11 +35,13 @@ const filteredPages = computed(() => {
     return q ? result : props.pages;
 });
 
-const isActivePage = (category: string, id: number) => {
+/** Whether the given page is currently active. */
+const isActivePage = (category: string, id: number): boolean => {
     return activePage.value.category === category && activePage.value.id === id;
 };
 
-function handleEscape(event: KeyboardEvent) {
+/** Close the modal on Escape key. */
+function handleEscape(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
         emit('close');
     }

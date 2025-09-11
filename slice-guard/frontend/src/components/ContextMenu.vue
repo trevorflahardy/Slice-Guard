@@ -1,16 +1,31 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue';
 
+/** Item definition for the context menu. */
 export interface ContextMenuItem {
+    /** Display label. */
     label: string;
+    /** Action to perform when clicked. */
     action: () => void;
+    /** Optional variant to show destructive styling. */
     variant?: 'danger';
 }
 
-const props = defineProps<{ items: ContextMenuItem[]; x: number; y: number }>();
+/** Props for {@link ContextMenu}. */
+interface Props {
+    /** Menu items to render. */
+    items: ContextMenuItem[];
+    /** Absolute X coordinate for the menu origin. */
+    x: number;
+    /** Absolute Y coordinate for the menu origin. */
+    y: number;
+}
+
+const props = defineProps<Props>();
 const emit = defineEmits(['close']);
 
-function onClickOutside() {
+/** Close the menu when clicking outside. */
+function onClickOutside(): void {
     emit('close');
 }
 

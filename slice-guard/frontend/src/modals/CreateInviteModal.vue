@@ -2,7 +2,9 @@
 import { ref } from 'vue';
 import { apiFetch } from '../services/api';
 
+/** Props for {@link CreateInviteModal}. */
 interface Props {
+    /** ID of the lab to create the invite for. */
     labId: number;
 }
 const props = defineProps<Props>();
@@ -11,7 +13,8 @@ const emit = defineEmits(['close']);
 const hours = ref<number | null>(null);
 const maxUses = ref<number | null>(null);
 
-async function createInvite() {
+/** Submit the invite creation request to the backend. */
+async function createInvite(): Promise<void> {
     await apiFetch(`/labs/${props.labId}/invites`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

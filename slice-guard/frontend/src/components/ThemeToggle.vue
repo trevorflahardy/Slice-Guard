@@ -3,9 +3,12 @@ import { onMounted, watchEffect, computed } from 'vue';
 import Button from './Button.vue';
 import { useLocalStorage } from '@vueuse/core';
 
+/** Persisted theme preference. */
 const theme = useLocalStorage<'light' | 'dark'>('theme', 'light', {
     listenToStorageChanges: true,
 });
+
+/** Whether the current theme is dark. */
 const isDark = computed(() => theme.value === 'dark');
 
 // Initialize theme from localStorage or system preference
@@ -15,7 +18,8 @@ onMounted(() => {
     theme.value = savedTheme ? savedTheme : systemPrefersDark ? 'dark' : 'light';
 });
 
-function toggleTheme() {
+/** Toggle between light and dark themes. */
+function toggleTheme(): void {
     theme.value = theme.value === 'dark' ? 'light' : 'dark';
 }
 

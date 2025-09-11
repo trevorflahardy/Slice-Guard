@@ -1,26 +1,42 @@
 <script setup lang="ts">
-import { useLabsStore } from '../store/labs';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { PlusIcon, MagnifyingGlassIcon, ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline';
-import { ref } from 'vue';
+
 import JoinLabModal from '../modals/JoinLabModal.vue';
+import { useLabsStore } from '../store/labs';
 import Button from './Button.vue';
 
+/**
+ * Sidebar listing labs and navigation controls.
+ */
 const labStore = useLabsStore();
 const router = useRouter();
-const showJoin = ref(false);
+const showJoin = ref<boolean>(false);
 
-const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6'];
-function colorFor(id: number) {
+const colors: string[] = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6'];
+
+/**
+ * Deterministically pick a placeholder color for a lab by its id.
+ */
+function colorFor(id: number): string {
     return colors[id % colors.length];
 }
-function openLab(id: number) {
+
+/**
+ * Navigate to the selected lab.
+ */
+function openLab(id: number): void {
     router.push(`/lab/${id}`);
 }
-function createLab() {
+
+/** Navigate to the lab creation page. */
+function createLab(): void {
     router.push('/lab/create');
 }
-function openDms() {
+
+/** Navigate to direct messages. */
+function openDms(): void {
     router.push('/dms');
 }
 </script>

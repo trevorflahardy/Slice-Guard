@@ -11,6 +11,7 @@ import ChannelMessage from '../../../components/channels/ChannelMessage.vue';
 import Button from '../../../components/Button.vue';
 import RoleColorChanger from './RoleColorChanger.vue';
 
+/** Props for {@link RoleEdit}. */
 export interface RoleEditProps {
     selectedRole: LabRole;
     defaultRoleId: number | null;
@@ -42,17 +43,13 @@ const isDefault = computed(
     () => props.defaultRoleId !== null && props.selectedRole.id === props.defaultRoleId,
 );
 
-/**
- * Toggle a permission bit on or off in the local mask.
- */
-function togglePerm(bit: number) {
+/** Toggle a permission bit on or off in the local mask. */
+function togglePerm(bit: number): void {
     permMask.value ^= bit;
 }
 
-/**
- * Remove the currently selected role.
- */
-async function removeRole() {
+/** Remove the currently selected role. */
+async function removeRole(): Promise<void> {
     if (!props.selectedRole) {
         return;
     }
@@ -60,10 +57,8 @@ async function removeRole() {
     selectedId.value = props.roleList[0].id ?? null;
 }
 
-/**
- * Persist changes made to the currently selected role.
- */
-async function save() {
+/** Persist changes made to the currently selected role. */
+async function save(): Promise<void> {
     if (!props.selectedRole) {
         return;
     }

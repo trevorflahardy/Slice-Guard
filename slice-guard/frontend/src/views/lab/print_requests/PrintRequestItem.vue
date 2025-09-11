@@ -179,6 +179,7 @@ const author = computed(
                     :style="{ backgroundColor: tag.color }"
                     >{{ tag.name }}
                 </span>
+
                 <!-- Add tag button -->
                 <Dropdown
                     v-if="canManage"
@@ -187,14 +188,21 @@ const author = computed(
                     :multiple="true"
                 >
                     <template #activator>
-                        <PlusCircleIcon class="text-surface-high h-5 w-5 drop-shadow-sm" />
+                        <PlusCircleIcon class="text-surface-highest h-5 w-5 drop-shadow-sm" />
                     </template>
                 </Dropdown>
             </TransitionGroup>
         </div>
 
         <!-- Description of the ticket, max 3 lines, truncated -->
-        <div class="text-fg-secondary mt-auto line-clamp-3 text-left text-sm text-pretty">
+        <div
+            class="mt-auto line-clamp-3 text-left text-sm text-pretty"
+            :class="[
+                entry.request.description && entry.request.description?.length < 30
+                    ? 'text-fg-secondary'
+                    : 'from-fg-secondary to-fg-tertiary bg-gradient-to-b bg-clip-text text-transparent',
+            ]"
+        >
             {{ entry.request.description }}
         </div>
 

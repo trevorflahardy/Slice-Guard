@@ -71,6 +71,9 @@ const filtered = computed(() => {
         });
 });
 
+const openFiltered = computed(() => filtered.value.filter((r) => !r.request.is_closed));
+const closedFiltered = computed(() => filtered.value.filter((r) => r.request.is_closed));
+
 const selectClass = 'bg-surface-low px-2 py-1 rounded-md text-fg-primary';
 </script>
 
@@ -136,6 +139,7 @@ const selectClass = 'bg-surface-low px-2 py-1 rounded-md text-fg-primary';
         </div>
 
         <div class="h-screen">
+            <!-- First, show all the open print requests -->
             <TransitionGroup
                 name="grid"
                 tag="div"
@@ -143,7 +147,7 @@ const selectClass = 'bg-surface-low px-2 py-1 rounded-md text-fg-primary';
             >
                 <Suspense>
                     <PrintRequestListItem
-                        v-for="(item, index) in filtered"
+                        v-for="(item, index) in openFiltered"
                         :key="item.request.id"
                         :entry="item"
                         class="grid-item"
@@ -154,10 +158,35 @@ const selectClass = 'bg-surface-low px-2 py-1 rounded-md text-fg-primary';
 
                     <template #fallback>
                         <PrintRequestItemLoading
-                            v-for="n in filtered.length"
+                            v-for="n in openFiltered.length"
                             :key="n"
                         />
                     </template>
+                </Suspense>
+            </TransitionGroup>
+
+            <!-- Break line between the two categories -->
+            <div
+                v-if="closedFiltered.length > 0 && openFiltered.length > 0"
+                class="border-fg-secondary/20 my-6 border-t border-dashed"
+            ></div>
+
+            <!-- Secondly, show the closed print requests -->
+            <TransitionGroup
+                name="grid"
+                tag="div"
+                class="grid auto-rows-fr grid-cols-1 gap-5 transition-all duration-300 lg:grid-cols-2 xl:grid-cols-3"
+            >
+                <Suspense>
+                    <PrintRequestListItem
+                        v-for="(item, index) in closedFiltered"
+                        :key="item.request.id"
+                        :entry="item"
+                        class="grid-item"
+                        :style="{
+                            transitionDelay: `${index * 70}ms`,
+                        }"
+                    />
                 </Suspense>
             </TransitionGroup>
         </div>

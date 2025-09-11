@@ -23,7 +23,9 @@ function ensureUser(userId: number, existing: number[]) {
 }
 
 const filteredMembers = computed(() => {
-    if (!filter.value) return members.value;
+    if (!filter.value) {
+        return members.value;
+    }
     const low = filter.value.toLowerCase();
     return members.value.filter((m) => {
         const user = labs.getUser(m.user_id);
@@ -37,20 +39,27 @@ function toggle(userId: number, roleId: number) {
         userId,
         members.value.find((m) => m.user_id === userId)?.roles.map((r) => r.id) || [],
     );
-    if (current.has(roleId)) current.delete(roleId);
-    else current.add(roleId);
+    if (current.has(roleId)) {
+        current.delete(roleId);
+    } else {
+        current.add(roleId);
+    }
 }
 
 function isChecked(userId: number, roleId: number) {
     const member = members.value.find((m) => m.user_id === userId);
     const base = member ? member.roles.map((r) => r.id) : [];
     const current = working.value[userId];
-    if (!current) return base.includes(roleId);
+    if (!current) {
+        return base.includes(roleId);
+    }
     return current.has(roleId);
 }
 
 async function save() {
-    if (!props.labId) return;
+    if (!props.labId) {
+        return;
+    }
     saving.value = true;
     try {
         const payload: { userId: number; roleIds: number[] }[] = [];
@@ -69,13 +78,13 @@ async function save() {
                     .sort((a, b) => b.rank - a.rank || a.id - b.id);
             }
         }
-        try {
-            await apiFetch(`/labs/${props.labId}/members/roles`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ updates: payload }),
-            });
-        } catch (_) {}
+
+        await apiFetch(`/labs/${props.labId}/members/roles`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ updates: payload }),
+        });
+
         working.value = {};
     } finally {
         saving.value = false;
@@ -131,8 +140,8 @@ async function save() {
                             <input
                                 type="checkbox"
                                 :checked="isChecked(m.user_id, r.id)"
-                                @change="toggle(m.user_id, r.id)"
                                 class="accent-accent h-4 w-4"
+                                @change="toggle(m.user_id, r.id)"
                             />
                         </td>
                     </tr>

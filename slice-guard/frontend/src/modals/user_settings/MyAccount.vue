@@ -8,7 +8,8 @@ import Button from '../../components/Button.vue';
 const auth = useAuthStore();
 const name = ref(auth.user?.name ?? '');
 
-async function updateName() {
+/** Persist a new display name for the current user. */
+async function updateName(): Promise<void> {
     if (!auth.user) {
         return;
     }
@@ -24,7 +25,8 @@ async function updateName() {
     }
 }
 
-async function onAvatarChange(e: Event) {
+/** Upload a new avatar image for the current user. */
+async function onAvatarChange(e: Event): Promise<void> {
     if (!auth.user) {
         return;
     }

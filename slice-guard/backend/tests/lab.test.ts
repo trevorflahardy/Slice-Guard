@@ -10,6 +10,7 @@ import {
     type LabRow,
     type LabRoleRow,
     type LabMemberRow,
+    createRole,
 } from '../src/db/lab';
 
 function createMockSQL(results: any[] = []) {
@@ -51,7 +52,7 @@ function sampleRole(): LabRoleRow {
         name: 'Role',
         permissions: 1,
         created_at: new Date(),
-        rank: 1
+        rank: 1,
     };
 }
 
@@ -98,22 +99,37 @@ test('updateLab updates fields', async () => {
 test(' inserts expected values', async () => {
     const role = sampleRole();
     const db = createMockSQL([[role]]);
-    const result = await (db as any, role.lab_id, role.name, role.permissions as number, null);
-    expect(normalize(db.queries.at(-1))).toBe(
-        'INSERT INTO lab.roles (lab_id, name, permissions, rank, color) VALUES ($1, $2, $3, $4, $5) RETURNING id, lab_id, name, permissions, rank, color, created_at',
+    const result = await createRole(db as any, role.lab_id, role.name, role.permissions as number, null);
+    expect(normalize(db.queries.at(0))).toBe(
+        "INSERT INTO lab.roles (lab_id, name, permissions, rank, color) VALUES ($1, $2, $3, $4, $5) RETURNING id, lab_id, name, permissions, rank, color, created_at",
     );
-    expect(db.params.at(-1)).toEqual([role.lab_id, role.name, role.permissions, 1, null]);
+    expect(db.params.at(0)).toEqual([role.lab_id, role.name, role.permissions, null, null]);
     expect(result).toEqual(role);
 });
 
 test('updateRole updates permissions', async () => {
     const role = sampleRole();
     const db = createMockSQL([[role]]);
-    const result = await updateRole(db as any, role.lab_id, role.id, role.permissions as number, undefined, undefined, null);
+    const result = await updateRole(
+        db as any,
+        role.lab_id,
+        role.id,
+        role.permissions as number,
+        undefined,
+        undefined,
+        null,
+    );
     expect(normalize(db.queries.at(-1))).toBe(
         'UPDATE lab.roles SET permissions = $1, rank = COALESCE($2, rank), name = COALESCE($3, name), color = COALESCE($4, color) WHERE id = $5 AND lab_id = $6 RETURNING id, lab_id, name, permissions, rank, color, created_at',
     );
-    expect(db.params.at(-1)).toEqual([role.permissions, undefined, undefined, null, role.id, role.lab_id]);
+    expect(db.params.at(-1)).toEqual([
+        role.permissions,
+        undefined,
+        undefined,
+        null,
+        role.id,
+        role.lab_id,
+    ]);
     expect(result).toEqual(role);
 });
 

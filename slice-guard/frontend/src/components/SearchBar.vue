@@ -1,10 +1,17 @@
 <script setup lang="ts">
-defineProps<{
+/** Props for {@link SearchBar}. */
+interface Props {
+    /** Bound text value. */
     modelValue: string;
+    /** Optional placeholder text. */
     placeholder?: string;
-}>();
+}
+defineProps<Props>();
+
 const emit = defineEmits(['update:modelValue']);
-function onInput(e: Event) {
+
+/** Emit the updated value on input events. */
+function onInput(e: Event): void {
     emit('update:modelValue', (e.target as HTMLInputElement).value);
 }
 </script>

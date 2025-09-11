@@ -12,7 +12,8 @@ const status = ref<'idle' | 'invalid'>('idle');
 const router = useRouter();
 const labs = useLabsStore();
 
-async function join() {
+/** Attempt to join the lab using the entered invite code. */
+async function join(): Promise<void> {
     status.value = 'idle';
     try {
         const res = await apiFetch(`/invites/${code.value}`, { method: 'POST' });

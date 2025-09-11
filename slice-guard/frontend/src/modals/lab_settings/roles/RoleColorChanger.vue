@@ -4,10 +4,14 @@ import { colorSwatches } from './constants';
 import { PencilIcon, CheckIcon } from '@heroicons/vue/24/outline';
 import ColorPickerModal from '../../ColorPickerModal.vue';
 
+/** Props for {@link RoleColorChanger}. */
 export interface RoleColorChangerProps {
+    /** Whether this role is the default role (color locked). */
     isDefault: boolean;
 }
 defineProps<RoleColorChangerProps>();
+
+/** Currently selected color communicated via v-model. */
 const selectedColor: ModelRef<string | null> = defineModel('selectedColor', { required: true });
 
 const showColorModal = ref(false);

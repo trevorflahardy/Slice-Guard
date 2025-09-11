@@ -1,22 +1,29 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, type Component } from 'vue';
 
-interface DropdownOption {
+/** Option entry for the dropdown. */
+export interface DropdownOption {
     id: number | string;
     name: string;
     icon?: Component;
+    /** Optional variant for styling (e.g. danger). */
     variant?: 'danger';
 }
 
+/** Props for {@link Dropdown}. */
 interface Props {
+    /** Available options to display. */
     options: DropdownOption[];
+    /** Selected value or values when `multiple` is true. */
     modelValue: number | string | null | (number | string)[];
+    /** Placeholder text when nothing is selected. */
     placeholder?: string;
+    /** Allow selecting multiple options. */
     multiple?: boolean;
 }
 
 interface Emits {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+    /** Update the selected value(s). */
     (e: 'update:modelValue', value: number | string | null | (number | string)[]): void;
 }
 
@@ -30,8 +37,8 @@ const emit = defineEmits<Emits>();
 const isOpen = ref(false);
 const dropdownRef = ref<HTMLElement>();
 
-// Handle click outside to close dropdown
-function handleClickOutside(event: MouseEvent) {
+/** Close the dropdown when clicking outside. */
+function handleClickOutside(event: MouseEvent): void {
     if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
         isOpen.value = false;
     }
@@ -45,7 +52,7 @@ onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
 
-// Computed display text
+/** Text to show in the activator button. */
 const displayText = computed(() => {
     if (props.multiple) {
         const selected = props.modelValue as (number | string)[];
@@ -57,31 +64,28 @@ const displayText = computed(() => {
             return option?.name || props.placeholder;
         }
         return `${selected.length} selected`;
-    } else {
-        const value = props.modelValue as number | string | null;
-        if (value === null || value === undefined) {
-            return props.placeholder;
-        }
-        const option = props.options.find((opt) => opt.id === value);
-        return option?.name || props.placeholder;
     }
+    const value = props.modelValue as number | string | null;
+    if (value === null || value === undefined) {
+        return props.placeholder;
+    }
+    const option = props.options.find((opt) => opt.id === value);
+    return option?.name || props.placeholder;
 });
 
-// Check if option is selected
+/** Determine if the option is currently selected. */
 function isSelected(optionId: number | string): boolean {
     if (props.multiple) {
         const selected = props.modelValue as (number | string)[];
         return selected ? selected.includes(optionId) : false;
-    } else {
-        return props.modelValue === optionId;
     }
+    return props.modelValue === optionId;
 }
 
-// Handle option selection
-function selectOption(optionId: number | string) {
+/** Handle selection toggling for the given option. */
+function selectOption(optionId: number | string): void {
     if (props.multiple) {
         const currentSelected = (props.modelValue as (number | string)[]) || [];
-
         if (currentSelected.includes(optionId)) {
             // Remove from selection
             const newSelected = currentSelected.filter((id) => id !== optionId);

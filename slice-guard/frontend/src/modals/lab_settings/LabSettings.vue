@@ -12,17 +12,20 @@ const labs = useLabsStore();
 const labId = Number(route.params.id);
 const perms = labs.getLabPermissions(labId);
 
+/** List of pages rendered inside the settings modal. */
 const pages = {
     'lab settings': [
         { name: 'General', component: defineAsyncComponent(() => import('./General.vue')), id: 1 },
         ...(hasLabPermission(perms, LabPermission.MANAGE_ROLES)
             ? [
-                  {
-                      name: 'Roles',
-                      component: defineAsyncComponent(() => import('./roles/RoleSettingsLayout.vue')),
-                      id: 2,
-                  },
-              ]
+                {
+                    name: 'Roles',
+                    component: defineAsyncComponent(
+                        () => import('./roles/RoleSettingsLayout.vue'),
+                    ),
+                    id: 2,
+                },
+            ]
             : []),
     ],
 };

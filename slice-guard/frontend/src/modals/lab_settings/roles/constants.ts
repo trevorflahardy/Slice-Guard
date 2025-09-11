@@ -1,4 +1,4 @@
-import { LabPermission } from "@shared/db/lab";
+import { LabPermission } from '@shared/db/lab';
 
 // Curated theme-aligned palette
 export const colorSwatches = [

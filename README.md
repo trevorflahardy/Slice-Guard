@@ -114,7 +114,6 @@ Regardless, this is a large milestone! Of course, UI improvements will be coming
 
 <img width="1365" height="744" alt="image" src="https://github.com/user-attachments/assets/92099ce7-5f2b-4dae-9e5d-1677891765c8" />
 
-
 ## Aug 6th Update
 
 Added lab avatars, websocket updates with multi-client support, lab invite codes w/ expiration dates and max uses, leaving and joining multiple labs, and a better sidebar. Will add custom channels and better role permissions managements soon. Of course, all the styling will be cleaned later down the road after core infastructure is set in place.

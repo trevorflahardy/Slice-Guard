@@ -144,8 +144,8 @@ async function createRole() {
                 :selected-role="selectedRole"
                 :default-role-id="defaultRoleId"
                 :role-list="roleList"
-                :lab-id="labId"
                 v-model:selected-id="selectedId"
+                :lab-id="labId"
             />
         </div>
         <div

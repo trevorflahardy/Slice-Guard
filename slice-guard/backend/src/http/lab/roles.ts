@@ -45,7 +45,7 @@ export const updateRoleRoute = withAuth(async (req, userId, state, params) => {
         permissions,
         rank,
         isDefault ? undefined : name,
-        isDefault ? undefined : color ?? null,
+        isDefault ? undefined : (color ?? null),
     );
     state.broadcast({ op: WsEvent.ROLE_UPDATED, d: { role } });
     return Response.json(role);

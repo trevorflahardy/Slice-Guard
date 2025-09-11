@@ -116,7 +116,7 @@ const author = computed(
 
 <template>
     <div
-        class="bg-surface-low shadow-surface-high flex w-full flex-col gap-2 rounded-xl p-3 shadow-xs"
+        class="bg-surface shadow-surface-high dark:outline-surface-high dark:shadow-surface flex w-full flex-col gap-2 rounded-xl p-3 shadow-sm dark:outline-1"
     >
         <!-- Title and user avatar -->
         <div class="flex flex-row items-center justify-between">

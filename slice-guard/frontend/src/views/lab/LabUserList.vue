@@ -110,7 +110,7 @@ const sortedFilteredMembers = computed(() => {
                     :key="u.member.user_id"
                 >
                     <div
-                        class="text-fg-primary flex items-center justify-start gap-3 rounded-xl p-2 transition-all duration-200 hover:text-black hover:shadow-md"
+                        class="text-fg-secondary hover:text-fg-primary hover:bg-surface flex items-center justify-start gap-3 rounded-xl p-2 transition-all duration-200 hover:shadow-md"
                     >
                         <UserAvatar
                             v-if="u.user"

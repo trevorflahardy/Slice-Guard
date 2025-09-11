@@ -27,7 +27,9 @@ const color = ref<string>(props.modelValue ?? '#000000');
 watch(
     () => props.modelValue,
     (v) => {
-        if (typeof v === 'string' && v !== color.value) color.value = v;
+        if (typeof v === 'string' && v !== color.value) {
+            color.value = v;
+        }
     },
 );
 

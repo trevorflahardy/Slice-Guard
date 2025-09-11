@@ -23,7 +23,9 @@ const labStore = useLabsStore();
  * Resolve the message author, fetching the user if necessary.
  */
 async function resolveAuthor(): Promise<User | null> {
-    if (props.author) return props.author;
+    if (props.author) {
+        return props.author;
+    }
 
     const authorId = props.message.user_id;
     const res = await apiFetch(`/users/${authorId}`);

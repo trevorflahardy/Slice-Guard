@@ -51,7 +51,9 @@ const categorized: ComputedRef<Record<RoleName, { member: LabMember; user: User 
 // Role name -> rank lookup (everyone lowest)
 const roleRank = computed(() => {
     const out: Record<string, number> = { everyone: -Infinity };
-    for (const r of roles.value) out[r.name] = r.rank;
+    for (const r of roles.value) {
+        out[r.name] = r.rank;
+    }
     return out;
 });
 
@@ -79,7 +81,9 @@ const sortedFilteredMembers = computed(() => {
         .sort((a, b) => {
             const ra = roleRank.value[a.category] ?? -Infinity;
             const rb = roleRank.value[b.category] ?? -Infinity;
-            if (rb !== ra) return rb - ra; // higher rank first
+            if (rb !== ra) {
+                return rb - ra;
+            } // higher rank first
             return a.category.localeCompare(b.category);
         });
 });

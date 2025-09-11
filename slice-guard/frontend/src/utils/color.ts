@@ -31,8 +31,12 @@ export function clamp(n: number, min = 0, max = 1): number {
  * lower-case string starting with `#`. Returns `#000000` for invalid input.
  */
 export function normalizeHex(v: string | null | undefined): string {
-    if (!v) return '#000000';
-    if (!v.startsWith('#')) return v.toLowerCase();
+    if (!v) {
+        return '#000000';
+    }
+    if (!v.startsWith('#')) {
+        return v.toLowerCase();
+    }
     return v.length === 4
         ? `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}`.toLowerCase()
         : v.slice(0, 7).toLowerCase();

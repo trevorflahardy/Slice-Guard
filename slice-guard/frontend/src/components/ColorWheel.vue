@@ -45,7 +45,9 @@ const hex = computed(() => {
 watch(
     () => props.modelValue,
     (nv) => {
-        if (!nv) return;
+        if (!nv) {
+            return;
+        }
         const n = normalizeHex(nv);
         if (n !== hex.value) {
             const { r, g, b } = hexToRgb(n);
@@ -67,7 +69,9 @@ let draggingSquare = false;
  */
 function setSVFromEvent(ev: PointerEvent): void {
     const el = squareRef.value;
-    if (!el) return;
+    if (!el) {
+        return;
+    }
     const rect = el.getBoundingClientRect();
     const x = clamp((ev.clientX - rect.left) / rect.width);
     const y = clamp((ev.clientY - rect.top) / rect.height);
@@ -84,13 +88,17 @@ function onSquareDown(ev: PointerEvent): void {
 
 /** Track pointer movement while dragging within SV square. */
 function onSquareMove(ev: PointerEvent): void {
-    if (!draggingSquare) return;
+    if (!draggingSquare) {
+        return;
+    }
     setSVFromEvent(ev);
 }
 
 /** Finish SV drag and emit final color. */
 function onSquareUp(): void {
-    if (!draggingSquare) return;
+    if (!draggingSquare) {
+        return;
+    }
     draggingSquare = false;
     emit('change', hex.value);
 }
@@ -112,7 +120,9 @@ let draggingHue = false;
 /** Update hue value based on pointer position on the hue slider. */
 function setHueFromEvent(ev: PointerEvent): void {
     const el = sliderRef.value;
-    if (!el) return;
+    if (!el) {
+        return;
+    }
     const rect = el.getBoundingClientRect();
     const x = clamp((ev.clientX - rect.left) / rect.width);
     hsv.value.h = Math.round(x * 360);
@@ -127,13 +137,17 @@ function onHueDown(ev: PointerEvent): void {
 
 /** Track pointer movement while adjusting hue. */
 function onHueMove(ev: PointerEvent): void {
-    if (!draggingHue) return;
+    if (!draggingHue) {
+        return;
+    }
     setHueFromEvent(ev);
 }
 
 /** Finish hue drag and emit final color. */
 function onHueUp(): void {
-    if (!draggingHue) return;
+    if (!draggingHue) {
+        return;
+    }
     draggingHue = false;
     emit('change', hex.value);
 }

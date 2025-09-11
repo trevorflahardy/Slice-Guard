@@ -47,12 +47,16 @@ const listEl = useTemplateRef<HTMLElement>('listEl');
 // The roles that the user cannot edit (below them) will not be included in
 // useSortable and will be marked as disabled. The others will be draggable.
 const editableRoles = computed(() => {
-    if (!member) return [];
+    if (!member) {
+        return [];
+    }
     return roleList.value.filter((r) => r.rank < topRank);
 });
 
 const nonEditableRoles = computed(() => {
-    if (!member) return [];
+    if (!member) {
+        return [];
+    }
     return roleList.value.filter((r) => r.rank >= topRank);
 });
 
@@ -141,10 +145,10 @@ async function createRole() {
             class="no-scrollbar flex flex-1 flex-col gap-4 overflow-y-scroll p-5"
         >
             <RoleEdit
+                v-model:selected-id="selectedId"
                 :selected-role="selectedRole"
                 :default-role-id="defaultRoleId"
                 :role-list="roleList"
-                v-model:selected-id="selectedId"
                 :lab-id="labId"
             />
         </div>

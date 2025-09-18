@@ -348,4 +348,10 @@ async function deleteRole(role: LabRole) {
             </table>
         </div>
     </div>
+
+    <!-- Showcase of reusable components -->
+    <div class="mt-10 space-y-5 space-x-4">
+        <Button variant="primary">Primary Button</Button>
+        <Button variant="secondary">Secondary Button</Button>
+    </div>
 </template>

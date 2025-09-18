@@ -87,7 +87,7 @@ onUnmounted(() => {
                         </div>
                     </div>
                     <button
-                        class="text-fg-secondary hover:text-fg-primary focus-visible:outline-accent rounded-full p-2 transition-colors focus-visible:outline focus-visible:outline-2"
+                        class="text-fg-secondary hover:text-fg-primary focus-visible:outline-accent rounded-full p-2 transition-colors focus-visible:outline-2"
                         @click="close"
                     >
                         <XMarkIcon class="h-5 w-5" />

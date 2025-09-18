@@ -11,7 +11,14 @@ export function computeMemberPermissions(member: LabMember | null): number | nul
     if (!member) {
         return null;
     }
-    // Roles are expected to be ordered by rank DESC from backend.
-    const top = member.roles[0];
-    return top ? Number(top.permissions) : null;
+    const roles = [...member.roles].sort((a, b) => b.rank - a.rank || a.id - b.id);
+    if (roles.length === 0) {
+        return null;
+    }
+
+    let mask = Number(roles[0].permissions);
+    for (let i = 1; i < roles.length; i += 1) {
+        mask |= Number(roles[i].permissions);
+    }
+    return mask;
 }

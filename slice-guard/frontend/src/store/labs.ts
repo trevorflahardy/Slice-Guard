@@ -1,11 +1,18 @@
 import { defineStore } from 'pinia';
 import type { RequestTag } from '@shared/db/request';
 import type { LabState, PrintRequestEvent, MemberEvent } from '@shared/payloads/ws';
-import type { LabInvite, LabRole, Lab, LabMember } from '@shared/db/lab';
+import {
+    LabPermission,
+    type LabInvite,
+    type LabRole,
+    type Lab,
+    type LabMember,
+} from '@shared/db/lab';
 import type { Channel } from '@shared/db/channel';
 import type { User } from '@shared/db/user';
 import type { Message } from '@shared/db/message';
 import { useAuthStore } from './auth';
+import { computeMemberPermissions } from '../utils/permissions';
 
 const DEV = import.meta.env.DEV;
 
@@ -89,11 +96,50 @@ export const useLabsStore = defineStore('labs', {
 
         /** Get permissions for a lab */
         getLabPermissions: (state) => (labId: LabId) => {
+            const auth = useAuthStore();
+            const userId = auth.user?.id;
+            if (!userId) {
+                return 0;
+            }
+
+            const lab = state.labs.get(labId) || null;
+            if (lab && lab.owner_id === userId) {
+                return LabPermission.ALL;
+            }
+
+            const member = state.members.get(labId)?.get(userId) ?? null;
+            const computed = computeMemberPermissions(member);
+            if (computed !== null) {
+                return computed;
+            }
+
             return state.permissions.get(labId) || 0;
         },
     },
 
     actions: {
+        recomputePermissions(labId: LabId) {
+            const auth = useAuthStore();
+            const userId = auth.user?.id;
+            if (!userId) {
+                this.permissions.delete(labId);
+                return;
+            }
+
+            const lab = this.labs.get(labId) || null;
+            if (lab && lab.owner_id === userId) {
+                this.permissions.set(labId, LabPermission.ALL);
+                return;
+            }
+
+            const member = this.members.get(labId)?.get(userId) ?? null;
+            const computed = computeMemberPermissions(member);
+            if (computed !== null) {
+                this.permissions.set(labId, computed);
+            } else {
+                this.permissions.delete(labId);
+            }
+        },
         /** Initialize store with labs from server. */
         setInitial(labStates: LabState[]) {
             if (DEV) {
@@ -201,6 +247,9 @@ export const useLabsStore = defineStore('labs', {
 
             // Store permissions
             this.permissions.set(labId, labState.permissions || 0);
+
+            // Ensure cached permissions match current member state
+            this.recomputePermissions(labId);
         },
 
         /** Update basic lab info. */
@@ -394,6 +443,7 @@ export const useLabsStore = defineStore('labs', {
             if (members) {
                 members.set(event.member.user_id, event.member);
             }
+            this.recomputePermissions(labId);
         },
         /** Remove member by user id. */
         removeMember(labId: LabId, userId: UserId) {
@@ -405,6 +455,7 @@ export const useLabsStore = defineStore('labs', {
             if (members) {
                 members.delete(userId);
             }
+            this.recomputePermissions(labId);
         },
         /** Handle member leave events. */
         handleMemberLeft(labId: LabId, userId: UserId) {
@@ -415,6 +466,8 @@ export const useLabsStore = defineStore('labs', {
                     console.debug('[labs] removeLab', labId);
                 }
                 this.removeLab(labId);
+            } else {
+                this.recomputePermissions(labId);
             }
         },
         /** Add an invite to the lab. */
@@ -460,6 +513,17 @@ export const useLabsStore = defineStore('labs', {
             if (roles) {
                 roles.set(role.id, role);
             }
+            const members = this.members.get(labId);
+            if (members) {
+                for (const member of members.values()) {
+                    const idx = member.roles.findIndex((r) => r.id === role.id);
+                    if (idx !== -1) {
+                        member.roles[idx] = role;
+                        member.roles.sort((a, b) => b.rank - a.rank || a.id - b.id);
+                    }
+                }
+            }
+            this.recomputePermissions(labId);
         },
         /** Update role fields. */
         updateRole(labId: LabId, role: LabRole) {
@@ -482,6 +546,15 @@ export const useLabsStore = defineStore('labs', {
             if (roles) {
                 roles.delete(roleId);
             }
+            const members = this.members.get(labId);
+            if (members) {
+                for (const member of members.values()) {
+                    member.roles = member.roles
+                        .filter((r) => r.id !== roleId)
+                        .sort((a, b) => b.rank - a.rank || a.id - b.id);
+                }
+            }
+            this.recomputePermissions(labId);
         },
         /**
          * Add a user's public profile information

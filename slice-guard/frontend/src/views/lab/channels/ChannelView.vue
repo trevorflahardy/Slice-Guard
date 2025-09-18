@@ -179,6 +179,7 @@ onMounted(() => {
                 :key="m.id"
                 :message="m"
                 :author="labs.getUser(m.user_id)!"
+                :lab-id="channel?.lab_id ?? null"
             />
 
             <!-- Empty state -->

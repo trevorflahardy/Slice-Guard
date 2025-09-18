@@ -99,9 +99,15 @@ test('updateLab updates fields', async () => {
 test(' inserts expected values', async () => {
     const role = sampleRole();
     const db = createMockSQL([[role]]);
-    const result = await createRole(db as any, role.lab_id, role.name, role.permissions as number, null);
+    const result = await createRole(
+        db as any,
+        role.lab_id,
+        role.name,
+        role.permissions as number,
+        null,
+    );
     expect(normalize(db.queries.at(0))).toBe(
-        "INSERT INTO lab.roles (lab_id, name, permissions, rank, color) VALUES ($1, $2, $3, $4, $5) RETURNING id, lab_id, name, permissions, rank, color, created_at",
+        'INSERT INTO lab.roles (lab_id, name, permissions, rank, color) VALUES ($1, $2, $3, $4, $5) RETURNING id, lab_id, name, permissions, rank, color, created_at',
     );
     expect(db.params.at(0)).toEqual([role.lab_id, role.name, role.permissions, null, null]);
     expect(result).toEqual(role);
@@ -163,10 +169,16 @@ test('getMemberRolePermissions selects join', async () => {
     expect(normalize(db.queries[0])).toBe('SELECT owner_id FROM lab.labs WHERE id = $1');
     expect(db.params[0]).toEqual([1]);
     expect(normalize(db.queries[1])).toBe(
-        'SELECT r.permissions FROM lab.member_roles mr JOIN lab.roles r ON mr.role_id = r.id WHERE mr.lab_id = $1 AND mr.user_id = $2 ORDER BY r.rank DESC, r.id ASC LIMIT 1',
+        'SELECT r.permissions FROM lab.member_roles mr JOIN lab.roles r ON mr.role_id = r.id WHERE mr.lab_id = $1 AND mr.user_id = $2 ORDER BY r.rank DESC, r.id ASC',
     );
     expect(db.params[1]).toEqual([1, 2]);
     expect(result).toEqual(8);
+});
+
+test('getMemberRolePermissions aggregates multiple roles', async () => {
+    const db = createMockSQL([[{ owner_id: 5 }], [{ permissions: 4 }, { permissions: 2 }]]);
+    const result = await getMemberRolePermissions(db as any, 7, 9);
+    expect(result).toEqual(6);
 });
 
 test('listMembers selects expected', async () => {

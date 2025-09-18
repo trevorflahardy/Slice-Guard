@@ -12,11 +12,10 @@ import { clamp, hexToRgb, rgbToHex, rgbToHsv, hsvToRgb, normalizeHex } from '../
  * `change` event when the user finishes an interaction (pointer up).
  */
 
-interface Emits {
-    (e: 'update:modelValue', v: string): void;
-    (e: 'change', v: string): void; // fired on pointer up / finalize interaction
-}
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+    'update:modelValue': [value: string];
+    change: [value: string];
+}>();
 
 const props = withDefaults(
     defineProps<{
@@ -67,7 +66,7 @@ let draggingSquare = false;
  * Update saturation and value based on pointer event coordinates within the
  * square selector.
  */
-function setSVFromEvent(ev: PointerEvent): void {
+function setSVFromEvent(ev: globalThis.PointerEvent): void {
     const el = squareRef.value;
     if (!el) {
         return;
@@ -80,14 +79,14 @@ function setSVFromEvent(ev: PointerEvent): void {
 }
 
 /** Begin dragging within the SV square. */
-function onSquareDown(ev: PointerEvent): void {
+function onSquareDown(ev: globalThis.PointerEvent): void {
     draggingSquare = true;
     (ev.currentTarget as HTMLElement).setPointerCapture?.(ev.pointerId);
     setSVFromEvent(ev);
 }
 
 /** Track pointer movement while dragging within SV square. */
-function onSquareMove(ev: PointerEvent): void {
+function onSquareMove(ev: globalThis.PointerEvent): void {
     if (!draggingSquare) {
         return;
     }
@@ -118,7 +117,7 @@ const squareBg = computed(() => `hsl(${Math.round(hsv.value.h)} 100% 50%)`);
 const sliderRef = ref<HTMLElement | null>(null);
 let draggingHue = false;
 /** Update hue value based on pointer position on the hue slider. */
-function setHueFromEvent(ev: PointerEvent): void {
+function setHueFromEvent(ev: globalThis.PointerEvent): void {
     const el = sliderRef.value;
     if (!el) {
         return;
@@ -129,14 +128,14 @@ function setHueFromEvent(ev: PointerEvent): void {
 }
 
 /** Start dragging on the hue slider. */
-function onHueDown(ev: PointerEvent): void {
+function onHueDown(ev: globalThis.PointerEvent): void {
     draggingHue = true;
     (ev.currentTarget as HTMLElement).setPointerCapture?.(ev.pointerId);
     setHueFromEvent(ev);
 }
 
 /** Track pointer movement while adjusting hue. */
-function onHueMove(ev: PointerEvent): void {
+function onHueMove(ev: globalThis.PointerEvent): void {
     if (!draggingHue) {
         return;
     }

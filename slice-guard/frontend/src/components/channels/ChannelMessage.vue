@@ -65,7 +65,7 @@ function openProfile(): void {
             <!-- The user's avatar off to the left -->
             <button
                 type="button"
-                class="focus-visible:outline-accent/80 rounded-full focus-visible:outline focus-visible:outline-2 disabled:cursor-default"
+                class="focus-visible:outline-accent/80 rounded-full focus-visible:outline-2 disabled:cursor-default"
                 :class="canOpenProfile ? 'cursor-pointer' : 'cursor-default'"
                 :disabled="!canOpenProfile"
                 @click="openProfile"
@@ -87,7 +87,7 @@ function openProfile(): void {
                     <button
                         v-if="resolvedAuthor"
                         type="button"
-                        class="text-fg-primary focus-visible:outline-accent/70 text-left text-sm font-medium hover:underline focus-visible:outline focus-visible:outline-2 disabled:cursor-default disabled:opacity-70"
+                        class="text-fg-primary focus-visible:outline-accent/70 text-left text-sm font-medium hover:underline focus-visible:outline-2 disabled:cursor-default disabled:opacity-70"
                         :disabled="!canOpenProfile"
                         @click="openProfile"
                     >

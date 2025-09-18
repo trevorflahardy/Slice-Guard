@@ -233,14 +233,14 @@ export class Server {
     }
 
     private async handleWebSocketOpen(ws: ServerWebSocket) {
-        this.state.sockets.add(ws);
+        this.state.addSocket(ws);
         const labs = await getUserLabStates(this.state.db, ws.data.userId);
         ws.send(JSON.stringify({ op: WsEvent.HELLO, d: { labs } }));
         logger.debug({ userId: ws.data.userId }, 'WebSocket connected');
     }
 
     private handleWebSocketClose(ws: ServerWebSocket) {
-        this.state.sockets.delete(ws);
+        this.state.removeSocket(ws);
         logger.debug({ userId: ws.data.userId }, 'WebSocket disconnected');
     }
 }

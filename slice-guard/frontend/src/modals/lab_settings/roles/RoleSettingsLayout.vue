@@ -35,8 +35,8 @@ watch(
     { immediate: true },
 );
 
-const member = labs.members.get(labId)?.get(auth.user?.id ?? 0) ?? null;
-const topRank = member?.roles[0]?.rank ?? 0;
+const member = computed(() => labs.members.get(labId)?.get(auth.user?.id ?? 0) ?? null);
+const topRank = computed(() => member.value?.roles[0]?.rank ?? 0);
 
 const selectedRole: ComputedRef<LabRole | null> = computed(
     () => roleList.value.find((r) => r.id === selectedId.value) || null,
@@ -47,26 +47,68 @@ const listEl = useTemplateRef<HTMLElement>('listEl');
 // The roles that the user cannot edit (below them) will not be included in
 // useSortable and will be marked as disabled. The others will be draggable.
 const editableRoles = computed(() => {
-    if (!member) {
+    if (!member.value) {
         return [];
     }
-    return roleList.value.filter((r) => r.rank < topRank);
+    return roleList.value.filter((r) => r.rank < topRank.value);
 });
 
 const nonEditableRoles = computed(() => {
-    if (!member) {
+    if (!member.value) {
         return [];
     }
-    return roleList.value.filter((r) => r.rank >= topRank);
+    return roleList.value.filter((r) => r.rank >= topRank.value);
 });
 
 useSortable(listEl, editableRoles, {
     onUpdate: async () => {
-        // Merge updated draggable roles with non-editable roles
         roleList.value = [...nonEditableRoles.value, ...editableRoles.value];
-        // ! TODO: API call for update
+        await persistRoleOrder();
     },
 });
+
+async function persistRoleOrder(): Promise<void> {
+    if (!member.value) {
+        return;
+    }
+
+    const editable = editableRoles.value;
+    if (editable.length === 0) {
+        return;
+    }
+
+    let nextRank = topRank.value - 1;
+    const updates: { role: LabRole; newRank: number }[] = [];
+    for (const role of editable) {
+        const newRank = nextRank;
+        nextRank -= 1;
+        if (role.rank !== newRank) {
+            updates.push({ role, newRank });
+        }
+        role.rank = newRank;
+    }
+
+    roleList.value = [...nonEditableRoles.value, ...editable]
+        .slice()
+        .sort((a, b) => b.rank - a.rank || a.id - b.id);
+
+    for (const { role, newRank } of updates) {
+        const res = await apiFetch(`/labs/${labId}/roles/${role.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                permissions: Number(role.permissions),
+                rank: newRank,
+            }),
+        });
+        if (!res.ok) {
+            console.error('[labs] failed to persist role rank', res);
+            continue;
+        }
+        const updated = (await res.json()) as LabRole;
+        labs.updateRole(labId, updated);
+    }
+}
 
 /**
  * Create a new role at a rank the current user can manage and select it.
@@ -79,12 +121,13 @@ async function createRole() {
             name: 'new role',
             color: '#888888',
             permissions: 0,
+            rank: topRank.value > 0 ? topRank.value - 1 : 1,
         }),
     });
 
     if (res.ok) {
         const role: LabRole = await res.json();
-        labs.roles.get(labId)?.set(role.id, role);
+        labs.addRole(labId, role);
         roleList.value.push(role);
         roleList.value.sort((a, b) => b.rank - a.rank);
         selectedId.value = role.id;

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { computedAsync } from '@vueuse/core';
 
 import type { Message } from '@shared/db/message';
@@ -6,6 +7,7 @@ import type { User } from '@shared/db/user';
 
 import { apiFetch } from '../../services/api';
 import { useLabsStore } from '../../store/labs';
+import { useUiStore } from '../../store/ui';
 import UserAvatar from '../UserAvatar.vue';
 
 /** Props for {@link ChannelMessage}. */
@@ -14,10 +16,13 @@ export interface ChannelMessageProps {
     message: Message;
     /** Optional author; fetched if not provided. */
     author: User | null;
+    /** Lab context for opening a profile modal. */
+    labId?: number | null;
 }
 
 const props = defineProps<ChannelMessageProps>();
 const labStore = useLabsStore();
+const ui = useUiStore();
 
 /**
  * Resolve the message author, fetching the user if necessary.
@@ -40,7 +45,16 @@ async function resolveAuthor(): Promise<User | null> {
     return fetched;
 }
 
-const author = computedAsync<User | null>(resolveAuthor, null);
+const resolvedAuthor = computedAsync<User | null>(resolveAuthor, null);
+
+const canOpenProfile = computed(() => props.labId !== null && props.labId !== undefined);
+
+function openProfile(): void {
+    if (props.labId === null || props.labId === undefined) {
+        return;
+    }
+    ui.openUserProfile({ labId: props.labId, userId: props.message.user_id });
+}
 </script>
 
 <template>
@@ -49,20 +63,41 @@ const author = computedAsync<User | null>(resolveAuthor, null);
     >
         <div class="flex flex-row items-start justify-center gap-2">
             <!-- The user's avatar off to the left -->
-            <UserAvatar
-                v-if="author"
-                :user="author"
-                size="size-8"
-            />
+            <button
+                type="button"
+                class="focus-visible:outline-accent/80 rounded-full focus-visible:outline-2 disabled:cursor-default"
+                :class="canOpenProfile ? 'cursor-pointer' : 'cursor-default'"
+                :disabled="!canOpenProfile"
+                @click="openProfile"
+            >
+                <UserAvatar
+                    v-if="resolvedAuthor"
+                    :user="resolvedAuthor"
+                    size="size-8"
+                />
+                <div
+                    v-else
+                    class="h-8 w-8 rounded-full bg-gray-600"
+                />
+            </button>
 
-            <div>
+            <div class="min-w-0 flex-1">
                 <!-- Their name and when the message was created off to the right next to each other -->
                 <div class="flex flex-row items-center justify-start gap-2">
+                    <button
+                        v-if="resolvedAuthor"
+                        type="button"
+                        class="text-fg-primary focus-visible:outline-accent/70 text-left text-sm font-medium hover:underline focus-visible:outline-2 disabled:cursor-default disabled:opacity-70"
+                        :disabled="!canOpenProfile"
+                        @click="openProfile"
+                    >
+                        {{ resolvedAuthor.name || 'User ' + resolvedAuthor.id }}
+                    </button>
                     <div
-                        v-if="author"
+                        v-else
                         class="text-fg-primary text-left text-sm"
                     >
-                        {{ author.name || 'User ' + author.id }}
+                        User {{ message.user_id }}
                     </div>
                     <!-- Show the date and the time it was created-->
                     <div class="text-fg-tertiary text-left text-xs">

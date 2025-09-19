@@ -22,17 +22,14 @@ interface Props {
     multiple?: boolean;
 }
 
-interface Emits {
-    /** Update the selected value(s). */
-    (e: 'update:modelValue', value: number | string | null | (number | string)[]): void;
-}
-
 const props = withDefaults(defineProps<Props>(), {
     placeholder: 'Select option',
     multiple: false,
 });
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+    'update:modelValue': [value: number | string | null | (number | string)[]];
+}>();
 
 const isOpen = ref(false);
 const dropdownRef = ref<HTMLElement>();

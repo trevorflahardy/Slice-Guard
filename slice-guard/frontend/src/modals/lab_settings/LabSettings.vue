@@ -18,14 +18,14 @@ const pages = {
         { name: 'General', component: defineAsyncComponent(() => import('./General.vue')), id: 1 },
         ...(hasLabPermission(perms, LabPermission.MANAGE_ROLES)
             ? [
-                {
-                    name: 'Roles',
-                    component: defineAsyncComponent(
-                        () => import('./roles/RoleSettingsLayout.vue'),
-                    ),
-                    id: 2,
-                },
-            ]
+                  {
+                      name: 'Roles',
+                      component: defineAsyncComponent(
+                          () => import('./roles/RoleSettingsLayout.vue'),
+                      ),
+                      id: 2,
+                  },
+              ]
             : []),
     ],
 };

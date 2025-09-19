@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, type ComputedRef } from 'vue';
+import { ref, computed, type ComputedRef, watch } from 'vue';
 import type { Lab, LabMember } from '@shared/db/lab';
 import { useLabsStore } from '../../store/labs';
 import SearchBar from '../../components/SearchBar.vue';
 import UserAvatar from '../../components/UserAvatar.vue';
 import { type User } from '@shared/db/user';
+import { useUiStore } from '../../store/ui';
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 
 type RoleName = string;
 
@@ -15,7 +17,34 @@ const props = defineProps<{
 }>();
 
 const labs = useLabsStore();
+const ui = useUiStore();
 const search = ref('');
+
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isCompact = breakpoints.smaller('md');
+const collapsed = ref(false);
+
+watch(
+    isCompact,
+    (small) => {
+        collapsed.value = small;
+    },
+    { immediate: true },
+);
+
+function toggleCollapsed(): void {
+    if (!isCompact.value) {
+        return;
+    }
+    collapsed.value = !collapsed.value;
+}
+
+function openProfile(userId: number): void {
+    if (!props.lab) {
+        return;
+    }
+    ui.openUserProfile({ labId: props.lab.id, userId });
+}
 
 const members = computed(() => {
     return (props.lab && labs.getLabMembers(props.lab.id)) || [];
@@ -91,50 +120,68 @@ const sortedFilteredMembers = computed(() => {
 
 <template>
     <div class="flex flex-col gap-4">
-        <!-- Search bar to filter users -->
-        <SearchBar
-            v-model="search"
-            placeholder="Search users..."
-        />
-        <!-- Display the list of users categorized by role -->
+        <div class="flex items-center justify-between md:hidden">
+            <h2 class="text-fg-primary text-sm font-semibold uppercase">Members</h2>
+            <button
+                type="button"
+                class="text-fg-secondary hover:text-fg-primary rounded-md px-2 py-1 text-xs font-medium transition-colors"
+                @click="toggleCollapsed"
+            >
+                {{ collapsed ? 'Show' : 'Hide' }}
+            </button>
+        </div>
+
         <div
-            v-for="entry in sortedFilteredMembers"
-            :key="entry.category"
-            class="flex flex-col gap-2"
+            v-if="!collapsed"
+            class="flex flex-col gap-4"
         >
-            <!-- Category header -->
-            <h3 class="text-fg-primary px-2 text-xs font-medium tracking-wide uppercase">
-                {{ entry.category }}
-            </h3>
+            <!-- Search bar to filter users -->
+            <SearchBar
+                v-model="search"
+                placeholder="Search users..."
+            />
+            <!-- Display the list of users categorized by role -->
+            <div
+                v-for="entry in sortedFilteredMembers"
+                :key="entry.category"
+                class="flex flex-col gap-2"
+            >
+                <!-- Category header -->
+                <h3 class="text-fg-primary px-2 text-xs font-medium tracking-wide uppercase">
+                    {{ entry.category }}
+                </h3>
 
-            <!-- Users in this category -->
-            <ul class="space-y-1">
-                <li
-                    v-for="u in entry.users"
-                    :key="u.member.user_id"
-                >
-                    <div
-                        class="text-fg-secondary hover:text-fg-primary hover:bg-surface flex items-center justify-start gap-3 rounded-xl p-2 transition-all duration-200 hover:shadow-md"
+                <!-- Users in this category -->
+                <ul class="space-y-1">
+                    <li
+                        v-for="u in entry.users"
+                        :key="u.member.user_id"
                     >
-                        <UserAvatar
-                            v-if="u.user"
-                            :user="u.user"
-                            size="size-7"
-                        />
-                        <div
-                            v-else
-                            class="h-7 w-7 flex-none rounded-full bg-gray-700"
-                        ></div>
+                        <button
+                            type="button"
+                            class="text-fg-secondary hover:text-fg-primary hover:bg-surface flex w-full items-center justify-start gap-3 rounded-xl p-2 text-left transition-all duration-200 hover:shadow-md"
+                            @click="openProfile(u.member.user_id)"
+                        >
+                            <UserAvatar
+                                v-if="u.user"
+                                :user="u.user"
+                                size="size-7"
+                            />
+                            <div
+                                v-else
+                                class="h-7 w-7 flex-none rounded-full bg-gray-700"
+                            ></div>
 
-                        <span class="truncate text-sm">
-                            {{ u.user?.name || u.user?.email || u.member.user_id }}
-                        </span>
-                    </div>
-                </li>
-            </ul>
+                            <span class="truncate text-sm">
+                                {{ u.user?.name || u.user?.email || u.member.user_id }}
+                            </span>
+                        </button>
+                    </li>
+                </ul>
 
-            <!-- Divider line -->
-            <hr class="border-surface-high my-2" />
+                <!-- Divider line -->
+                <hr class="border-surface-high my-2" />
+            </div>
         </div>
     </div>
 </template>

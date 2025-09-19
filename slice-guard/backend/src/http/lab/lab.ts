@@ -34,7 +34,7 @@ export const create = withAuth(async (req, userId, state) => {
     const lab = await createLab(state.db, userId, name, description ?? null, iconUrl ?? null);
     const labState = await getLabState(state.db, lab.id, userId);
     if (labState) {
-        state.broadcast({ op: WsEvent.LAB_CREATED, d: { lab: labState } });
+        state.sendToUser(userId, { op: WsEvent.LAB_CREATED, d: { lab: labState } });
     }
     return Response.json(lab);
 });

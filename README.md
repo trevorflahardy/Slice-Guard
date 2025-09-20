@@ -100,6 +100,17 @@ Ensure the bucket exists and the credentials have read/write access.
 
 # Developmental Preview Images
 
+## Sep 20th Update
+
+Continuing working on permissions systems, lab settings panels, role management, etc.
+
+Most importantly, I've drafted a new UI theme that will be applied to the application throughout:
+
+<img width="1460" height="1432" alt="image" src="https://github.com/user-attachments/assets/64615d01-80c2-4740-9693-d6c1b7412580" />
+<img width="1452" height="1332" alt="image" src="https://github.com/user-attachments/assets/edcd2669-004e-40d2-a9d0-51972e628079" />
+
+The background, in actuality, will not be this blue color but rather something more elegant - still have to decide what. This will drastically improve the feel of the application throughout!
+
 ## Aug 8th Update
 
 Improved UI for channels, started diagnosing issues related to performance.

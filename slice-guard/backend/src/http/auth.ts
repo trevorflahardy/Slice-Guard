@@ -1,6 +1,7 @@
 import { hashPassword, verifyPassword } from '../utils/hash';
 import { generateApiKey } from '../utils/apiKey';
 import { createUser, findUserByEmail, getOrCreateApiKey } from '../db/user';
+import { validateEmail, validatePassword, validateStringLength } from '../utils/validate';
 import type State from '../utils/state';
 import type { AuthLoginPayload, AuthRegisterPayload } from '@shared/payloads';
 
@@ -9,6 +10,13 @@ import type { AuthLoginPayload, AuthRegisterPayload } from '@shared/payloads';
  */
 export async function register(req: Request, state: State): Promise<Response> {
     const { email, password, name } = (await req.json()) as AuthRegisterPayload;
+
+    const emailErr = validateEmail(email);
+    if (emailErr) return new Response(emailErr, { status: 400 });
+    const passErr = validatePassword(password);
+    if (passErr) return new Response(passErr, { status: 400 });
+    const nameErr = validateStringLength(name, 'Name', 1, 100);
+    if (nameErr) return new Response(nameErr, { status: 400 });
 
     state.logger.debug({ email }, 'Attempting to register user');
     const existing = await findUserByEmail(state.db, email);
@@ -41,6 +49,12 @@ export async function register(req: Request, state: State): Promise<Response> {
  */
 export async function login(req: Request, state: State): Promise<Response> {
     const { email, password } = (await req.json()) as AuthLoginPayload;
+
+    const emailErr = validateEmail(email);
+    if (emailErr) return new Response(emailErr, { status: 400 });
+    if (typeof password !== 'string' || password.length === 0) {
+        return new Response('Password is required', { status: 400 });
+    }
 
     state.logger.debug({ email }, 'Login attempt');
     const user = await findUserByEmail(state.db, email);

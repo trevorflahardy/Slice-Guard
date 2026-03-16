@@ -54,6 +54,11 @@ const routes: RouteRecordRaw[] = [
         name: 'Register',
         component: () => import('../views/auth/RegisterPage.vue'),
     },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: () => import('../views/NotFound.vue'),
+    },
 ];
 
 const router = createRouter({
@@ -61,7 +66,7 @@ const router = createRouter({
     routes,
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
     const auth = useAuthStore();
     if (to.name === 'Login' || to.name === 'Register') {
         if (auth.apiKey) {
@@ -71,6 +76,15 @@ router.beforeEach((to) => {
     }
     if (!auth.apiKey) {
         return { name: 'Login' };
+    }
+    // Verify lab membership for lab routes
+    if (to.params.id && to.matched.some((r) => r.path.startsWith('/lab'))) {
+        const { useLabsStore } = await import('../store/labs');
+        const labs = useLabsStore();
+        const labId = Number(to.params.id);
+        if (labId && !labs.labs.has(labId)) {
+            return { name: 'Root' };
+        }
     }
     return true;
 });

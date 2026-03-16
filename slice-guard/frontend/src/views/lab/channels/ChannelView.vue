@@ -61,7 +61,6 @@ async function ensureHistory() {
     const res = await apiFetch(`/channels/${channelId.value}/messages?limit=50`);
     if (res.ok) {
         const messages: Message[] = await res.json();
-        console.log(messages);
         labs.setMessages(channelId.value, messages);
         // Scroll to bottom after loading initial messages
         await scrollToBottom();

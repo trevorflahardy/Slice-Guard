@@ -172,7 +172,7 @@ export interface LabState {
 
 export interface ErrorPayload {
     code: ErrorCode;
-    message: number;
+    message: string;
 }
 
 export type WsPayloads = {

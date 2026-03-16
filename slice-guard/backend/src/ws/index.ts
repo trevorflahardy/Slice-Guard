@@ -2,7 +2,7 @@ import { WsEvent, type WsPayloadUnion, type WsEventValue } from '@shared/payload
 import type State from '../utils/state';
 import type { Server } from '../server';
 import { handlers, HandlerPayload, type Handler, type HandlerResponse } from './handlers';
-import { ErrorCode, toErrorCodeValue, type ErrorCodeValue } from '@slice-guard/shared/ws/errors';
+import { ErrorCode, type ErrorCodeValue } from '@slice-guard/shared/ws/errors';
 
 export type WebSocketData = {
     created_at: number;
@@ -55,7 +55,7 @@ export async function validateAndDispatchMessage(
                 op: WsEvent.ERROR,
                 d: {
                     code: response as ErrorCode,
-                    message: toErrorCodeValue(response as ErrorCodeValue),
+                    message: String(response),
                 },
             };
         }
@@ -68,7 +68,7 @@ export async function validateAndDispatchMessage(
                 op: WsEvent.ERROR,
                 d: {
                     code: ErrorCode.INTERNAL_ERROR,
-                    message: toErrorCodeValue(ErrorCode.INTERNAL_ERROR),
+                    message: 'Internal server error',
                 },
             }),
         );

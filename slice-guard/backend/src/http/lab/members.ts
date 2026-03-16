@@ -3,9 +3,9 @@ import {
     addMember,
     removeMember,
     getMember,
-    listMembers,
     getMemberRoles,
     getMemberRolePermissions,
+    getLabMembersWithDetails,
 } from '../../db/lab';
 import { findPublicUserById } from '../../db/user';
 import { LabPermission, type LabMember } from '@shared/db/lab';
@@ -29,7 +29,7 @@ export const addMemberRoute = withAuth(async (req, userId, state, params) => {
     const roles = await getMemberRoles(state.db, labId, addId);
     const member: LabMember = { ...memberRow, roles };
     const user = await findPublicUserById(state.db, addId);
-    state.broadcast({ op: WsEvent.MEMBER_JOINED, d: { labId, member, user } });
+    state.sendToLab(labId, { op: WsEvent.MEMBER_JOINED, d: { labId, member, user } });
     return Response.json(member);
 });
 
@@ -46,7 +46,8 @@ export const removeMemberRoute = withAuth(async (req, userId, state, params) => 
     }
 
     await removeMember(state.db, labId, removeId);
-    state.broadcast({ op: WsEvent.MEMBER_LEFT, d: { labId, userId: removeId } });
+    state.sendToLab(labId, { op: WsEvent.MEMBER_LEFT, d: { labId, userId: removeId } });
+    state.removeUserFromLab(removeId, labId);
     return new Response(null, { status: 204 });
 });
 
@@ -61,7 +62,8 @@ export const leaveLabRoute = withAuth(async (_req, userId, state, params) => {
     }
 
     await removeMember(state.db, labId, userId);
-    state.broadcast({ op: WsEvent.MEMBER_LEFT, d: { labId, userId } });
+    state.sendToLab(labId, { op: WsEvent.MEMBER_LEFT, d: { labId, userId } });
+    state.removeUserFromLab(userId, labId);
     return new Response(null, { status: 204 });
 });
 
@@ -109,22 +111,10 @@ export const listMembersRoute = withAuth(async (_req, userId, state, params) => 
         return new Response('Unauthorized', { status: 403 });
     }
 
-    const rows = await listMembers(state.db, labId);
-    const results = [] as any[];
-    for (const row of rows) {
-        const user = await findPublicUserById(state.db, row.user_id);
-        if (!user) {
-            continue;
-        }
-        const roles = await getMemberRoles(state.db, labId, row.user_id);
-        const member: LabMember = {
-            lab_id: row.lab_id,
-            user_id: row.user_id,
-            roles,
-            joined_at: row.joined_at,
-        };
-        results.push({ member, user });
-    }
-
+    const details = await getLabMembersWithDetails(state.db, labId);
+    const results = details.map((d) => ({
+        member: { ...d.member, roles: d.roles },
+        user: d.user,
+    }));
     return Response.json(results);
 });

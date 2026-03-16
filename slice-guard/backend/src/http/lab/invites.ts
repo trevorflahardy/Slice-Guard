@@ -30,8 +30,8 @@ export const createInviteRoute = withAuth(async (req, userId, state, params) => 
     const code = Math.random().toString(36).slice(2, 8);
     const expiresAt = expiresIn ? new Date(Date.now() + expiresIn * 1000) : null;
     const invite = await createInvite(state.db, labId, code, maxUses ?? null, expiresAt);
-    // Notify all clients including the creator
-    state.broadcast({ op: WsEvent.INVITE_CREATED, d: { invite } });
+    // Notify all lab members including the creator
+    state.sendToLab(labId, { op: WsEvent.INVITE_CREATED, d: { invite } });
     return Response.json(invite);
 });
 
@@ -66,8 +66,8 @@ export const updateInviteRoute = withAuth(async (req, userId, state, params) => 
         maxUses ?? null,
         expiresAt ? new Date(expiresAt) : null,
     );
-    // Broadcast update to all clients including the actor
-    state.broadcast({ op: WsEvent.INVITE_UPDATED, d: { invite } });
+    // Broadcast update to all lab members including the actor
+    state.sendToLab(labId, { op: WsEvent.INVITE_UPDATED, d: { invite } });
     return Response.json(invite);
 });
 
@@ -82,8 +82,8 @@ export const deleteInviteRoute = withAuth(async (_req, userId, state, params) =>
         return new Response('Unauthorized', { status: 403 });
     }
     await deleteInvite(state.db, inviteId, labId);
-    // Inform all clients that an invite was deleted
-    state.broadcast({ op: WsEvent.INVITE_DELETED, d: { labId, inviteId } });
+    // Inform all lab members that an invite was deleted
+    state.sendToLab(labId, { op: WsEvent.INVITE_DELETED, d: { labId, inviteId } });
     return new Response(null, { status: 204 });
 });
 
@@ -118,9 +118,11 @@ export const useInviteRoute = withAuth(async (_req, userId, state, params) => {
     const user = await findPublicUserById(state.db, userId);
     await addInviteUse(state.db, invite.id, userId);
     const updated: LabInvite = { ...invite, uses: invite.uses + 1 };
-    state.broadcast({ op: WsEvent.MEMBER_JOINED, d: { labId: invite.lab_id, member, user } });
-    // Notify everyone (including the joiner) about updated invite usage
-    state.broadcast({ op: WsEvent.INVITE_UPDATED, d: { invite: updated } });
+    // Register the joining user's existing sockets to this lab before broadcasting
+    state.addUserToLab(userId, invite.lab_id);
+    state.sendToLab(invite.lab_id, { op: WsEvent.MEMBER_JOINED, d: { labId: invite.lab_id, member, user } });
+    // Notify lab members (including the joiner) about updated invite usage
+    state.sendToLab(invite.lab_id, { op: WsEvent.INVITE_UPDATED, d: { invite: updated } });
     const lab = await getLabState(state.db, invite.lab_id, userId);
     if (!lab) {
         return new Response('Lab not found', { status: 500 });

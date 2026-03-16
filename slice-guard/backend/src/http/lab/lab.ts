@@ -72,7 +72,7 @@ export const update = withAuth(async (req, userId, state, params) => {
     }
 
     const lab = await updateLab(state.db, id, name, description ?? null, iconUrl ?? null);
-    state.broadcast({ op: WsEvent.LAB_UPDATED, d: { lab } });
+    state.sendToLab(id, { op: WsEvent.LAB_UPDATED, d: { lab } });
     return Response.json(lab);
 });
 
@@ -87,7 +87,7 @@ export const del = withAuth(async (req, userId, state, params) => {
         return new Response('Unauthorized', { status: 403 });
     }
     await deleteLab(state.db, id);
-    state.broadcast({ op: WsEvent.LAB_DELETED, d: { labId: id } });
+    state.sendToLab(id, { op: WsEvent.LAB_DELETED, d: { labId: id } });
     return new Response(null, { status: 204 });
 });
 
@@ -125,6 +125,6 @@ export const uploadIcon = withAuth(async (req, userId, state, params) => {
         return new Response('Not found', { status: 404 });
     }
     const lab = await updateLab(state.db, id, current.name, current.description ?? null, url);
-    state.broadcast({ op: WsEvent.LAB_UPDATED, d: { lab } });
+    state.sendToLab(id, { op: WsEvent.LAB_UPDATED, d: { lab } });
     return Response.json(lab);
 });

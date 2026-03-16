@@ -41,7 +41,11 @@ export const uploadAvatar = withAuth(async (req, userId, state, params) => {
     const publicEndpoint = process.env.S3_PUBLIC_ENDPOINT || process.env.S3_ENDPOINT;
     const url = `${publicEndpoint}/${process.env.S3_BUCKET}/${key}`;
     const user = await setAvatarUrl(state.db, id, url);
-    state.broadcast({ op: WsEvent.USER_UPDATED, d: { user } });
+    // Notify all labs the user belongs to
+    const memberships = await state.db`SELECT lab_id FROM lab.members WHERE user_id = ${id}`;
+    for (const row of memberships) {
+        state.sendToLab(row.lab_id, { op: WsEvent.USER_UPDATED, d: { user } });
+    }
     return Response.json(user);
 });
 
@@ -68,6 +72,10 @@ export const update = withAuth(async (req, userId, state, params) => {
     }
     const { name } = (await req.json()) as { name: string };
     const user = await setName(state.db, id, name);
-    state.broadcast({ op: WsEvent.USER_UPDATED, d: { user } });
+    // Notify all labs the user belongs to
+    const memberships = await state.db`SELECT lab_id FROM lab.members WHERE user_id = ${id}`;
+    for (const row of memberships) {
+        state.sendToLab(row.lab_id, { op: WsEvent.USER_UPDATED, d: { user } });
+    }
     return Response.json(user);
 });

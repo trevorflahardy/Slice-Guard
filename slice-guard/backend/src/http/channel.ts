@@ -60,7 +60,7 @@ export const createChannelRoute = withAuth(async (req, userId, state, params) =>
         description ?? null,
         requestId ?? null,
     );
-    state.broadcast({ op: WsEvent.CHANNEL_CREATED, d: { channel } });
+    state.sendToLab(labId, { op: WsEvent.CHANNEL_CREATED, d: { channel } });
     return Response.json({ channel });
 });
 
@@ -82,7 +82,7 @@ export const updateChannelRoute = withAuth(async (req, userId, state, params) =>
         description ?? null,
         categoryId ?? null,
     );
-    state.broadcast({ op: WsEvent.CHANNEL_UPDATED, d: { channel } });
+    state.sendToLab(labId, { op: WsEvent.CHANNEL_UPDATED, d: { channel } });
     return Response.json({ channel });
 });
 
@@ -98,7 +98,7 @@ export const setChannelPositionRoute = withAuth(async (req, userId, state, param
         return new Response('Unauthorized', { status: 403 });
     const { position } = (await req.json()) as ChannelPositionPayload;
     const channel = await setChannelPosition(state.db, channelId, position);
-    state.broadcast({ op: WsEvent.CHANNEL_UPDATED, d: { channel } });
+    state.sendToLab(labId, { op: WsEvent.CHANNEL_UPDATED, d: { channel } });
     return Response.json({ channel });
 });
 
@@ -112,7 +112,7 @@ export const deleteChannelRoute = withAuth(async (_req, userId, state, params) =
     if (!hasLabPermission(perms, LabPermission.MANAGE_ROLES))
         return new Response('Unauthorized', { status: 403 });
     await deleteChannel(state.db, channelId);
-    state.broadcast({ op: WsEvent.CHANNEL_DELETED, d: { channelId, labId } });
+    state.sendToLab(labId, { op: WsEvent.CHANNEL_DELETED, d: { channelId, labId } });
     return new Response(null, { status: 204 });
 });
 
@@ -163,7 +163,9 @@ export const createMessageRoute = withAuth(async (req, userId, state, params) =>
         userMentions ?? [],
         roleMentions ?? [],
     );
-    state.broadcast({ op: WsEvent.MESSAGE_CREATED, d: { message } });
+    if (channel.lab_id) {
+        state.sendToLab(channel.lab_id, { op: WsEvent.MESSAGE_CREATED, d: { message } });
+    }
     return Response.json({ message });
 });
 
@@ -193,7 +195,9 @@ export const updateMessageRoute = withAuth(async (req, userId, state, params) =>
         userMentions ?? [],
         roleMentions ?? [],
     );
-    state.broadcast({ op: WsEvent.MESSAGE_UPDATED, d: { message } });
+    if (channel.lab_id) {
+        state.sendToLab(channel.lab_id, { op: WsEvent.MESSAGE_UPDATED, d: { message } });
+    }
     return Response.json({ message });
 });
 
@@ -215,6 +219,8 @@ export const deleteMessageRoute = withAuth(async (_req, userId, state, params) =
         } else return new Response('Unauthorized', { status: 403 });
     }
     await deleteMessage(state.db, messageId);
-    state.broadcast({ op: WsEvent.MESSAGE_DELETED, d: { channelId, messageId } });
+    if (channel.lab_id) {
+        state.sendToLab(channel.lab_id, { op: WsEvent.MESSAGE_DELETED, d: { channelId, messageId } });
+    }
     return new Response(null, { status: 204 });
 });

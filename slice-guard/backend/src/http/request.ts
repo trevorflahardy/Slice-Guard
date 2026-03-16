@@ -37,7 +37,7 @@ export const create = withAuth(async (req, userId, state, params) => {
 
     state.logger.debug({ labId, userId }, 'Creating print request');
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    if (perms !== null && !hasLabPermission(perms, LabPermission.CREATE_REQUEST)) {
+    if (perms === null || !hasLabPermission(perms, LabPermission.CREATE_REQUEST)) {
         return new Response('Unauthorized', { status: 403 });
     }
 
@@ -58,7 +58,7 @@ export const create = withAuth(async (req, userId, state, params) => {
     const user = await findPublicUserById(state.db, userId);
     const tags = await getTagsForRequest(state.db, result.id);
     const payload: PrintRequestEvent = { request: result, user, tags };
-    state.broadcast({ op: WsEvent.REQUEST_CREATED, d: payload });
+    state.sendToLab(labId, { op: WsEvent.REQUEST_CREATED, d: payload });
 
     return Response.json(result);
 });
@@ -107,7 +107,6 @@ export const getRoute = withAuth(async (_req, userId, state, params) => {
         return new Response('Not found', { status: 404 });
     }
     const perms = await getMemberRolePermissions(state.db, labId, userId);
-    console.log('debug', row.user_id, userId, perms);
     if (
         Number(row.user_id) !== userId &&
         (perms == null || !hasLabPermission(perms, LabPermission.MANAGE_REQUESTS))
@@ -133,7 +132,7 @@ export const createTagRoute = withAuth(async (req, userId, state, params) => {
     state.logger.debug({ labId, name, color }, 'Creating tag');
     const tag = await createTag(state.db, labId, name, color, isDefault ?? false);
     state.logger.debug({ id: tag.id }, 'Created tag');
-    state.broadcast({ op: WsEvent.TAG_CREATED, d: { tag } });
+    state.sendToLab(labId, { op: WsEvent.TAG_CREATED, d: { tag } });
     return Response.json(tag);
 });
 
@@ -153,7 +152,7 @@ export const setTagDefaultRoute = withAuth(async (req, userId, state, params) =>
     state.logger.debug({ tagId, isDefault }, 'Setting tag default');
     const tag = await setTagDefault(state.db, tagId, isDefault);
     state.logger.debug({ tagId }, 'Updated tag');
-    state.broadcast({ op: WsEvent.TAG_UPDATED, d: { tag } });
+    state.sendToLab(labId, { op: WsEvent.TAG_UPDATED, d: { tag } });
     return Response.json({ tag });
 });
 
@@ -202,7 +201,7 @@ export const assignTagRoute = withAuth(async (req, userId, state, params) => {
     if (updated) {
         const user = await findPublicUserById(state.db, updated.user_id);
         const tags = await getTagsForRequest(state.db, requestId);
-        state.broadcast({ op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } });
+        state.sendToLab(labId, { op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } });
     }
     return new Response(null, { status: 204 });
 });
@@ -228,7 +227,7 @@ export const setRequestStateRoute = withAuth(async (req, userId, state, params) 
     const updated = await setRequestClosed(state.db, requestId, isClosed);
     const user = await findPublicUserById(state.db, updated.user_id);
     const tags = await getTagsForRequest(state.db, requestId);
-    state.broadcast({ op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } });
+    state.sendToLab(labId, { op: WsEvent.REQUEST_UPDATED, d: { request: updated, user, tags } });
     return Response.json(updated);
 });
 
@@ -247,7 +246,7 @@ export const deleteRoute = withAuth(async (_req, userId, state, params) => {
         return new Response('Unauthorized', { status: 403 });
     }
     await deletePrintRequest(state.db, requestId);
-    state.broadcast({ op: WsEvent.REQUEST_DELETED, d: { labId, requestId } });
+    state.sendToLab(labId, { op: WsEvent.REQUEST_DELETED, d: { labId, requestId } });
     return new Response(null, { status: 204 });
 });
 
@@ -264,6 +263,6 @@ export const deleteTagRoute = withAuth(async (_req, userId, state, params) => {
     }
 
     await deleteTag(state.db, tagId);
-    state.broadcast({ op: WsEvent.TAG_DELETED, d: { labId, tagId } });
+    state.sendToLab(labId, { op: WsEvent.TAG_DELETED, d: { labId, tagId } });
     return new Response(null, { status: 204 });
 });

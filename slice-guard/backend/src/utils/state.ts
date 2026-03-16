@@ -17,6 +17,8 @@ export default class State {
     sockets: Set<ServerWebSocket> = new Set();
     // Active sockets keyed by user id for targeted broadcasts
     private socketsByUser: Map<number, Set<ServerWebSocket>> = new Map();
+    // Active sockets keyed by lab id for lab-scoped broadcasts
+    private socketsByLab: Map<number, Set<ServerWebSocket>> = new Map();
 
     constructor(db: SQL, logger: Logger) {
         this.db = db;
@@ -44,6 +46,74 @@ export default class State {
         collection.delete(ws);
         if (collection.size === 0) {
             this.socketsByUser.delete(ws.data.userId);
+        }
+
+        // Clean up socketsByLab entries for this socket
+        for (const [labId, sockets] of this.socketsByLab) {
+            sockets.delete(ws);
+            if (sockets.size === 0) {
+                this.socketsByLab.delete(labId);
+            }
+        }
+    }
+
+    /** Register a websocket connection to a specific lab. */
+    addSocketToLab(ws: ServerWebSocket, labId: number) {
+        const collection = this.socketsByLab.get(labId);
+        if (collection) {
+            collection.add(ws);
+        } else {
+            this.socketsByLab.set(labId, new Set([ws]));
+        }
+    }
+
+    /** Remove a websocket connection from a specific lab. */
+    removeSocketFromLab(ws: ServerWebSocket, labId: number) {
+        const collection = this.socketsByLab.get(labId);
+        if (!collection) {
+            return;
+        }
+        collection.delete(ws);
+        if (collection.size === 0) {
+            this.socketsByLab.delete(labId);
+        }
+    }
+
+    /** Add all of a user's existing sockets to a lab (e.g. when joining via invite). */
+    addUserToLab(userId: number, labId: number) {
+        const sockets = this.socketsByUser.get(userId);
+        if (!sockets) {
+            return;
+        }
+        for (const ws of sockets) {
+            this.addSocketToLab(ws, labId);
+        }
+    }
+
+    /** Remove all of a user's sockets from a lab (e.g. when kicked or leaving). */
+    removeUserFromLab(userId: number, labId: number) {
+        const sockets = this.socketsByUser.get(userId);
+        if (!sockets) {
+            return;
+        }
+        for (const ws of sockets) {
+            this.removeSocketFromLab(ws, labId);
+        }
+    }
+
+    /** Send a message only to sockets that belong to a specific lab. */
+    sendToLab(labId: number, msg: WsPayloadUnion) {
+        const sockets = this.socketsByLab.get(labId);
+        if (!sockets) {
+            return;
+        }
+        const raw = JSON.stringify(msg);
+        for (const ws of sockets) {
+            try {
+                ws.send(raw);
+            } catch (err) {
+                this.logger.error({ err, labId }, 'Failed to send lab-scoped WS message');
+            }
         }
     }
 

@@ -12,7 +12,27 @@ import { getUserLabStates } from './utils/lab_state';
 
 import logger from './utils/logger';
 import { withLogging } from './http/middleware';
+import { authLimiter } from './utils/rateLimit';
 import type { Logger } from 'pino';
+
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+function corsHeaders(): Record<string, string> {
+    return {
+        'Access-Control-Allow-Origin': FRONTEND_URL,
+        'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400',
+    };
+}
+
+function withCors(response: Response): Response {
+    const headers = corsHeaders();
+    for (const [key, value] of Object.entries(headers)) {
+        response.headers.set(key, value);
+    }
+    return response;
+}
 
 export class Server {
     private state: State;
@@ -32,12 +52,22 @@ export class Server {
             port: 3000,
             routes: {
                 '/api/login': {
-                    POST: (req) =>
-                        withLogging((r, s) => auth.login(r, s))(req, this.state, req.params),
+                    POST: (req) => {
+                        const ip = req.headers.get('x-forwarded-for') || 'unknown';
+                        if (!authLimiter.check(ip)) {
+                            return new Response('Too many requests', { status: 429 });
+                        }
+                        return withLogging((r, s) => auth.login(r, s))(req, this.state, req.params);
+                    },
                 },
                 '/api/register': {
-                    POST: (req) =>
-                        withLogging((r, s) => auth.register(r, s))(req, this.state, req.params),
+                    POST: (req) => {
+                        const ip = req.headers.get('x-forwarded-for') || 'unknown';
+                        if (!authLimiter.check(ip)) {
+                            return new Response('Too many requests', { status: 429 });
+                        }
+                        return withLogging((r, s) => auth.register(r, s))(req, this.state, req.params);
+                    },
                 },
                 '/api/labs': {
                     GET: (req) => withLogging(lab.list)(req, this.state, {}),
@@ -160,8 +190,7 @@ export class Server {
                 },
                 '/api/*': {
                     OPTIONS: (_req) => {
-                        // Handle CORS preflight (in the future)
-                        return new Response('Not Found', { status: 404 });
+                        return new Response(null, { status: 204, headers: corsHeaders() });
                     },
                     // For all other methods, let the request pass through to the routes
                     '*': (req) =>
@@ -213,8 +242,9 @@ export class Server {
             return new Response(null);
         }
 
-        // Handle CORS preflight for all API routes (in the future)
+        // Handle CORS preflight for all API routes
         if (req.method === 'OPTIONS') {
+            return new Response(null, { status: 204, headers: corsHeaders() });
         }
 
         // Return undefined to let Bun's router handle the request
@@ -235,6 +265,9 @@ export class Server {
     private async handleWebSocketOpen(ws: ServerWebSocket) {
         this.state.addSocket(ws);
         const labs = await getUserLabStates(this.state.db, ws.data.userId);
+        for (const lab of labs) {
+            this.state.addSocketToLab(ws, lab.lab.id);
+        }
         ws.send(JSON.stringify({ op: WsEvent.HELLO, d: { labs } }));
         logger.debug({ userId: ws.data.userId }, 'WebSocket connected');
     }

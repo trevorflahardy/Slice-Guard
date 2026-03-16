@@ -18,7 +18,7 @@ export const createRoleRoute = withAuth(async (req, userId, state, params) => {
     }
 
     const role = await createRole(state.db, labId, name, permissions, rank ?? 1, color ?? null);
-    state.broadcast({ op: WsEvent.ROLE_CREATED, d: { role } });
+    state.sendToLab(labId, { op: WsEvent.ROLE_CREATED, d: { role } });
     return Response.json(role);
 });
 
@@ -47,7 +47,7 @@ export const updateRoleRoute = withAuth(async (req, userId, state, params) => {
         isDefault ? undefined : name,
         isDefault ? undefined : (color ?? null),
     );
-    state.broadcast({ op: WsEvent.ROLE_UPDATED, d: { role } });
+    state.sendToLab(labId, { op: WsEvent.ROLE_UPDATED, d: { role } });
     return Response.json(role);
 });
 
@@ -64,6 +64,6 @@ export const deleteRoleRoute = withAuth(async (req, userId, state, params) => {
     }
 
     await deleteRole(state.db, labId, roleId);
-    state.broadcast({ op: WsEvent.ROLE_DELETED, d: { labId, roleId } });
+    state.sendToLab(labId, { op: WsEvent.ROLE_DELETED, d: { labId, roleId } });
     return new Response(null, { status: 204 });
 });

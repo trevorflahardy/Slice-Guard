@@ -60,13 +60,15 @@ export async function getInviteByCode(db: SQL, code: string): Promise<LabInviteR
 }
 
 export async function addInviteUse(db: SQL, inviteId: number, userId: number): Promise<void> {
-    await db`
-        INSERT INTO lab.invite_uses (invite_id, user_id)
-             VALUES (${inviteId}, ${userId})
-    `;
-    await db`
-        UPDATE lab.invites
-           SET uses = uses + 1
-         WHERE id = ${inviteId}
-    `;
+    await db.begin(async (tx) => {
+        await tx`
+            INSERT INTO lab.invite_uses (invite_id, user_id)
+                 VALUES (${inviteId}, ${userId})
+        `;
+        await tx`
+            UPDATE lab.invites
+               SET uses = uses + 1
+             WHERE id = ${inviteId}
+        `;
+    });
 }

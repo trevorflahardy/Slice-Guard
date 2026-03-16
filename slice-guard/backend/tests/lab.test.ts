@@ -26,6 +26,9 @@ function createMockSQL(results: any[] = []) {
     };
     fn.queries = [] as string[];
     fn.params = [] as any[][];
+    fn.begin = async (cb: (tx: any) => Promise<any>) => {
+        return cb(fn);
+    };
     return fn;
 }
 

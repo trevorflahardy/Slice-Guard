@@ -30,28 +30,30 @@ export async function createLab(
     description: string | null = null,
     iconUrl: string | null = null,
 ): Promise<LabRow> {
-    const rows: LabRow[] = await db`
-        INSERT INTO lab.labs (owner_id, name, description, icon_url)
-             VALUES (${ownerId}, ${name}, ${description}, ${iconUrl})
-        RETURNING id, owner_id, name, description, icon_url, default_role_id, created_at
-    `;
-    const lab: LabRow = rows[0];
+    return await db.begin(async (tx) => {
+        const rows: LabRow[] = await tx`
+            INSERT INTO lab.labs (owner_id, name, description, icon_url)
+                 VALUES (${ownerId}, ${name}, ${description}, ${iconUrl})
+            RETURNING id, owner_id, name, description, icon_url, default_role_id, created_at
+        `;
+        const lab: LabRow = rows[0];
 
-    // Create a default role for every member, @everyone
-    const role = await createRole(
-        db,
-        lab.id,
-        'everyone',
-        LabPermission.READ | LabPermission.WRITE,
-        0,
-        null,
-    );
+        // Create a default role for every member, @everyone
+        const role = await createRole(
+            tx,
+            lab.id,
+            'everyone',
+            LabPermission.READ | LabPermission.WRITE,
+            0,
+            null,
+        );
 
-    lab.default_role_id = role.id;
+        lab.default_role_id = role.id;
 
-    // Add this owner to the member list with the default role
-    await addMember(db, lab.id, ownerId, role.id);
-    return lab;
+        // Add this owner to the member list with the default role
+        await addMember(tx, lab.id, ownerId, role.id);
+        return lab;
+    });
 }
 
 /**

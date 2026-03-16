@@ -6,6 +6,9 @@ export class WebSocketClient {
     private ws: WebSocket | null = null;
     private url: string;
     private reconnectId: number | null = null;
+    private key: string | undefined;
+    private retryCount = 0;
+    private maxRetries = 10;
     private listeners = new Map<WsEvent, Set<Listener>>();
 
     constructor(url: string) {
@@ -16,8 +19,14 @@ export class WebSocketClient {
         if (this.ws) {
             return;
         }
-        const url = key ? `${this.url}?key=${encodeURIComponent(key)}` : this.url;
+        if (key !== undefined) {
+            this.key = key;
+        }
+        const url = this.key ? `${this.url}?key=${encodeURIComponent(this.key)}` : this.url;
         this.ws = new WebSocket(url);
+        this.ws.addEventListener('open', () => {
+            this.retryCount = 0;
+        });
         this.ws.addEventListener('message', (ev) => {
             try {
                 const msg: WsPayloadUnion = JSON.parse(ev.data);
@@ -31,13 +40,25 @@ export class WebSocketClient {
         });
         this.ws.addEventListener('close', () => {
             this.ws = null;
-            if (this.reconnectId === null) {
+            if (this.reconnectId === null && this.retryCount < this.maxRetries) {
+                const delay = Math.min(1000 * Math.pow(2, this.retryCount), 30000);
+                this.retryCount++;
                 this.reconnectId = window.setTimeout(() => {
                     this.reconnectId = null;
                     this.connect();
-                }, 2000);
+                }, delay);
             }
         });
+    }
+
+    disconnect() {
+        if (this.reconnectId !== null) {
+            clearTimeout(this.reconnectId);
+            this.reconnectId = null;
+        }
+        this.retryCount = this.maxRetries; // Prevent reconnect
+        this.ws?.close();
+        this.ws = null;
     }
 
     send(op: WsEvent, d: unknown) {

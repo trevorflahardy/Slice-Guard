@@ -1,16 +1,14 @@
 import type { SQL } from 'bun';
 import {
     listLabsForUser,
-    listMembers,
-    getMemberRoles,
+    getLabMembersWithDetails,
     listInvites,
     getMemberRolePermissions,
     getLab,
 } from '../db/lab';
-import { getAllPrintRequests, getTagsForRequest, listTags } from '../db/lab/request';
+import { getRequestsWithDetails, listTags } from '../db/lab/request';
 import { listChannels } from '../db/lab/channel';
-import { findPublicUserById } from '../db/user';
-import type { LabRole, LabMember, LabInvite } from '@shared/db/lab';
+import type { LabRole, LabInvite } from '@shared/db/lab';
 import type { LabState, MemberEvent, PrintRequestEvent } from '@shared/payloads/ws';
 import type { RequestTag } from '@shared/db/request';
 
@@ -29,19 +27,12 @@ export async function getUserLabStates(db: SQL, userId: number): Promise<LabStat
         ORDER BY rank DESC, id ASC`) as any;
 
         // Load members with their roles and public user info
-        const memberRows = await listMembers(db, lab.id);
-        const members: MemberEvent[] = [];
-        for (const row of memberRows) {
-            const user = await findPublicUserById(db, row.user_id);
-            const mRoles = await getMemberRoles(db, lab.id, row.user_id);
-            const member: LabMember = {
-                lab_id: row.lab_id,
-                user_id: row.user_id,
-                roles: mRoles,
-                joined_at: row.joined_at,
-            };
-            members.push({ labId: lab.id, member, user });
-        }
+        const memberDetails = await getLabMembersWithDetails(db, lab.id);
+        const members: MemberEvent[] = memberDetails.map((d) => ({
+            labId: lab.id,
+            member: { ...d.member, roles: d.roles },
+            user: d.user,
+        }));
 
         // Load tags for the lab
         const tags: RequestTag[] = await listTags(db, lab.id);
@@ -51,13 +42,7 @@ export async function getUserLabStates(db: SQL, userId: number): Promise<LabStat
         const permissions = await getMemberRolePermissions(db, lab.id, userId);
 
         // Load requests with their tags and user info
-        const requestRows = await getAllPrintRequests(db, lab.id);
-        const requests: PrintRequestEvent[] = [];
-        for (const r of requestRows) {
-            const user = await findPublicUserById(db, r.user_id);
-            const rTags = await getTagsForRequest(db, r.id);
-            requests.push({ request: r, user, tags: rTags });
-        }
+        const requests: PrintRequestEvent[] = await getRequestsWithDetails(db, lab.id);
 
         // Load channels for the lab
         const channels = await listChannels(db, lab.id);
@@ -98,19 +83,12 @@ export async function getLabState(
       ORDER BY rank DESC, id ASC`) as any;
 
     // Load members with their roles and public user info
-    const memberRows = await listMembers(db, labId);
-    const members: MemberEvent[] = [];
-    for (const row of memberRows) {
-        const user = await findPublicUserById(db, row.user_id);
-        const mRoles = await getMemberRoles(db, labId, row.user_id);
-        const member: LabMember = {
-            lab_id: row.lab_id,
-            user_id: row.user_id,
-            roles: mRoles,
-            joined_at: row.joined_at,
-        };
-        members.push({ labId, member, user });
-    }
+    const memberDetails = await getLabMembersWithDetails(db, labId);
+    const members: MemberEvent[] = memberDetails.map((d) => ({
+        labId,
+        member: { ...d.member, roles: d.roles },
+        user: d.user,
+    }));
 
     // Load tags for the lab
     const tags: RequestTag[] = await listTags(db, labId);
@@ -120,13 +98,7 @@ export async function getLabState(
     const permissions = await getMemberRolePermissions(db, labId, userId);
 
     // Load requests with their tags and user info
-    const requestRows = await getAllPrintRequests(db, labId);
-    const requests: PrintRequestEvent[] = [];
-    for (const r of requestRows) {
-        const user = await findPublicUserById(db, r.user_id);
-        const rTags = await getTagsForRequest(db, r.id);
-        requests.push({ request: r, user, tags: rTags });
-    }
+    const requests: PrintRequestEvent[] = await getRequestsWithDetails(db, labId);
 
     const channels = await listChannels(db, labId);
 

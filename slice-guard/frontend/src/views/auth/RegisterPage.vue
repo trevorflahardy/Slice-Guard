@@ -23,7 +23,7 @@ async function submit() {
     error.value = '';
     try {
         await register(email.value, password.value, name.value);
-        router.push('/nolabs');
+        router.push('/');
     } catch (e: any) {
         error.value = e.message ?? 'Failed to register';
     }

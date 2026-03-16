@@ -11,6 +11,11 @@ export default defineConfig({
             '@shared': fileURLToPath(new URL('../shared', import.meta.url)),
         },
     },
+    test: {
+        environment: 'happy-dom',
+        globals: true,
+        setupFiles: ['src/__tests__/setup.ts'],
+    },
     server: {
         proxy: {
             '/api': 'http://localhost:3000',

@@ -6,10 +6,8 @@ CREATE TABLE lab.labs (
     name TEXT NOT NULL,
     description TEXT,
     icon_url TEXT,
-    default_role_id INTEGER,
-    created_at TIMESTAMP DEFAULT NOW(),
-    CONSTRAINT labs_default_role_fkey FOREIGN KEY (default_role_id)
-        REFERENCES lab.roles(id) ON DELETE SET NULL
+    default_role_id INTEGER, -- No constraint here yet
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE lab.roles (
@@ -21,6 +19,10 @@ CREATE TABLE lab.roles (
     rank INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+ALTER TABLE lab.labs
+ADD CONSTRAINT labs_default_role_fkey
+FOREIGN KEY (default_role_id) REFERENCES lab.roles(id) ON DELETE SET NULL;
 
 CREATE TABLE lab.members (
     lab_id INTEGER NOT NULL REFERENCES lab.labs(id) ON DELETE CASCADE,
